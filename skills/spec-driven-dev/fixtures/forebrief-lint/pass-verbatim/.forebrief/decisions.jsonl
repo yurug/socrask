@@ -1,0 +1,3 @@
+{"id":"01A","seq":1,"ts":"2026-07-24T10:00:00.000Z","actor":"agent","type":"decision","refs":[],"payload":{"card":"card-a","chosen":"1","mode":"override","rationale":"Removing reconciled mode avoids two representations of one state.","source_channel":"chat"}}
+{"id":"01B","seq":2,"ts":"2026-07-24T10:01:00.000Z","actor":"human","type":"ask_why","refs":[],"payload":{"card":"card-a","text":"Why remove it instead of keeping it unused?"}}
+{"id":"01C","seq":3,"ts":"2026-07-24T10:02:00.000Z","actor":"agent","type":"answer","refs":[],"payload":{"card":"card-a","ref_seq":2,"text":"An unused enum value invites a second producer eventually; removing it is safer."}}

@@ -6,8 +6,8 @@ __pycache__/
 *.pyc
 
 # Local working material that is not part of the public distribution
-.forebrief/
-methodology/decisions/
-methodology/decisions-round-1.md
-research/technical-communication-primitives.md
-examples/
+/.forebrief/
+/methodology/decisions/
+/methodology/decisions-round-1.md
+/research/technical-communication-primitives.md
+/examples/
