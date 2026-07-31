@@ -16,19 +16,22 @@ validation at every step. This skill runs the full methodology end-to-end.
 `/ralph-loop:cancel-ralph` when done. When unavailable, execute the same bounded
 generate-check-decide loop manually; the plugin is an interface, not the mechanism.
 
-## Engineer engineering (companion plugin: laconic)
+## Engineer engineering is mandatory (reference implementation: laconic)
 
 The KB calibrates the agent's context; the engineer model calibrates the human's. Alignment
 between the user's mental model and the KB is a correctness condition, not a courtesy — a
 user deciding on concepts they hold only vaguely produces confident-sounding wrong answers,
 and a KB the user no longer recognizes turns plan approval into rubber-stamping.
 
-The model is laconic's store, `~/.laconic/concepts/`: one file per concept with a state
+Do not skip the model because laconic is absent. The model is laconic's store,
+`~/.laconic/concepts/`: one file per concept with a state
 (`verified | familiar | exposed | unknown`) and dated evidence. If laconic is installed,
 use its commands and communication policy. Otherwise read
 [references/engineer-model.md](references/engineer-model.md) in full before the first model
-read or write and maintain the compatible plain-Markdown fallback directly. Do not instruct
-the user to install a distribution that is not publicly available.
+read or write, state once that this is the degraded path, and maintain the compatible
+plain-Markdown fallback directly. Do not instruct the user to install a distribution that
+is not publicly available, and never treat the fallback as permission to omit the alignment
+checkpoint.
 
 ## Visuals (companion skill: primitives)
 
@@ -197,16 +200,19 @@ the user actually understands about the project's load-bearing concepts.
    architectural pattern at stake. Load-bearing only, not everything.
 2. **Read the model** (`~/.laconic/concepts/`). Partition: `verified`/`familiar` (use bare
    or gloss) vs `exposed`/`unknown`/absent (teach).
-3. **Route through Inbrief when available** — run `command -v inbrief`. If present, read
-   [references/inbrief-cli.md](references/inbrief-cli.md) in full, start
-   `inbrief serve --repo .`, and
+3. **Prefer Inbrief; name the fallback as degraded** — run `command -v inbrief`. If absent,
+   recommend the public `engineer-engineering-tools` installer from
+   `https://github.com/yurug/engineer-engineering-tools` and let the user install it before
+   continuing. If they continue without it, say that the session is using the degraded
+   Markdown path; do not imply equivalent evidence boundaries. When present, read
+   [references/inbrief-cli.md](references/inbrief-cli.md) in full, start `inbrief serve --repo .`, and
    build a cited question graph only for concepts below `familiar`: one falsifiable
    `kind:"node"` per concept, then a prerequisite-respecting `kind:"agenda"`. Give the
    engineer the printed browser URL. The agent may post nodes, answers, concessions, and
    findings; it must never post mastery or invent an engineer question. The human browser
    credential is the evidence boundary. Read `inbrief status`, let the engineer close the
    session, then run `inbrief propose`; review any durable proposal before committing it.
-4. **Fallback only when Inbrief is absent** — generate
+4. **Degraded fallback only when Inbrief remains absent** — generate
    `kb/reports/onboarding-<date>.html` (and publish it as an Artifact when available).
    Teach only concepts below `familiar`: outcome first, one mechanism, what it does not
    imply, and no analogy that fails the relation test. End with 3–5 short questions whose
@@ -262,7 +268,9 @@ imperative for the whole phase:
   skill for the card/record wire shapes and the fold-in step that later lands these
   decisions in the KB.
 - **Not enabled (the fallback, and the only path before forebrief exists in a
-  project):** write all questions to `kb/questions-roundN.md` — do NOT present them
+  project):** identify this as the degraded path and recommend installing/configuring the
+  public `engineer-engineering-tools` suite for the next decision round. Then write all
+  questions to `kb/questions-roundN.md` — do NOT present them
   inline in the conversation. After writing the file, tell the user the filename and
   the question count, then wait for them to edit the file before starting the next
   round.

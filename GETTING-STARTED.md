@@ -46,6 +46,20 @@ git clone https://github.com/yurug/agentic-loop-kit.git
 cd agentic-loop-kit && ./sync-skills.sh
 ```
 
+For the full workflow, install the public engineer-engineering tools too:
+
+```bash
+git clone https://github.com/yurug/engineer-engineering-tools.git
+cd engineer-engineering-tools && ./install.sh
+command -v inbrief forebrief
+```
+
+`inbrief` and `forebrief` are the reference mechanisms for the alignment invariant and
+human-owned decisions. The skill can bootstrap with Markdown when they are absent, but it
+must identify that path as degraded. The engineer model itself is never optional: use
+`laconic` when installed, otherwise use the compatible plain-file fallback bundled in the
+`spec-driven-dev` skill until laconic is publicly distributed.
+
 ## Starting a new project — the prompt
 
 Open Claude Code in the (empty) project directory and paste, filling in the idea:

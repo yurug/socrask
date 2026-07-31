@@ -32,6 +32,18 @@ Then, from any project:
 Starting from zero? `GETTING-STARTED.md` carries the exact bootstrap prompt, the prompt for
 adopting the methodology on an existing codebase, and what to run day to day.
 
+For the full reference loop, also install
+[engineer-engineering-tools](https://github.com/yurug/engineer-engineering-tools):
+
+```bash
+git clone https://github.com/yurug/engineer-engineering-tools.git
+cd engineer-engineering-tools && ./install.sh
+```
+
+That supplies `inbrief` for grounded onboarding and `forebrief` for human-owned decisions.
+The Markdown fallbacks keep bootstrap possible, but they are degraded modes: they cannot
+enforce the human credential boundary or preserve a decision session as an append-only log.
+
 ## What you get
 
 - A written specification and a knowledge base your agent reads before it writes anything,
@@ -60,13 +72,14 @@ whose phases lean on four disciplines:
 4. **Engineer engineering**: keeping the accountable human's mental model aligned with the
    system, which is a correctness condition and not a courtesy.
 
-Optional companion tools, each usable on its own:
-[engineer-engineering-tools](https://github.com/yurug/engineer-engineering-tools) provides
-the `inbrief` and `forebrief` workflows; `laconic` maintains the model of what the engineer
-knows but is not publicly distributed yet; and
+The reference stack uses
+[engineer-engineering-tools](https://github.com/yurug/engineer-engineering-tools) for
+`inbrief` and `forebrief`. `laconic` is the reference implementation of the persistent
+engineer model and calibrated communication; it is not publicly distributed yet, so the kit
+ships a compatible, auditable Markdown fallback rather than dropping the alignment
+invariant. Finally,
 [rocqeteer](https://github.com/yurug/rocqeteer) gives the harness its strongest check,
-formal verification of critical modules. Every integration has a documented fallback, so
-none is required to run this kit.
+formal verification of critical modules.
 
 ## What is inside
 
@@ -82,7 +95,9 @@ none is required to run this kit.
 Pre-1.0 release candidate. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. The supported installation target for this release is Claude Code;
-`forebrief`, `inbrief`, and `laconic` integrations are optional and have explicit fallbacks.
+the full workflow expects `inbrief`, `forebrief`, and an engineer model. Explicit fallbacks
+exist for bootstrap and constrained environments, but are not presented as equivalent to the
+reference tools.
 
 If you run it, tell me what broke. Issues, pull requests, and a plain "this made no sense
 to me" are all welcome.

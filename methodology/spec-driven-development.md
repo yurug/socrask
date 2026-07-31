@@ -109,6 +109,11 @@ performance evidence; self-assessment is not), and fold the answers back into th
 Phase 1 questions, the Phase 3 plan, and the Phase 6 sync brief are then written at the
 level the model establishes.
 
+The model and alignment checkpoint are mandatory. `laconic` is their reference
+implementation; `inbrief` and `forebrief` are the reference interaction mechanisms. When a
+tool is unavailable, use the documented plain-file fallback and call it degraded: the
+fallback preserves the activity, not the tool-enforced human credential or append-only log.
+
 ### Phase 1: Ambiguity Resolution
 Generate questions, propose defaults, iterate with the human. Exit when no blind spots
 remain. The cost of one extra question round is negligible; the cost of a wrong assumption
