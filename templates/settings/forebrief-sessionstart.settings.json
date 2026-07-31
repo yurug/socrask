@@ -1,0 +1,15 @@
+{
+  "//": "Merge into the project's .claude/settings.json ALONGSIDE kb-sessionstart.settings.json (both are separate SessionStart hook entries, not a replacement for each other). Injects `forebrief status` at every session start ONLY when this repo is forebrief-enabled -- `command -v forebrief` on PATH AND `.forebrief/config.json` exists, the operational definition (forebrief's kb/spec/config-and-formats.md). Degrades to a silent no-op otherwise (NF6: forebrief's own host-repo-independence property) -- never an error banner on a repo that hasn't set it up.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" 2>/dev/null && command -v forebrief >/dev/null 2>&1 && [ -f .forebrief/config.json ] && forebrief status 2>/dev/null; true"
+          }
+        ]
+      }
+    ]
+  }
+}

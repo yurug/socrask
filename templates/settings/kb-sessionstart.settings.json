@@ -1,0 +1,15 @@
+{
+  "//": "Merge into the project's .claude/settings.json. Injects kb/INDEX.md into context at every session start (startup, resume, clear, compact) — the KB routing table is then PRESENT, not merely requested. Verified: SessionStart stdout is added to Claude's context.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat \"$CLAUDE_PROJECT_DIR/kb/INDEX.md\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

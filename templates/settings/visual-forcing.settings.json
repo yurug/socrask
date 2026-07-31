@@ -1,0 +1,15 @@
+{
+  "//": "Tier 'presence' of the visual-enforcement ladder. THREE ROUTES WERE MEASURED AND FAILED before this one, all emitting hookSpecificOutput.additionalContext, which the docs list as supported and this build does not deliver: PreToolUse on the artifact tool (script provably ran, twice, nothing arrived), PostToolUse (same), and a Stop hook exiting 0 with plain stdout (same). What reaches the model is {\"decision\":\"block\",\"reason\":\"...\"} on stdout with exit 0 \u2014 the shape the laconic plugin's own stop-check uses, the one hook in this setup observed working. 'block' does not block the artifact (already shipped); it means the turn does not end until the model answers, which is the decided policy: ask once, a one-line reason is enough. A per-session marker keeps it to once and stop_hook_active keeps blocks from stacking. Hooks load at SESSION START only. VALIDATED 2026-07-27 in a live session: the hook fired at end of turn, its block reached the model with the findings, the model answered and the turn closed \u2014 the first of the four routes tried that actually delivered.",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/skills/primitives/visual-stop-check.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

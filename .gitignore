@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+*.swp
+*~
+__pycache__/
+*.pyc
+
+# Local working material that is not part of the public distribution
+.forebrief/
+methodology/decisions/
+methodology/decisions-round-1.md
+research/technical-communication-primitives.md
+examples/

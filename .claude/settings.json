@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/skills/primitives/visual-stop-check.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
