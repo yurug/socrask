@@ -40,9 +40,11 @@ git clone https://github.com/yurug/engineer-engineering-tools.git
 cd engineer-engineering-tools && ./install.sh
 ```
 
-That supplies `inbrief` for grounded onboarding and `forebrief` for human-owned decisions.
-The Markdown fallbacks keep bootstrap possible, but they are degraded modes: they cannot
-enforce the human credential boundary or preserve a decision session as an append-only log.
+That supplies `inbrief` for grounded onboarding, `forebrief` for human-owned decisions, and
+`backbrief` for the comprehension checkpoint after every non-trivial change. The Markdown
+fallbacks keep bootstrap possible, but they are degraded modes: they cannot enforce the
+human credential boundary, preserve a decision session as an append-only log, or maintain a
+cited comprehension map across cycles.
 
 ## What you get
 
@@ -74,10 +76,10 @@ whose phases lean on four disciplines:
 
 The reference stack uses
 [engineer-engineering-tools](https://github.com/yurug/engineer-engineering-tools) for
-`inbrief` and `forebrief`. `laconic` is the reference implementation of the persistent
-engineer model and calibrated communication; it is not publicly distributed yet, so the kit
-ships a compatible, auditable Markdown fallback rather than dropping the alignment
-invariant. Finally,
+`inbrief`, `forebrief`, and `backbrief`: before, during, and after the work. `laconic` is the
+reference implementation of the persistent engineer model and calibrated communication
+shared by all three; it is not publicly distributed yet, so the kit ships a compatible,
+auditable Markdown fallback rather than dropping the alignment invariant. Finally,
 [rocqeteer](https://github.com/yurug/rocqeteer) gives the harness its strongest check,
 formal verification of critical modules.
 
@@ -95,9 +97,9 @@ formal verification of critical modules.
 Pre-1.0 release candidate. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. The supported installation target for this release is Claude Code;
-the full workflow expects `inbrief`, `forebrief`, and an engineer model. Explicit fallbacks
-exist for bootstrap and constrained environments, but are not presented as equivalent to the
-reference tools.
+the full workflow expects `inbrief`, `forebrief`, `backbrief`, and an engineer model.
+Explicit fallbacks exist for bootstrap and constrained environments, but are not presented
+as equivalent to the reference tools.
 
 If you run it, tell me what broke. Issues, pull requests, and a plain "this made no sense
 to me" are all welcome.

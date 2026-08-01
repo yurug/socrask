@@ -110,9 +110,10 @@ Phase 1 questions, the Phase 3 plan, and the Phase 6 sync brief are then written
 level the model establishes.
 
 The model and alignment checkpoint are mandatory. `laconic` is their reference
-implementation; `inbrief` and `forebrief` are the reference interaction mechanisms. When a
-tool is unavailable, use the documented plain-file fallback and call it degraded: the
-fallback preserves the activity, not the tool-enforced human credential or append-only log.
+implementation; `inbrief`, `forebrief`, and `backbrief` are the reference interaction
+mechanisms before, during, and after the work. When a tool is unavailable, use the documented
+plain-file fallback and call it degraded: the fallback preserves the activity, not the
+tool-enforced human credential, append-only decision log, or cross-session comprehension map.
 
 ### Phase 1: Ambiguity Resolution
 Generate questions, propose defaults, iterate with the human. Exit when no blind spots
@@ -152,7 +153,10 @@ themselves — audit -> fix -> re-audit until 0 criticals.
 
 ### Phase 6: KB Sync
 After implementation, verify the KB still matches reality. Update stale files. The KB is
-the source of truth — if code contradicts spec, flag it.
+the source of truth — if code contradicts spec, flag it. Then run Backbrief over the slice's
+diff so the engineer, not the agent, advances a cited comprehension map. If Backbrief is
+unavailable, use the short brief and quiz fallback, label it degraded, and never infer
+alignment from silence or from stopping a session.
 
 ### Phase 7: Documentation & Validation
 Write user-facing documentation, integrate user-facing instructions as tests so the doc

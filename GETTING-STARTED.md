@@ -51,14 +51,15 @@ For the full workflow, install the public engineer-engineering tools too:
 ```bash
 git clone https://github.com/yurug/engineer-engineering-tools.git
 cd engineer-engineering-tools && ./install.sh
-command -v inbrief forebrief
+command -v inbrief forebrief backbrief
 ```
 
-`inbrief` and `forebrief` are the reference mechanisms for the alignment invariant and
-human-owned decisions. The skill can bootstrap with Markdown when they are absent, but it
-must identify that path as degraded. The engineer model itself is never optional: use
-`laconic` when installed, otherwise use the compatible plain-file fallback bundled in the
-`spec-driven-dev` skill until laconic is publicly distributed.
+`inbrief`, `forebrief`, and `backbrief` are the reference mechanisms before, during, and
+after the work: grounded onboarding, human-owned decisions, and the per-cycle comprehension
+checkpoint. The skill can bootstrap with Markdown when they are absent, but it must identify
+that path as degraded. The engineer model itself is never optional: use `laconic` when
+installed, otherwise use the compatible plain-file fallback bundled in the `spec-driven-dev`
+skill until laconic is publicly distributed.
 
 ## Starting a new project — the prompt
 

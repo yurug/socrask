@@ -352,13 +352,23 @@ drift signal; fix every error and triage every warning. Then check what the mach
   execution-tier (`sonnet`) subagents with KB-only access answer them — one per question, fanned
   out (Model routing rule 4 applies). Update the KB to close any gap.
 
-**KB↔engineer sync** — the third leg, after KB↔code: list the decisions, properties, and spec
-amendments created or changed since the user last engaged, and present the top few by
-cost-of-being-wrong as a short brief — only the surprising; expected steps compressed to a
-line. If the changes introduced new load-bearing concepts, append a 2–3 question micro-quiz
-(same evidence rules as Phase 0.75) and update the engineer model from the answers. An
-autonomous run that ends with the user unable to answer "what changed and why" has drifted,
-however green its tests.
+**KB↔engineer sync uses Backbrief by default.** For every non-Direct change, run
+`command -v backbrief`. When present, invoke the installed `backbrief` skill, read
+[references/backbrief-cli.md](references/backbrief-cli.md) in full, then read
+`backbrief digest`. Start `backbrief serve --repo . --focus diff:<start>..HEAD`, where
+`<start>` is the commit at which this approved slice began. Build the cited comprehension
+map, give the engineer the browser URL, and process the human event stream. Only the human
+may advance understanding. Do not claim Phase 6 complete while relevant nodes remain
+contested or the engineer has not engaged; `backbrief stop` is not evidence of alignment.
+
+**Degraded fallback only when Backbrief is absent or explicitly declined:** recommend the
+public `engineer-engineering-tools` installer and name the limitation. Then list decisions,
+properties, and spec amendments changed since the user last engaged; present the top few by
+cost-of-being-wrong as a short brief, compress expected steps to one line, and ask a 2–3
+question micro-quiz on new load-bearing concepts. Update the engineer model from the human's
+answers. An unanswered or skipped checkpoint is reported as alignment not established, never
+as success. An autonomous run that ends with the user unable to answer “what changed and
+why” has drifted, however green its tests.
 
 Update any stale KB files. The KB is the source of truth.
 
