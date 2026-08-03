@@ -200,17 +200,24 @@ the user actually understands about the project's load-bearing concepts.
    architectural pattern at stake. Load-bearing only, not everything.
 2. **Read the model** (`~/.laconic/concepts/`). Partition: `verified`/`familiar` (use bare
    or gloss) vs `exposed`/`unknown`/absent (teach).
-3. **Prefer Inbrief; name the fallback as degraded** — run `command -v inbrief`. If absent,
-   recommend the public `engineer-engineering-tools` installer from
-   `https://github.com/yurug/engineer-engineering-tools` and let the user install it before
-   continuing. If they continue without it, say that the session is using the degraded
+3. **Prefer Inbrief; name the fallback as degraded** — run this skill's
+   `resolve-engineering-tool.sh inbrief` and use the absolute path it prints for every
+   invocation. It searches PATH, npm's global prefix, user-local installs, and the standard
+   development checkout. Only treat Inbrief as absent when the resolver exits `1`. If absent,
+   read [references/inbrief-cli.md](references/inbrief-cli.md), offer its exact
+   `engineer-engineering-tools` clone + `install.sh inbrief` commands, and let the user
+   authorize/install it before continuing. Do not ask for an npm package name: Inbrief is
+   a workspace package installed by the toolsuite. If they continue without it, say that
+   the session is using the degraded
    Markdown path; do not imply equivalent evidence boundaries. When present, read
    [references/inbrief-cli.md](references/inbrief-cli.md) in full, start `inbrief serve --repo .`, and
    build a cited question graph only for concepts below `familiar`: one falsifiable
    `kind:"node"` per concept, then a prerequisite-respecting `kind:"agenda"`. Give the
    engineer the printed browser URL. The agent may post nodes, answers, concessions, and
    findings; it must never post mastery or invent an engineer question. The human browser
-   credential is the evidence boundary. Read `inbrief status`, let the engineer close the
+   credential is the evidence boundary. Start the fast response sentinel from the CLI
+   reference immediately after handing over the URL; browser input must wake the workflow
+   without a second chat message. Read `inbrief status`, let the engineer close the
    session, then run `inbrief propose`; review any durable proposal before committing it.
 4. **Degraded fallback only when Inbrief remains absent** — generate
    `kb/reports/onboarding-<date>.html` (and publish it as an Artifact when available).
@@ -255,7 +262,8 @@ gets its default silently accepted — the exact failure Phase 0.75 exists to pr
 Questions the user asks back during a round are model evidence; record them.
 
 **Routing check — run this before writing anything:**
-`command -v forebrief && [ -f .forebrief/config.json ]` (the operational definition of
+this skill's `resolve-engineering-tool.sh forebrief` must succeed AND
+`[ -f .forebrief/config.json ]` (the operational definition of
 "forebrief-enabled", `forebrief`'s own `kb/spec/config-and-formats.md`). This flips the
 imperative for the whole phase:
 
@@ -263,7 +271,9 @@ imperative for the whole phase:
   `kind:"question"` card per question, the proposed default as `default`) instead of
   writing a file. Do NOT also write `kb/questions-roundN.md` — the log IS the round;
   a parallel markdown file is the exact drift the routing enforcement exists to kill.
-  Wait for the round to close (every card decided — `forebrief status`), then read
+  During a live sit-down, start the fast response sentinel from the `forebrief` skill;
+  never ask the engineer to return to chat and say the round is done. Wait for the round
+  to close (every card decided — `forebrief status`), then read
   `forebrief digest` for overrides/rationale before the next round. See the `forebrief`
   skill for the card/record wire shapes and the fold-in step that later lands these
   decisions in the KB.
@@ -353,12 +363,14 @@ drift signal; fix every error and triage every warning. Then check what the mach
   out (Model routing rule 4 applies). Update the KB to close any gap.
 
 **KB↔engineer sync uses Backbrief by default.** For every non-Direct change, run
-`command -v backbrief`. When present, invoke the installed `backbrief` skill, read
+this skill's `resolve-engineering-tool.sh backbrief` and use the absolute path it prints.
+When it succeeds, invoke the installed `backbrief` skill, read
 [references/backbrief-cli.md](references/backbrief-cli.md) in full, then read
 `backbrief digest`. Start `backbrief serve --repo . --focus diff:<start>..HEAD`, where
 `<start>` is the commit at which this approved slice began. Build the cited comprehension
 map, give the engineer the browser URL, and process the human event stream. Only the human
-may advance understanding. Do not claim Phase 6 complete while relevant nodes remain
+may advance understanding. Start the fast response sentinel immediately; never require a
+chat-side “done” after a browser action. Do not claim Phase 6 complete while relevant nodes remain
 contested or the engineer has not engaged; `backbrief stop` is not evidence of alignment.
 
 **Degraded fallback only when Backbrief is absent or explicitly declined:** recommend the

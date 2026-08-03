@@ -4,12 +4,25 @@ Inbrief opens a grounded onboarding session for an engineer. The coding agent
 builds a question map from repository evidence; the engineer alone records
 mastery in the browser.
 
-After installing the public toolsuite, invoke commands as `inbrief …`.
+Inbrief is not a standalone npm package. Install it from the public toolsuite
+into the active Node/npm environment:
+
+```sh
+git clone https://github.com/yurug/engineer-engineering-tools.git \
+  "$HOME/.local/share/engineer-engineering-tools"
+"$HOME/.local/share/engineer-engineering-tools/install.sh" inbrief
+```
+
+If that checkout already exists, do not clone over it; inspect it and update it
+normally. The installer builds the workspace, links `@inbrief/cli` into the
+active `npm prefix -g`, and installs the Inbrief skill. Then invoke commands as
+`inbrief …` or by the absolute path printed by the installer.
 
 | Command | Does |
 |---|---|
 | `inbrief serve [--repo DIR] [--port N] [--open]` | Starts a local session and prints its URL, tokens, port, session id, and PID. |
 | `inbrief act FILE.json` / `inbrief act -` | Posts an agent-authored node, agenda, answer, concession, finding, or close record. |
+| `inbrief events [--since N] [--follow] [--timeout SECS] [--actor human]` | Reads human mastery changes and questions; timed follow exits on its first matching event. |
 | `inbrief status` | Reports whether the server is running and the current coverage counts. |
 | `inbrief propose [--out DIR]` | Prints durable material learned by the session, or writes proposals to an explicitly chosen scratch directory. |
 | `inbrief stop` | Stops the server without claiming that the onboarding session completed. |
