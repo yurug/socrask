@@ -23,6 +23,12 @@ listed here, so the page cannot silently fall behind the machinery.
 | `skills/primitives/visual-stop-check.sh` | a session that ends with an artifact and no visual — asks once, and a stated reason closes it (a gate, not a verdict) |
 | `tools/ci-local.sh` | nothing itself — it is the runner that gives all of the above one exit code |
 
+| `tools/agent-work.py` | overlapping worktree claims, resource contention, stale handoffs and unaligned integration closure |
+| `tools/alignment-check.py` | unresolved declared human checkpoints and stale diff bounds; does not authenticate human evidence |
+| `tools/enroll-shared-repo.sh` | tracked/foreign artifact replacement and predictable enrollment conflicts |
+| `tools/guard-kit-artifacts.sh` | enrolled personal paths in the index; limited force-add convenience hook |
+| `tools/inject-profile.sh` | lifecycle helper: injects only the explicitly enrolled personal profile |
+
 ## Budgets
 
 | Budget | Where it comes from |

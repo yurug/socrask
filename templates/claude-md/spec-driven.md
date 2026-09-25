@@ -26,13 +26,16 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    Prose is not a channel: instructions raise a probability, exit codes decide. If nothing
    can check the rule, say so where the rule is written, with the reason — an audit can
    weigh a stated reason and cannot weigh a silence.
-6. **Calibrate user-facing output to the engineer model** — before writing anything for
-   the user (summary, plan presentation, docs), read `~/.laconic/concepts/` if present:
-   use `verified` concepts bare, gloss or teach load-bearing ones below `familiar`. A
-   user question the KB already answers is an alignment defect, not a lookup — answer
-   from the KB with the file path, and demote the concept in the model (a question about
-   X means X is not verified). The laconic plugin, if installed, enforces the
-   communication policy; this rule adds the project-side loop.
+6. **Keep communication concise and alignment explicit.** Lead with the outcome or
+   decision, explain only what is needed to act, and state important uncertainty.
+   Use Inbrief when unfamiliar concepts affect a decision; use Backbrief on the
+   final aggregate diff for every non-Direct change. The coordinator owns human
+   checkpoints; child agents return evidence without prompting independently.
+   Record checkpoint status and evidence in the work's alignment record and run
+   `tools/alignment-check.py` at start and finish (see `docs/alignment.md`).
+   A launched session is pending, not complete. Only actual human evidence or
+   explicit degraded authorization settles a required checkpoint. Questions never
+   automatically demote knowledge; persistent personal models require owner opt-in.
 
 ## Before you start: size it, and after it fails: route it
 
@@ -56,14 +59,14 @@ behaviours that must not change while it is fixed (named property IDs).
 Skipping that decision is how the same defect class comes back next cycle.
 
 **The loop must ratchet.** After each iteration run
-`python3 tools/ratchet.py --from-log <test output>`. It refuses a run where an obligation
+`python3 tools/ratchet.py --from-results <results.json>`. It refuses a run where an obligation
 that passed before no longer does, and names it. An obligation may be retired only on the
 record (`--retire <ID> --reason "<why>"`). Commit `.ratchet.json`.
 
 ## Model routing (subagents)
 
-Pass an explicit `model` on every subagent spawn; don't let execution work silently inherit
-the session model.
+Select a supported execution model explicitly when available; judgment tasks inherit.
+Host tools and model names differ: do not pass an unsupported Claude name to another host.
 
 - **Judgment tier** (session model — strongest available): premortems, spec/properties/ADR
   authoring, planning, plan simulation, adversarial verification of audit findings,

@@ -1,6 +1,6 @@
 # Agentic Loop Kit
 
-[![CI](https://github.com/yurug/agentic-loop-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/yurug/agentic-loop-kit/actions/workflows/ci.yml)
+[![CI](https://github.com/yurug/agentic-dev-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/yurug/agentic-dev-kit/actions/workflows/ci.yml)
 
 The loop I run when I build software with coding agents, packaged so you can run it too.
 
@@ -10,7 +10,8 @@ was supposed to be accountable for. This kit is the answer I converged on: onboa
 engineer, resolve the ambiguity, write the spec and the knowledge base, let the agent produce
 a change, run the checks, and re-align the engineer at the end of every cycle.
 
-It runs today on Claude Code, as a set of skills plus the templates they expect.
+The skill installation targets Claude Code. The collaboration and validation CLIs
+are agent-neutral and run with Python 3 and Git on a POSIX host.
 
 ## Try it
 
@@ -59,6 +60,18 @@ cited comprehension map across cycles.
 - Premortems before you build, so the idea and then the plan get stress-tested while
   changing your mind is still cheap.
 
+## Work with concurrent agents
+
+Use one writing agent per Git worktree, explicit path ownership, and one coordinator
+for integration and human communication. `tools/agent-work.py` atomically reserves
+paths and shared test resources, records command results, and requires a clean tested
+commit for handoff. Inbrief and Backbrief have explicit coordinator checkpoints;
+a worker finishing does not claim the human understood the combined change.
+
+Start with [the concurrent-agent walkthrough](docs/concurrent-agents.md) and
+[human checkpoint policy](docs/alignment.md). For personal tooling in a shared
+repository, read [safe enrollment](docs/shared-repositories.md).
+
 ## Where it fits
 
 This kit implements the loop argued for in
@@ -94,10 +107,11 @@ formal verification of critical modules.
 
 ## Status
 
-Pre-1.0 release candidate. The methodology is still evolving, but every deterministic
+**v0.1.0** — first tagged release. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. The supported installation target for this release is Claude Code;
-the full workflow expects `inbrief`, `forebrief`, `backbrief`, and an engineer model.
+the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer
+model is optional and requires owner opt-in. See [release notes](CHANGELOG.md).
 Explicit fallbacks exist for bootstrap and constrained environments, but are not presented
 as equivalent to the reference tools.
 

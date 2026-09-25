@@ -1,0 +1,24 @@
+# Changelog
+
+## 0.1.0 — 2026-09-25
+
+First tagged release: concurrent local worktrees with explicit ownership and
+human checkpoints.
+
+- Add atomic path claims, shared-resource leases, commit-bound technical handoffs,
+  coordinated integration, and explicit interrupted-command recovery.
+- Connect Inbrief start disposition and Backbrief final-diff evidence to coordinator
+  lifecycle gates; workers use one coordinator for human communication.
+- Clarify Laconic as concise, decision-focused communication; persistent personal
+  models are opt-in, and questions never automatically demote understanding.
+- Replace raw-log ratchet extraction with versioned complete test results, unique
+  test IDs, atomic writes and serialized state transitions.
+- Add safe personal-repository enrollment, linked-worktree support, staged-path
+  guard and preservation of tracked/foreign artifacts.
+- Run resolver, alignment, enrollment and concurrent-process regression tests in
+  the shared local/CI gate.
+
+Compatibility: raw `ratchet.py --from-log` and implicit stdin are rejected. Migrate
+using `docs/ratchet.md`. Collaboration requires POSIX Python 3 and local filesystem
+locking. Independent clones/hosts are not coordinated. Human evidence references
+are checked for consistency, not authenticated; no claim of automatic comprehension.

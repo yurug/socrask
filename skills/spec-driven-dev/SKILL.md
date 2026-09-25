@@ -16,65 +16,54 @@ validation at every step. This skill runs the full methodology end-to-end.
 `/ralph-loop:cancel-ralph` when done. When unavailable, execute the same bounded
 generate-check-decide loop manually; the plugin is an interface, not the mechanism.
 
-## Engineer engineering is mandatory (reference implementation: laconic)
+## Human alignment and concise communication
 
-The KB calibrates the agent's context; the engineer model calibrates the human's. Alignment
-between the user's mental model and the KB is a correctness condition, not a courtesy — a
-user deciding on concepts they hold only vaguely produces confident-sounding wrong answers,
-and a KB the user no longer recognizes turns plan approval into rubber-stamping.
+Forebrief captures decisions; Inbrief prepares a human for a meaningful decision;
+Backbrief explains the actual resulting change. None substitutes for another.
+The coordinator owns these checkpoints for the whole slice; child agents return
+findings and evidence without opening sessions or prompting the user independently.
 
-Do not skip the model because laconic is absent. The model is laconic's store,
-`~/.laconic/concepts/`: one file per concept with a state
-(`verified | familiar | exposed | unknown`) and dated evidence. If laconic is installed,
-use its commands and communication policy. Otherwise read
-[references/engineer-model.md](references/engineer-model.md) in full before the first model
-read or write, state once that this is the degraded path, and maintain the compatible
-plain-Markdown fallback directly. Do not instruct the user to install a distribution that
-is not publicly available, and never treat the fallback as permission to omit the alignment
-checkpoint.
+Apply laconic's communication discipline even when its plugin is unavailable:
+lead with the outcome or decision, give only the context needed to act, identify
+material uncertainty, and offer detail progressively. For a decision, state the
+options, recommendation, consequence, and what answer is needed. For a result,
+state what changed, why, validation, and remaining limits. Concise does not mean
+omitting an unresolved question or an important risk.
+
+An engineer model is optional and private. Read or update persistent personal
+concept records only when the owner has opted in; otherwise use the current
+conversation to explain unfamiliar terms. Read
+[references/engineer-model.md](references/engineer-model.md) before using a model.
+A question may be a request for evidence, a challenge, or a scope clarification:
+**never demote knowledge merely because the user asks a question**, including
+one answered by the KB. Answer it with the relevant source and repair unclear
+explanations. Silence and agent-written quizzes are not human evidence.
+
+## Recorded checkpoints (every task)
+
+Create an alignment record when claiming work, before implementation; see
+`docs/alignment.md` for the schema and `tools/alignment-check.py` for the gate.
+Record the tier and exact base commit. Inbrief is required for a new subsystem,
+unfamiliar load-bearing concept, or decision whose meaning needs explanation.
+A Slice on familiar ground may mark it `not-required` with a concrete reason.
+Full work normally requires Inbrief. Backbrief is required for every non-Direct
+change. A Direct change records why both are unnecessary and still receives a
+short result summary. Reassess the tier if scope grows.
+
+Run the checker at start and finish. `required` and `pending` are unfinished;
+`human-complete` cites actual human event evidence for the checkpoint;
+`degraded-authorized` cites explicit human authorization to use a limited or
+skipped checkpoint and remains visibly degraded. Tool absence, a launched browser,
+a sent URL, a stopped server, green tests, or time passing never imply completion.
+Record session/event references only, never credentials or a personal profile.
+At finish pin the exact reviewed head; any later diff invalidates that Backbrief.
+The check verifies record consistency, not human understanding or evidence authenticity.
 
 ## Visuals (companion skill: primitives)
 
-laconic governs the prose; the `primitives` skill governs everything you draw. Whenever a
-phase below produces a visual — a diagram in a report, a comparison in an artifact, a
-mechanism walkthrough, a chart of measurements — invoke `primitives` and emit a validated
-spec instead of hand-rolling HTML or SVG. If the library is unavailable, write prose and a
-plain table; do not improvise a visual and leave it looking validated. Two rules from that
-skill bind here even when you never touch the library: **a stepped sequence of stills beats
-an animation** (animation's measured edge is small and disappears under reader-controlled
-pacing), and **an unvalidated visual must say so on its face**.
-
-**Governance of the model, which is not negotiable.** It belongs to the engineer:
-plain files under their own home directory, readable in full, deleted with `rm`.
-A correction from the user outranks any evidence that produced an entry — record
-the correction and move the state, do not argue from the log. Entries decay when
-they stop being exercised, because knowledge does. The model travels with the
-person across projects, never with the repository. **And it never feeds
-evaluation** — an engineer who suspects that the record of what they do not yet
-understand is read by whoever decides their promotion will start performing for
-it, and a model of performances is worth nothing to the person it serves. Never
-export it, summarise it into a report about the person, or cite it to anyone but
-its owner.
-
-Two things live on a slower clock and are NOT this model, though confusing them
-is easy: the project's non-negotiable rules and the team's repeated procedures.
-Those belong to the repository, are the same for everyone, and change rarely —
-they go in `CLAUDE.md` and the KB. The model belongs to a person, differs between
-two engineers on the same codebase, and moves every cycle.
-
-Rules the phases below apply:
-
-- **Evidence is what the user did** — a quiz answer, a correction, unprompted correct use, a
-  question asked. Never self-reported expertise (no predictive power for understanding),
-  never silence.
-- **Promotion slow, demotion fast** — a question about X demotes X to at most `exposed`; one
-  correct quiz answer raises confidence, not state.
-- **Calibration is subtraction** — `verified` concepts are used bare; load-bearing concepts
-  below `familiar` get taught before a decision depends on them. Never present any of this
-  as personalization.
-- **A user question the KB already answers is an alignment defect**, not a lookup: give the
-  KB's answer with its file path, demote the concept, and re-surface it at the next
-  checkpoint.
+For a visual, invoke `primitives` and use a validated spec. If unavailable, use
+prose and a plain table; label any unvalidated visual explicitly. Prefer a
+reader-paced sequence of stills when explaining steps.
 
 ## Model routing
 
@@ -89,9 +78,9 @@ session model wastes an order of magnitude in tokens. Route deliberately:
 Rules:
 
 1. Phases 0–3 run in the main session — run the skill itself on the judgment tier.
-2. **Pass an explicit `model` on every subagent spawn.** Execution tasks get `sonnet`;
-   judgment tasks omit the override and inherit the session model. Leaving execution
-   spawns unspecified silently burns judgment-tier tokens on mechanical work.
+2. Select a supported execution model explicitly when the host exposes that choice;
+   `sonnet` is the Claude example, not a portable model name. Judgment tasks inherit
+   the session model. If routing is unavailable, state that once and use the host default.
 3. **Escalate, don't pre-escalate.** Execution subagents get a bounded iteration budget
    (Phase 4: 2 Ralph iterations). On non-convergence they stop and return a structured
    failure report; a judgment-tier subagent takes over seeded with that report. Never
@@ -189,51 +178,26 @@ Phase 4.
 **Exit criterion:** the user has seen the premortem findings and either (a) confirmed proceed,
 (b) revised the idea, or (c) abandoned it. Do not slide into Phase 1 if (c).
 
-## Phase 0.75: Engineer Onboarding (mental-model calibration)
+## Phase 0.75: Inbrief when understanding affects the decision
 
-Ambiguity resolution asks the user to make decisions; decisions about concepts the user
-holds only vaguely produce confident-sounding wrong answers. Before Phase 1, establish what
-the user actually understands about the project's load-bearing concepts.
+1. Name the few load-bearing concepts needed for the next decision. Use the
+   conversation and repository evidence, without unsolicited personal profiling.
+2. Resolve Inbrief with `resolve-engineering-tool.sh inbrief`; use its printed
+   absolute path. Read [references/inbrief-cli.md](references/inbrief-cli.md).
+   Start a grounded session, post cited nodes and an agenda, and share its URL.
+3. Mark the checkpoint `pending`. Process human events and answer questions;
+   only the human may supply mastery or human closure evidence. An agent-authored
+   close record does not establish human completion.
+4. Close the record only from actual human evidence. If unavailable or declined,
+   explain the limitation and obtain explicit authorization for a concise
+   conversational briefing or a skipped checkpoint. Cite that authorization as
+   `degraded-authorized`; never call it tool-backed human completion.
 
-1. **List the load-bearing concepts** — the 5–10 ideas a wrong mental model of which would
-   corrupt Phase 1 answers: core domain terms, the external SDK's actual behavior, the
-   architectural pattern at stake. Load-bearing only, not everything.
-2. **Read the model** (`~/.laconic/concepts/`). Partition: `verified`/`familiar` (use bare
-   or gloss) vs `exposed`/`unknown`/absent (teach).
-3. **Prefer Inbrief; name the fallback as degraded** — run this skill's
-   `resolve-engineering-tool.sh inbrief` and use the absolute path it prints for every
-   invocation. It searches PATH, npm's global prefix, user-local installs, and the standard
-   development checkout. Only treat Inbrief as absent when the resolver exits `1`. If absent,
-   read [references/inbrief-cli.md](references/inbrief-cli.md), offer its exact
-   `engineer-engineering-tools` clone + `install.sh inbrief` commands, and let the user
-   authorize/install it before continuing. Do not ask for an npm package name: Inbrief is
-   a workspace package installed by the toolsuite. If they continue without it, say that
-   the session is using the degraded
-   Markdown path; do not imply equivalent evidence boundaries. When present, read
-   [references/inbrief-cli.md](references/inbrief-cli.md) in full, start `inbrief serve --repo .`, and
-   build a cited question graph only for concepts below `familiar`: one falsifiable
-   `kind:"node"` per concept, then a prerequisite-respecting `kind:"agenda"`. Give the
-   engineer the printed browser URL. The agent may post nodes, answers, concessions, and
-   findings; it must never post mastery or invent an engineer question. The human browser
-   credential is the evidence boundary. Start the fast response sentinel from the CLI
-   reference immediately after handing over the URL; browser input must wake the workflow
-   without a second chat message. Read `inbrief status`, let the engineer close the
-   session, then run `inbrief propose`; review any durable proposal before committing it.
-4. **Degraded fallback only when Inbrief remains absent** — generate
-   `kb/reports/onboarding-<date>.html` (and publish it as an Artifact when available).
-   Teach only concepts below `familiar`: outcome first, one mechanism, what it does not
-   imply, and no analogy that fails the relation test. End with 3–5 short questions whose
-   wrong answers expose the wrong model; never ask for self-rated expertise.
-5. **Fold human evidence back** — use browser actions or conversational answers, never
-   silence or agent-authored records. Update concept files with dated evidence: a correct
-   answer raises confidence; a wrong or absent one marks the concept `exposed` and earns a
-   different explanation.
-
-**Exit criterion:** every load-bearing concept is at `familiar` or above, or has been taught
-and tested once by the engineer. Inbrief must be human-closed and its close statement must
-name covered, unknown, disputed, skipped, unanswered, warnings, and findings. Never describe
-an agent-only or stopped session as successful. One round, then move on — Phases 3 and 6
-catch drift; do not loop here.
+Teach only what the decision needs. A short explanation and a concrete question
+are usually enough; do not impose a quiz on an already clear, familiar task.
+Independent preparation can proceed while a checkpoint is pending, but do not
+make dependent decisions until it is settled. Installation is optional; use the
+reference's install instructions when requested rather than blocking on setup.
 
 ## Phase 1: Ambiguity Resolution
 
@@ -256,10 +220,9 @@ Before writing ANY code, eliminate all blind spots.
 Default: [Proposed answer]
 ```
 
-Phrase every question at the level the engineer model establishes (Phase 0.75): `verified`
-terms bare, one-clause glosses for `exposed` ones. A question the user cannot fully parse
-gets its default silently accepted — the exact failure Phase 0.75 exists to prevent.
-Questions the user asks back during a round are model evidence; record them.
+Phrase questions using the context established in Phase 0.75; gloss unfamiliar
+load-bearing terms. Clarification is welcome and never automatically changes a
+personal knowledge rating. Defaults still need the applicable human decision.
 
 **Routing check — run this before writing anything:**
 this skill's `resolve-engineering-tool.sh forebrief` must succeed AND
@@ -333,11 +296,10 @@ premortem stress-tested the idea; this one stress-tests the implementation strat
 report in `kb/reports/premortem-plan-<timestamp>.{html,md}` and fold its checklist items into
 the plan's acceptance criteria.
 
-**Calibrated presentation:** before showing the plan, check each concept its steps depend on
-against the engineer model. Any load-bearing concept below `familiar` gets a one-clause gloss
-in the plan text or a linked mini-explainer — approval of a plan built on concepts the user
-does not hold is not informed consent. Questions the user asks about the plan are model
-evidence; record them before Phase 4.
+**Calibrated presentation:** use the conversation context to gloss unfamiliar
+load-bearing concepts before asking for a decision. Consult a persistent engineer
+model only if its owner opted in. Answer questions with relevant sources; do not
+infer ignorance or automatically record a knowledge rating from a question.
 
 **Exit criterion:** User approves the plan.
 
@@ -362,25 +324,22 @@ drift signal; fix every error and triage every warning. Then check what the mach
   execution-tier (`sonnet`) subagents with KB-only access answer them — one per question, fanned
   out (Model routing rule 4 applies). Update the KB to close any gap.
 
-**KB↔engineer sync uses Backbrief by default.** For every non-Direct change, run
-this skill's `resolve-engineering-tool.sh backbrief` and use the absolute path it prints.
-When it succeeds, invoke the installed `backbrief` skill, read
-[references/backbrief-cli.md](references/backbrief-cli.md) in full, then read
-`backbrief digest`. Start `backbrief serve --repo . --focus diff:<start>..HEAD`, where
-`<start>` is the commit at which this approved slice began. Build the cited comprehension
-map, give the engineer the browser URL, and process the human event stream. Only the human
-may advance understanding. Start the fast response sentinel immediately; never require a
-chat-side “done” after a browser action. Do not claim Phase 6 complete while relevant nodes remain
-contested or the engineer has not engaged; `backbrief stop` is not evidence of alignment.
+**Backbrief covers the final aggregate diff for every non-Direct change.**
+Finish code, KB, documentation, and validation first, then resolve Backbrief with
+`resolve-engineering-tool.sh backbrief` and read
+[references/backbrief-cli.md](references/backbrief-cli.md). Read its digest,
+pin the slice's base and final head, and build a cited map of what changed, why,
+validation, consequences, and unresolved questions. All child results enter this
+single coordinator-owned checkpoint. Give the engineer the URL and process human
+events. A URL, `humanSeen`, or `backbrief stop` is not evidence of comprehension.
+Mark `human-complete` only from substantive human checkpoint evidence with no
+unresolved contested explanation. Otherwise leave `pending`, or cite explicit
+human authorization as `degraded-authorized`. Report that distinction plainly.
 
-**Degraded fallback only when Backbrief is absent or explicitly declined:** recommend the
-public `engineer-engineering-tools` installer and name the limitation. Then list decisions,
-properties, and spec amendments changed since the user last engaged; present the top few by
-cost-of-being-wrong as a short brief, compress expected steps to one line, and ask a 2–3
-question micro-quiz on new load-bearing concepts. Update the engineer model from the human's
-answers. An unanswered or skipped checkpoint is reported as alignment not established, never
-as success. An autonomous run that ends with the user unable to answer “what changed and
-why” has drifted, however green its tests.
+The degraded conversational brief follows the same concise structure and names
+its limitation. Do not invent answers or force a comprehension quiz for familiar
+material. Any edits after review require a refreshed diff and checkpoint.
+Run `tools/alignment-check.py` at finish before claiming the workflow complete.
 
 Update any stale KB files. The KB is the source of truth.
 
@@ -390,7 +349,8 @@ Update any stale KB files. The KB is the source of truth.
    `laconic` skill, invoke it first — user docs are reader-facing prose, exactly its domain.
 2. Integrate user-facing instructions as tests to make sure the doc is valid
 2. Run final validation if a validation script exists
-3. Present results to user
+3. Complete the final aggregate Backbrief described in Phase 6 after these changes,
+   then present results and the recorded checkpoint status to the user
 
 ## Route every failure to the layer that owns it
 
@@ -469,10 +429,9 @@ would an unknown-unknown enter, and which auditor would catch it?
   decides. Where no check is possible, the rule says so and says why, because an audit can
   weigh a stated reason and cannot weigh a silence.
 - **Invest in the KB** — specifications, properties, and SDK research pay off across every implementation step
-- **Engineer the engineer too** — maintain the mental-model map (`~/.laconic/concepts/`),
-  teach load-bearing concepts below `familiar` before a decision depends on them, and
-  calibrate every user-facing artifact to the model. A misaligned user rubber-stamps, and
-  a rubber stamp is not validation.
+- **Keep the human aligned** — explain load-bearing concepts before decisions and
+  the actual diff before completion. Record real human evidence or explicit
+  degraded authorization; personal profiling is optional.
 - **Agent navigation** — every KB file must be self-sufficient and link to what's next
 - **External deps are dangerous** — always research actual runtime behavior before implementing
 - **Ralph Loops converge — if they ratchet** — implement -> validate -> fix -> repeat

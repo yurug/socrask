@@ -1,0 +1,13 @@
+# Paths the kit writes into a host repo's working tree.
+# One top-level name per line, relative to the repo root. Blank lines and #-comments ignored.
+#
+# Single source of truth for enroll-shared-repo.sh (what to relocate + exclude)
+# Enrollment records the paths it actually owns for guard-kit-artifacts.sh.
+# Adding a skill that
+# writes somewhere new means adding a line here, not editing two scripts.
+
+kb
+.inbrief
+.forebrief
+.backbrief
+SESSION_STATE.md

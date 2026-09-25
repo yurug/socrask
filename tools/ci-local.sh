@@ -23,8 +23,15 @@ run() {
   fi
 }
 
-run "kb-lint fixtures (enforcement channels)" ./skills/spec-driven-dev/test-kb-lint.sh
-run "forebrief-lint fixtures (verbatim rationale)" ./skills/spec-driven-dev/test-kb-lint-forebrief.sh
+# One runner discovery rule: every top-level shell skill suite and Python tool
+# suite runs here. Python skill fixtures are invoked by their shell wrappers.
+for suite in skills/*/test-*.sh tools/test-*.py; do
+  [ -f "$suite" ] || continue
+  case "$suite" in
+    *.sh) run "$suite" sh "$suite" ;;
+    *.py) run "$suite" python3 "$suite" ;;
+  esac
+done
 run "visual honesty gate" python3 skills/primitives/visual-check.py
 run "skill metadata and shipped references" python3 tools/skill-check.py
 
@@ -54,7 +61,6 @@ persistent_context_budget() {
   fi
 }
 run "persistent context line budget" persistent_context_budget
-run "ratchet (what passed stays passed)" ./skills/spec-driven-dev/test-ratchet.sh
 run "harness inventory (the KISS bound)" tools/harness-inventory.sh
 
 # Not run here: kb-lint against templates/kb. That template is meant to fail on

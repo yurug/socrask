@@ -57,9 +57,9 @@ command -v inbrief forebrief backbrief
 `inbrief`, `forebrief`, and `backbrief` are the reference mechanisms before, during, and
 after the work: grounded onboarding, human-owned decisions, and the per-cycle comprehension
 checkpoint. The skill can bootstrap with Markdown when they are absent, but it must identify
-that path as degraded. The engineer model itself is never optional: use `laconic` when
-installed, otherwise use the compatible plain-file fallback bundled in the `spec-driven-dev`
-skill until laconic is publicly distributed.
+that path as degraded and record human authorization. Communication discipline applies
+throughout; a persistent engineer model is optional and requires owner opt-in. See
+[human checkpoints](docs/alignment.md) for the executable start/finish policy.
 
 ## Starting a new project — the prompt
 
@@ -142,3 +142,10 @@ require before any task?
 ```
 
 A correct answer proves the presence tier works: the session knew before it could grep.
+
+## Concurrent work and human checkpoints
+
+Before assigning parallel writing tasks, follow [the worktree walkthrough](docs/concurrent-agents.md).
+Use one coordinator for Inbrief/Forebrief/Backbrief and [record checkpoint disposition](docs/alignment.md).
+Keep path ownership disjoint, serialize shared resources, and validate the combined commit.
+The [ratchet migration guide](docs/ratchet.md) replaces raw log scraping with explicit results.

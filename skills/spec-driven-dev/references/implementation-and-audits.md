@@ -11,6 +11,12 @@ Read this reference in full before executing Phase 4 or Phase 5.
 
 ## Phase 4: Implementation (Ralph Loops)
 
+Before implementation, pass the alignment start gate (see `docs/alignment.md`).
+The coordinator owns the checkpoint record and all human briefings; subagents
+return findings for one final aggregate Backbrief and never prompt independently.
+Ratchet input is complete version-1 structured test results, not log text; see
+`docs/ratchet.md` for the adapter contract.
+
 For each step in the plan:
 
 ### Ralph Loop (max 7 iterations per step across both tiers; if not converging, stop and split the step)
@@ -31,7 +37,7 @@ four of these are engineered, none is free.**
    property IDs are for. A step whose acceptance criteria cannot be checked
    independently is a step that was never sized (Phase 0); go back and cut it.
 2. **An obligation that passed stays passed when its neighbours move.** Run
-   `ratchet.py --from-log <test output>` after every iteration. It refuses a run
+   `ratchet.py --from-results <results.json>` after every iteration. It refuses a run
    where a previously-passing obligation has vanished, and names it. Commit
    `.ratchet.json` — an uncommitted high-water mark ratchets nothing.
 3. **The checker says WHICH obligation failed, not that something did.** This is
@@ -125,7 +131,7 @@ the judgment agent does not re-explore ruled-out dead ends.
 - Type checker passes
 - All tests pass
 - Linter clean
-- `ratchet.py --from-log <test output>` holds or advances — a regression here is a
+- `ratchet.py --from-results <results.json>` holds or advances — a regression here is a
   failure of this iteration even when every other check is green
 
 **Self-audit:**

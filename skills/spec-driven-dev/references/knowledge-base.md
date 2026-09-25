@@ -187,7 +187,7 @@ install the three mechanisms that keep the KB alive after this skill run ends:
    session's context — presence, not compliance.
 3. **kb-lint and ratchet in pre-commit and CI.** Copy `kb-lint.py` and `ratchet.py`
    from this skill's directory to the project's `tools/`, then wire
-   `python3 tools/kb-lint.py` and `python3 tools/ratchet.py --from-log <test output>`
+   `python3 tools/kb-lint.py` and `python3 tools/ratchet.py --from-results <complete-results.json>`
    into the project's pre-commit hook and CI pipeline. Both fail the build: lint on a
    KB that drifted, ratchet on a set of passing obligations that shrank. Commit
    `.ratchet.json`. This is the only tier with a hard guarantee — the other two raise

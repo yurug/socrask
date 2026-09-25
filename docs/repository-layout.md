@@ -72,3 +72,12 @@ error code, so an unrelated broken link cannot mask a regression.
 `test-kb-lint-forebrief.sh` runs `kb-lint-forebrief.py` against
 `fixtures/forebrief-lint/`, which cover the verbatim-rationale rule: a folded decision must
 carry the human's own words, not an agent's paraphrase of them.
+
+## Collaboration and release validation
+
+- [Concurrent agents](concurrent-agents.md): atomic claims, resources, integration and recovery.
+- [Human checkpoints](alignment.md): coordinator-owned Inbrief and final Backbrief.
+- [Shared repositories](shared-repositories.md): safe personal enrollment and guard limits.
+- [Ratchet results](ratchet.md): complete structured results and migration from raw logs.
+
+The local gate includes real concurrent-process/worktree tests and checkpoint/enrollment fixtures.

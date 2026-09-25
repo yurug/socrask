@@ -72,14 +72,11 @@ navigation — precise context, few tokens, few hops:
 - **External dependency research** — document actual SDK runtime behavior before implementing
 
 ### 4. Engineer Engineering
-The symmetric discipline to knowledge engineering: the KB calibrates the agent's context,
-the engineer model calibrates the human's. The process maintains a per-user map of
-demonstrated understanding (laconic's `~/.laconic/concepts/`, states `unknown` →
-`verified`, every claim backed by dated evidence — never self-report, never silence) and
-uses it to teach load-bearing concepts *before* decisions depend on them, phrase questions
-and plans at the right abstraction level, and treat a user question the KB already answers
-as an alignment defect. A misaligned user rubber-stamps, and a rubber stamp is not
-validation.
+Knowledge engineering calibrates the agent's context; engineer engineering keeps the
+human able to make and review the consequential decisions. Lead with outcomes, explain
+load-bearing concepts, and ground answers in the repository. Persistent personal models
+require owner opt-in; never infer ignorance from a question or understanding from silence.
+Use one coordinator for the human checkpoints across concurrent workers.
 
 ## The Methodology
 
@@ -102,18 +99,15 @@ kill or pivot an idea, and that is a successful outcome, not a failed phase. Out
 forced questions into Phase 1, properties into Phase 2, and acceptance criteria into Phase 3.
 
 ### Phase 0.75: Engineer Onboarding
-Before asking the user to decide anything, establish what they actually understand about
-the project's load-bearing concepts. Read the engineer model, teach what sits below
-`familiar` with a pedagogical HTML brief ending in a 3–5 question self-quiz (answers are
-performance evidence; self-assessment is not), and fold the answers back into the model.
-Phase 1 questions, the Phase 3 plan, and the Phase 6 sync brief are then written at the
-level the model establishes.
+Use Inbrief before Full work or an unfamiliar load-bearing decision. A familiar Slice
+can omit it with a recorded reason. Forebrief records decisions during the work, and
+Backbrief covers the final combined diff for every non-Direct change. Tool presence,
+agent closure and a sent URL do not prove human completion. Pending checkpoints remain
+pending; an explicitly authorized fallback records its limitations.
 
-The model and alignment checkpoint are mandatory. `laconic` is their reference
-implementation; `inbrief`, `forebrief`, and `backbrief` are the reference interaction
-mechanisms before, during, and after the work. When a tool is unavailable, use the documented
-plain-file fallback and call it degraded: the fallback preserves the activity, not the
-tool-enforced human credential, append-only decision log, or cross-session comprehension map.
+See [the checkpoint contract](../docs/alignment.md) and
+[concurrent worktrees](../docs/concurrent-agents.md). The coordinator owns the sessions;
+workers return tested commits and findings rather than opening competing conversations.
 
 ### Phase 1: Ambiguity Resolution
 Generate questions, propose defaults, iterate with the human. Exit when no blind spots

@@ -11,3 +11,7 @@ __pycache__/
 /methodology/decisions-round-1.md
 /research/technical-communication-primitives.md
 /examples/
+
+# Human brief runtime: contains local credentials and private events
+/.inbrief/
+/.backbrief/

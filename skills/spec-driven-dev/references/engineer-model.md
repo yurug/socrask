@@ -1,7 +1,11 @@
 # Engineer-model fallback
 
-Read this reference in full before reading or writing the engineer model when laconic is
-unavailable. Keep one concept per file at `~/.laconic/concepts/<id>.md` using this shape:
+Personal concept records are optional. Obtain owner opt-in before reading or writing
+them; otherwise calibrate explanations from the current conversation without storing
+a profile. Never export these records to the repository or use them for evaluation.
+Questions alone do not justify demotion, and silence is never evidence.
+
+When opted in and laconic is unavailable, keep one concept per file at `~/.laconic/concepts/<id>.md` using this shape:
 
 ```markdown
 ---
@@ -35,8 +39,10 @@ Interpret states conservatively:
 - `exposed`: define in one clause before relying on it;
 - `unknown`: teach before a decision depends on it.
 
-A concept-wide question is evidence that the state is at most `exposed`; a question about one
-facet belongs under “What has not been established” and need not erase demonstrated command
-of the rest. Correct unprompted use raises confidence by at most one state. Require repeated
-independent evidence before `verified`. A direct correction by the engineer overrides the
-record immediately.
+A question may request evidence, challenge an assumption, or clarify scope. It does
+not establish misunderstanding. Record a demonstrated misconception only with its
+actual context, and revise only the affected facet; correct unprompted use can add
+evidence. Require repeated independent evidence before `verified`. A correction
+from the owner overrides the record immediately. Omit sensitive content and allow
+the owner to inspect or delete the model. Use laconic primarily to make prose
+clear, concise, and useful at the current decision point, not to rate the person.
