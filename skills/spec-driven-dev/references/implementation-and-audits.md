@@ -21,9 +21,9 @@ For each step in the plan:
 
 ### Ralph Loop (max 7 iterations per step across both tiers; if not converging, stop and split the step)
 
-Ralph Loop is the iteration shell; the fresh subagent is the clean-context mechanism. Use both:
-spawn ONE fresh subagent per step (not per iteration — the same subagent runs the iterations
-within a step so it accumulates context about the failure modes it just fixed).
+Ralph Loop is the iteration shell. Delegate when independent work and host authorization
+make it useful; a single agent may run the same loop. When delegating, use one agent per
+bounded step so it retains the evidence from its unsuccessful hypotheses.
 
 ### The loop must ratchet, or it wanders
 
@@ -67,15 +67,16 @@ the same either way, and it must not come from whatever generated the candidate.
 One caveat bounds both: iteration only pays where a single attempt has
 non-trivial probability of success, and an imperfect checker caps the whole
 thing at a level no amount of extra iteration lifts. If the loop is not
-converging, the checks are the first suspect, not the model.
+converging, investigate the checker, model capability, available context and tool interface
+as competing hypotheses; a written specification does not rule out model weakness.
 
-**Tiered execution:** spawn the step's subagent on the execution tier (`model: sonnet`) with a
-budget of 2 Ralph iterations. Green within budget: done. Not green: the subagent stops (it does
-NOT keep thrashing past its budget) and returns the failure report below; the main session then
-spawns a fresh judgment-tier subagent seeded with that report plus the original contract, which
-continues the loop up to the shared 7-iteration cap. Escalation loses the execution agent's
-working memory — the failure report is the entire handoff, so it must be specific enough that
-the judgment agent does not re-explore ruled-out dead ends.
+**Tiered execution:** use a capable reference for unfamiliar integration, acceptance design
+and consequential repairs. A cheaper execution tier is appropriate after demonstrated
+quality on that task class. Bound its unsuccessful attempts at two, then hand off the
+failure report with the original contract. Preserve the shared seven-iteration cap.
+Any receiving agent needs enough evidence not to repeat ruled-out hypotheses. Passing
+unit checks establishes implementation evidence; behavioral acceptance still needs the
+observed user outcome described in `docs/outcome-quality.md`.
 
 **Subagent contract:**
 - Inputs in the prompt: the full step text from `kb/plan.md`; pointer to `kb/INDEX.md` and
@@ -148,13 +149,11 @@ the judgment agent does not re-explore ruled-out dead ends.
 
 ## Phase 5: Quality Audits
 
-After implementation is complete, run these audits — one fresh subagent per audit type so each
-keeps an independent perspective, all on the execution tier (`model: sonnet`). Prefer the
-`Workflow` tool when the harness provides it: each audit dimension pipelines straight into
-per-finding verification with no barrier, and each stage carries its own model override.
-Otherwise spawn all audit subagents IN PARALLEL with the Agent tool (they are read-only
-analyses of the same code; sequential spawning wastes time and lets earlier findings anchor
-later ones):
+After implementation, select the relevant dimensions below from the changed risks.
+Use an independent perspective for consequential acceptance or trust-boundary changes,
+with a model capable of adversarial judgment. Give the reviewer the original request,
+contract and artifacts before the author's explanation. Delegate independent read-only
+reviews when authorized and useful; seven parallel agents are not a quality criterion.
 
 1. **Test gap analysis**: for each feature/property/edge-case — is it tested? Write missing tests to get full code coverage.
 2. **Security**: credentials, input validation, data exposure, injection risks
@@ -176,28 +175,26 @@ that bar, it reports none; an empty audit is a valid result.
 
 Write findings to `kb/reports/`.
 
-**Adversarial verification before fixing:** for each CRITICAL or HIGH finding, spawn a fresh
-skeptic subagent on the judgment tier whose job is to REFUTE it (with the finding, the relevant
-code, and the KB). Verification is where plausible-but-wrong findings must die, so it is the one
-Phase 5 stage that earns judgment-tier tokens. Findings that survive refutation are real;
-refuted ones are dropped with a one-line rationale in the report. This prevents the fix loop
-from churning on plausible-but-wrong findings.
+**Adversarial verification before fixing:** try to refute consequential findings against
+the code, contract and a reproduction. Use a fresh capable reviewer when authorized and
+useful. Record what was demonstrated and what remains hypothetical; surviving one review
+is not proof. Drop refuted findings with their evidence instead of creating churn.
 
 Workflow sketch (adjust dimensions and schemas per project; the verify stage omits the model
 override so it inherits the judgment-tier session model):
 
 ```js
 const audits = await pipeline(
-  DIMENSIONS,                     // the 7 audit types above, one prompt each
-  d => agent(d.prompt, {model: 'sonnet', phase: 'Audit', schema: FINDINGS}),
+  SELECTED_DIMENSIONS,             // chosen from the risks of this change
+  d => agent(d.prompt, {phase: 'Audit', schema: FINDINGS}),
   r => parallel(r.findings.filter(isCriticalOrHigh).map(f => () =>
     agent(refutePrompt(f), {phase: 'Verify', schema: VERDICT})
       .then(v => ({...f, verdict: v})))))
 ```
 
-Fix all critical and high issues that survived verification. Fixes run on the execution tier —
-a verified finding plus the KB is a full spec for the fix — with the Phase 4 escalation rule if
-a fix does not converge.
+Fix critical and high issues that survived verification. Select the repair model by
+consequence and demonstrated task capability; a verified finding does not make a complex
+repair routine. Retain the Phase 4 bounded iteration and structured failure handoff.
 
 **A verified finding whose class can recur leaves a check behind, not just a fix.** The fix
 closes this instance; the check closes the class. Write it in the same commit — a test

@@ -67,13 +67,13 @@ reader-paced sequence of stills when explaining steps.
 
 ## Model routing
 
-Tasks in this process fall into two difficulty classes, and routing every subagent to the
-session model wastes an order of magnitude in tokens. Route deliberately:
+Choose models by demonstrated outcome quality, task risk and allowed data processing.
+Cost is measured per accepted task, including repair and review, not per token alone:
 
 | Tier | Model | Use for |
 |------|-------|---------|
 | **Judgment** | strongest available; inherit the session model | premortems, question generation, spec/properties/ADR authoring, planning, plan simulation, adversarial verification of findings, escalation target for stuck loops |
-| **Execution** | fastest capable execution model (`sonnet` on the supported Claude Code target) | implementing KB-specified plan steps, test writing, audit passes, KB/sync quiz answering, user-facing docs |
+| **Execution** | a model already validated for this bounded task class | routine implementation, mechanical transformations, KB navigation checks |
 
 Rules:
 
@@ -81,17 +81,30 @@ Rules:
 2. Select a supported execution model explicitly when the host exposes that choice;
    `sonnet` is the Claude example, not a portable model name. Judgment tasks inherit
    the session model. If routing is unavailable, state that once and use the host default.
-3. **Escalate, don't pre-escalate.** Execution subagents get a bounded iteration budget
-   (Phase 4: 2 Ralph iterations). On non-convergence they stop and return a structured
-   failure report; a judgment-tier subagent takes over seeded with that report. Never
-   start on the judgment tier "to be safe" for a task the KB fully specifies — if the
-   execution tier can't act on the spec, that is usually a spec defect worth discovering.
-4. **Quizzes (Phases 2c and 6) stay on the execution tier deliberately.** If `sonnet`
-   answers correctly from the KB alone, the KB is navigable by the agents that will
-   actually consume it. A judgment-tier model papers over a weak KB with raw reasoning
-   and masks exactly the defect the quiz exists to catch.
+3. **Establish a capable reference before optimizing cost.** Use judgment capability
+   for unfamiliar integration, acceptance design and consequential repairs, even with
+   a written spec. A weaker model's failure does not prove the spec is wrong. Execution
+   agents get at most two unsuccessful iterations before a structured handoff; repeated
+   failures require a changed hypothesis. Preserve the shared seven-iteration ceiling.
+4. **Test KB navigation with the agents that consume it.** Keep that diagnostic
+   separate from product acceptance. For product agents, record the effective model
+   of every decision-making helper, not just the model selected in the chat UI.
 5. Machine checks (kb-lint, type checker, linter, tests) cost zero model tokens — run
    them before every model-based pass, at any tier.
+
+## User outcome quality
+
+For product behavior or a recurring user defect, read
+[outcome acceptance](../../docs/outcome-quality.md). Preserve the original feedback,
+representative starting state, observable result and non-regression cases. A passing
+code suite, a deployed artifact and accepted user behavior are separate evidence.
+Run `tools/outcome-check.py` on complete, version-bound reports before promotion;
+missing/skipped cases and stale evidence never count as validation. Keep first attempts
+separate from retries. Register the gate in the real delivery command, not only a runbook.
+When the project has no adapter yet, report that gap and implement one bounded journey
+first; do not fabricate outcomes from unit-test totals. Select review dimensions by risk.
+After a kit upgrade, follow [agent adoption](../../docs/agent-adoption.md): publication,
+installation, acknowledgement and demonstrated use are distinct states.
 
 ## Preliminary remark
 
@@ -417,10 +430,9 @@ would an unknown-unknown enter, and which auditor would catch it?
   built. If you notice yourself reaching for the comfortable task
   while a scary one waits, stop and switch. The scary one is the task.
 - **Premortem before you build** — challenge the idea (Phase 0.5) and the plan (Phase 3) by assuming they already failed; blind spots are cheaper to find here than in code
-- **Route models by difficulty** — judgment-tier tokens buy specs, plans, risk analysis, and
-  verification; execution runs on the cheaper tier and escalates with a failure report when
-  it stops converging. An execution-tier agent stuck on a KB-specified task is usually
-  reporting a spec defect, not a model defect.
+- **Route models by demonstrated quality** — use capable judgment for uncertain integration,
+  acceptance and consequential repairs. Optimize cost only after task-class validation;
+  investigate model, specification, context and tool limitations as competing causes.
 - **Fix the harness, not the output** — when something is wrong, improve the spec/KB/tests, not just patch the code
 - **Enforce, don't request** — anything that has to hold gets a deterministic check, written
   when the rule is written: a test, a lint rule, a CI script, a hook. Build the tool on the

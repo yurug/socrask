@@ -149,3 +149,10 @@ Before assigning parallel writing tasks, follow [the worktree walkthrough](docs/
 Use one coordinator for Inbrief/Forebrief/Backbrief and [record checkpoint disposition](docs/alignment.md).
 Keep path ownership disjoint, serialize shared resources, and validate the combined commit.
 The [ratchet migration guide](docs/ratchet.md) replaces raw log scraping with explicit results.
+
+## Upgrade the quality loop
+
+Read [outcome acceptance](docs/outcome-quality.md), select a few representative feedback
+cases, and wire the gate into the real delivery entrypoint. Retain independent trials
+and complete baseline/candidate evidence. Use [agent adoption](docs/agent-adoption.md)
+to install the reviewed skill on Claude and Codex and obtain executed mailbox receipts.

@@ -3,6 +3,7 @@
 import copy
 import datetime as dt
 import json
+import hashlib
 from pathlib import Path
 import subprocess
 import sys
@@ -37,6 +38,10 @@ class OutcomeGate(unittest.TestCase):
                          'duration_ms': 100, 'cost': 0.01}]})
 
     def run_gate(self, baseline=None, extra=()):
+        digest = hashlib.sha256(json.dumps(self.contract).encode()).hexdigest()
+        for report in [self.report, baseline]:
+            if report is not None:
+                report.setdefault('contract_sha256', digest)
         for name, value in [('contract', self.contract), ('report', self.report), ('baseline', baseline)]:
             (self.root / (name+'.json')).write_text(json.dumps(value))
         cmd = [sys.executable, str(TOOL), '--contract', str(self.root/'contract.json'),
@@ -156,6 +161,29 @@ class OutcomeGate(unittest.TestCase):
         before = (self.root/'report.json').read_bytes()
         self.run_gate()
         self.assertEqual((self.root/'report.json').read_bytes(), before)
+
+    def test_contract_change_invalidates_old_evidence(self):
+        self.assertEqual(self.run_gate()[0], 0)
+        self.contract['cases'][0]['min_first_pass'] = .2
+        self.assert_blocked()
+
+    def test_no_trial_can_continue_after_success(self):
+        a = self.report['trials'][0]['attempts']
+        a.append(copy.deepcopy(a[0]))
+        self.assert_blocked()
+
+    def test_zero_success_cannot_be_an_accepted_required_case(self):
+        self.contract['cases'][0].update(min_first_pass=0, min_final_pass=0)
+        self.assert_blocked()
+
+    def test_duplicate_json_keys_and_truncated_input_are_rejected(self):
+        bad = self.root/'bad.json'
+        for text in ['{"version":1,"version":1}', '{"version":']:
+            with self.subTest(text=text):
+                bad.write_text(text)
+                code, out = self.run_gate(extra=['--report',str(bad)])
+                self.assertEqual(code, 2)
+                self.assertFalse(out['accepted'])
 
 
 if __name__ == '__main__':

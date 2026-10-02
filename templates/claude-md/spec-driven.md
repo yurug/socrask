@@ -65,14 +65,14 @@ record (`--retire <ID> --reason "<why>"`). Commit `.ratchet.json`.
 
 ## Model routing (subagents)
 
-Select a supported execution model explicitly when available; judgment tasks inherit.
+Prefer proven task quality; select a supported execution model only for validated task classes.
 Host tools and model names differ: do not pass an unsupported Claude name to another host.
 
 - **Judgment tier** (session model — strongest available): premortems, spec/properties/ADR
   authoring, planning, plan simulation, adversarial verification of audit findings,
   escalation target for stuck loops.
-- **Execution tier** (`sonnet`): implementing KB-specified plan steps, test writing, audit
-  passes, KB quizzes, user-facing docs.
+- **Execution tier**: routine work with demonstrated acceptance quality. Use judgment
+  capability for unfamiliar integration, acceptance design and consequential repairs.
 - **Escalation:** execution subagents run at most 2 Ralph iterations, then stop and return a
   failure report (failing tests verbatim, hypotheses ruled out, commits so far, suspected
   root cause, suspected spec gaps). A judgment-tier subagent continues from that report —
@@ -82,6 +82,17 @@ Host tools and model names differ: do not pass an unsupported Claude name to ano
   will actually consume it; a stronger model masks navigability defects.
 - Machine checks (kb-lint, type checker, linter, tests) cost zero model tokens — run them
   before every model-based pass.
+
+## User outcome acceptance
+
+For behavioral changes, keep feedback IDs, representative fixtures and observable outcomes.
+Implemented, deployed and accepted are distinct statuses. Preserve first-attempt failures
+and require every declared scenario; a skipped/missing case is incomplete validation.
+Use the kit's `docs/outcome-quality.md` and register `tools/outcome-check.py` in the actual
+delivery gate. Establish an explicit baseline; compare complete reports bound to the
+delivered artifact, fixture/checker versions and effective model configuration. A human
+comprehension acknowledgement is not product acceptance. After kit updates, require
+mailbox acknowledgement plus an executed adoption receipt (`docs/agent-adoption.md`).
 
 ## Project-specific rules
 

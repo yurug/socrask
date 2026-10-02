@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0 — 2026-10-02
+
+- Add a read-only user-outcome gate: complete required scenarios, exact contract digest,
+  immutable candidate identity observed before/after, freshness and fixture/checker lineage.
+- Preserve first-attempt success and recovery separately; compare repeated outcomes with
+  a baseline and report total duration/cost without turning an eventual success into a
+  clean first attempt. Missing, skipped and unknown cases fail validation.
+- Connect feedback to representative state, acceptance evidence and delivery ownership.
+  Keep comprehension, implementation, deployment and product acceptance distinct.
+- Replace unconditional cheap-model-first routing with demonstrated task quality;
+  record auxiliary models and measure total cost per useful result. Scope audits by risk.
+- Install/check selected skills for Claude and Codex, preserving unrelated files and
+  requiring explicit symlink replacement. Document mailbox ACK plus executed adoption.
+
+Compatibility: the obligation ratchet and existing suites are unchanged. Projects adopt
+the outcome gate through an explicit report adapter and promotion command; installation
+alone does not wire project CI or establish product success. Reports are declarations,
+not authenticated attestations. No live product or model default is changed by this release.
+
 ## 0.1.0 — 2026-09-25
 
 First tagged release: concurrent local worktrees with explicit ownership and

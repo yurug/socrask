@@ -17,7 +17,7 @@ skills/                Claude Code skills, one directory per skill (<name>/SKILL
                          test-ratchet.sh             runs the ratchet suite
                          test-kb-lint-forebrief.sh   runs the forebrief fixture suite
   forebrief/           Skill and public wire references for forebrief decision sessions
-sync-skills.sh         Symlinks every skill into ~/.claude/skills/ (idempotent)
+sync-skills.sh         Installs/checks selected skill links for Claude and/or Codex
 tools/skill-check.py   Validates public skill metadata and shipped references
 GETTING-STARTED.md     Bootstrap prompts and the KB-usage enforcement stack
 templates/

@@ -28,6 +28,8 @@ listed here, so the page cannot silently fall behind the machinery.
 | `tools/enroll-shared-repo.sh` | tracked/foreign artifact replacement and predictable enrollment conflicts |
 | `tools/guard-kit-artifacts.sh` | enrolled personal paths in the index; limited force-add convenience hook |
 | `tools/inject-profile.sh` | lifecycle helper: injects only the explicitly enrolled personal profile |
+| `tools/outcome-check.py` | incomplete/stale user outcomes, missing cases, erased first-attempt failures, mismatched release/contract and measured regressions |
+| `tools/sync-skills.py` | installation conflicts or missing/drifting selected Claude/Codex skill links (`--check`) |
 
 ## Budgets
 

@@ -24,6 +24,8 @@ starts from the request and resulting state, not the implementer's explanation.
 meets the contract and has no measured rate regression against the supplied baseline;
 1 means failed acceptance; 2 means invalid, incomplete or incompatible evidence.
 It emits JSON on stdout, never updates a baseline and never deploys anything.
+Invoke it from the kit checkout, or vendor the tool with its source revision recorded;
+installing a skill link does not create tools in a consuming project.
 
 ```sh
 python3 tools/outcome-check.py --contract quality/contract.json \
@@ -50,14 +52,16 @@ Every case is required. Exploratory cases belong in a separate contract/report.
 }
 ```
 
-Declare thresholds and trial counts before the candidate runs. Give deterministic
+Declare thresholds and trial counts before the candidate runs; final success thresholds
+must be positive. Give deterministic
 preservation checks a zero-failure policy. For stochastic behavior, choose rates and
 repetition counts appropriate to the risk; five successes are an initial observation,
 not a statistical guarantee. Keep difficult cases visible instead of weakening their
 checker until the candidate passes. Changes to fixtures, checkers, thresholds or scope
 need a reviewed contract revision and an explicit baseline transition.
 
-The report has `version: 1`, matching `suite` and `contract_revision`, `complete: true`,
+The report has `version: 1`, matching `suite` and `contract_revision`, `contract_sha256`
+(SHA-256 of the exact contract file bytes used by the runner), `complete: true`,
 timezone-aware `started_at`/`finished_at`, and:
 
 ```json

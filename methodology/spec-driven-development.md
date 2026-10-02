@@ -53,9 +53,9 @@ An agent is a stochastic process. The harness constrains it:
   next audit reads the reason instead of assuming coverage.
 - **Model routing** — token spend is a harness parameter, not an accident. Judgment-tier
   models (the strongest available) handle specs, plans, risk analysis, and adversarial
-  verification; execution-tier models handle well-specified implementation, audits, and
-  KB quizzes, with a bounded iteration budget and escalation to the judgment tier — via
-  a structured failure report — on non-convergence.
+  verification; execution-tier models handle task classes with demonstrated acceptance quality. Use a
+  capable reference for unfamiliar integration and consequential repairs, retain bounded
+  escalation, and measure total cost per accepted task including review and retries.
 
 The harness is what makes the agent's output converge on correctness instead of
 plausibility.
@@ -133,16 +133,16 @@ iteration gets verbatim error feedback and because it ratchets — `ratchet.py` 
 iteration where an obligation that passed before has quietly stopped passing, and naming
 which one is what lets the next attempt aim. Repair is the default; resampling N candidates
 and keeping whichever survives the checks is the alternative where checks are cheap and
-candidates small, and the acceptance criterion is the same either way. Each step runs on an execution-tier model with a
+candidates small, and the acceptance criterion is the same either way. An execution tier validated for the task class gets a
 2-iteration budget; on non-convergence it returns a structured failure report (failing tests
 verbatim, hypotheses ruled out, suspected root cause, suspected spec gaps) and a judgment-tier
 agent continues from that report — up to 7 iterations total, then the step gets split.
 
 ### Phase 5: Quality Audits
 Multi-axis: test gaps, security, performance, UX, spec compliance, simplicity, provability.
-Audits fan out on the execution tier (a deterministic Workflow pipeline where the harness
-provides one, parallel subagents otherwise); each critical/high finding is then adversarially
-verified by a judgment-tier skeptic before any fix is attempted. Ralph Loop the audits
+Select audit dimensions by the changed risks. Use independent capable judgment for
+consequential acceptance and trust boundaries; delegation depends on authorization and
+independent work, not a fixed auditor count. Verify consequential findings before repair. Ralph Loop the audits
 themselves — audit -> fix -> re-audit until 0 criticals.
 
 ### Phase 6: KB Sync
@@ -180,9 +180,16 @@ stays valid, run final validation, and present results.
    answer impossible beats a test that catches it, and a proof beats both for a
    critical core, provided what the proof does not cover is written beside it
 10. **Agent navigation != human navigation** — routing tables, not prose
-11. **Route models by difficulty** — judgment-tier tokens buy specs, plans, and verification,
-    not typing; execution tiers escalate with a failure report when they stop converging. An
-    execution agent stuck on a fully-specified task is usually reporting a spec defect
+11. **Route models by demonstrated quality** — establish a capable reference before
+    optimizing cost. A written spec does not rule out insufficient model capability.
+    Count helper models, retries and review in cost per accepted task
 12. **Engineer the engineer too** — maintain a map of the user's demonstrated understanding
     and calibrate every question, brief, and plan to it; alignment between the user's mental
     model and the KB is a correctness condition, not a courtesy
+
+## User outcome acceptance
+
+Use [outcome acceptance](../docs/outcome-quality.md) for representative feedback cases,
+complete version-bound reports and first-attempt reliability. Code checks, deployment
+and observed user success are distinct. Require [executed adoption](../docs/agent-adoption.md)
+after methodology upgrades; publication alone does not change active agents.

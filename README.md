@@ -10,8 +10,8 @@ was supposed to be accountable for. This kit is the answer I converged on: onboa
 engineer, resolve the ambiguity, write the spec and the knowledge base, let the agent produce
 a change, run the checks, and re-align the engineer at the end of every cycle.
 
-The skill installation targets Claude Code. The collaboration and validation CLIs
-are agent-neutral and run with Python 3 and Git on a POSIX host.
+Skill installation supports Claude Code and Codex. The collaboration and validation
+CLIs are agent-neutral and run with Python 3 and Git on a POSIX host.
 
 ## Try it
 
@@ -19,10 +19,15 @@ Install the skills once per machine:
 
 ```bash
 ./sync-skills.sh
+# Or install the same reviewed methodology for both hosts:
+./sync-skills.sh --target both --only spec-driven-dev
+./sync-skills.sh --target both --only spec-driven-dev --check
 ```
 
-Each `skills/<name>/` directory is symlinked into `~/.claude/skills/`, so this repository
-stays the single source of truth: edit a skill here and it is live immediately.
+Selected skill directories are symlinked into `~/.claude/skills/` and/or
+`~/.codex/skills/`. The default remains Claude. Real directories are never replaced;
+retargeting a foreign symlink requires `--replace-links`. Active agents must reload
+the skill and return an executed [adoption receipt](docs/agent-adoption.md).
 
 Then, from any project:
 
@@ -72,6 +77,16 @@ Start with [the concurrent-agent walkthrough](docs/concurrent-agents.md) and
 [human checkpoint policy](docs/alignment.md). For personal tooling in a shared
 repository, read [safe enrollment](docs/shared-repositories.md).
 
+## Measure user outcomes
+
+A green code suite is implementation evidence. Use [outcome acceptance](docs/outcome-quality.md)
+to bind complete, repeated user-journey results to the delivered artifact, retain
+first-attempt failures and reject missing cases or measured regressions. Start with
+a few real feedback cases; existing suites do not need wholesale migration.
+The gate validates supplied evidence; it cannot authenticate adapters or prove the
+checker's interpretation of the user's intent. Use capable models as a reference,
+then optimize total cost per accepted task with controlled comparisons.
+
 ## Where it fits
 
 This kit implements the loop argued for in
@@ -107,9 +122,9 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.1.0** — first tagged release. The methodology is still evolving, but every deterministic
+**v0.2.0** — outcome acceptance and verified agent adoption. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
-push and pull request. The supported installation target for this release is Claude Code;
+push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer
 model is optional and requires owner opt-in. See [release notes](CHANGELOG.md).
 Explicit fallbacks exist for bootstrap and constrained environments, but are not presented
