@@ -55,6 +55,18 @@ class SkillSync(unittest.TestCase):
         self.assertEqual(self.call('--only','../unknown').returncode, 2)
         self.assertFalse(self.claude.exists())
 
+    def test_dangling_host_directory_is_preflighted_across_hosts(self):
+        self.codex.symlink_to(self.root/'missing')
+        self.assertNotEqual(self.call('--target','both').returncode, 0)
+        self.assertFalse(self.claude.exists())
+        self.assertTrue(self.codex.is_symlink())
+
+    def test_nondirectory_ancestor_is_preflighted_across_hosts(self):
+        self.codex.write_text('preserve')
+        self.assertNotEqual(self.call('--target','both','--codex-dir',str(self.codex/'skills')).returncode, 0)
+        self.assertFalse(self.claude.exists())
+        self.assertEqual(self.codex.read_text(), 'preserve')
+
 
 if __name__ == '__main__':
     unittest.main()

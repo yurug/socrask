@@ -11,6 +11,16 @@ import sys
 import uuid
 
 
+def directory_conflict(directory):
+    """Missing directories are creatable; broken links and file ancestors are not."""
+    for path in (directory, *directory.parents):
+        if path.is_symlink() and not path.exists():
+            return f'dangling destination link: {path}'
+        if path.exists() and not path.is_dir():
+            return f'destination ancestor is not a directory: {path}'
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--target', choices=['claude', 'codex', 'both'], default='claude')
@@ -32,8 +42,9 @@ def main():
     for host, directory in targets:
         if args.target not in (host, 'both'):
             continue
-        if directory.exists() and not directory.is_dir():
-            errors.append(f'{host}: destination is not a directory: {directory}')
+        conflict = directory_conflict(directory)
+        if conflict:
+            errors.append(f'{host}: {conflict}')
             continue
         for name in names:
             dst, src = directory/name, available[name]
