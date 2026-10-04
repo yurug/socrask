@@ -152,6 +152,11 @@ The [ratchet migration guide](docs/ratchet.md) replaces raw log scraping with ex
 
 ## Upgrade the quality loop
 
+Adopt [project control](docs/project-management.md): capture the existing feedback/backlog
+inventory, assign owners and review dates, and wire `tools/project-check.py` into CI.
+Prove that deleting a request's task makes the real launcher fail. Import historical
+status as unverified until reconciled; do not manufacture acceptance to make the board green.
+
 Read [outcome acceptance](docs/outcome-quality.md), select a few representative feedback
 cases, and wire the gate into the real delivery entrypoint. Retain independent trials
 and complete baseline/candidate evidence. Use [agent adoption](docs/agent-adoption.md)

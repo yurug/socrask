@@ -273,6 +273,14 @@ vocabulary, KB audit loop, mandatory usage harness, and exit criterion.
 
 ## Phase 3: Planning
 
+Read [project control](../../docs/project-management.md) when maintaining plans or
+handling feedback. Keep one `kb/work/ledger.json`: project → plan → task → original
+request, with owner, next action, review date, dependencies and acceptance cases.
+Reopen repeated failures; preserve previous evidence. Reconcile every declared
+feedback/backlog source, limit active work, and run `tools/project-check.py` in the
+real CI/handoff path. Imported uncertainty stays visible; code completion never
+closes product acceptance. Review blocked, overdue and unverified work each session.
+
 Create `kb/plan.md` — incremental implementation plan:
 - 3-4 implementation steps maximum (not counting quality audit). If you need more, the slice
   is too large — close this invocation after one slice and re-run the skill for the next.

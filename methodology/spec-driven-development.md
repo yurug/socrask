@@ -119,6 +119,11 @@ Build the KB following the agent-optimized structure. This is the longest phase 
 most important one — everything downstream depends on it.
 
 ### Phase 3: Planning
+Maintain an accountable project/plan/task ledger alongside the narrative plan, following
+[project control](../docs/project-management.md). Check original-request coverage,
+owners, next actions, review dates, dependencies, WIP and evidence-backed closure in CI.
+Repeated complaints reopen the same task; imported claims remain explicitly unverified.
+
 Incremental steps, each traceable to properties and acceptance criteria. 3-4 steps max,
 ordered by risk: the first step is a vertical slice through the riskiest path, not the
 easiest happy path. For plans with high cost-of-being-wrong (irreversible data shapes,

@@ -16,6 +16,10 @@ Given a task type, tells you exactly which KB files to load and in what order.
 
 ## `implement`
 
+Before taking work, inspect `work/ledger.json` for ownership, dependencies, review dates
+and the project's active-work limit. Narrative plans explain the decision; this registry
+owns operational status. Reconcile new feedback into it before starting another task.
+
 ### Add a new module / feature
 1. `architecture/overview.md` -- understand module structure and patterns
 2. `spec/INDEX.md` -- pick the relevant spec file for this feature

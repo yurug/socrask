@@ -79,6 +79,10 @@ repository, read [safe enrollment](docs/shared-repositories.md).
 
 ## Measure user outcomes
 
+Use [project control](docs/project-management.md) to keep feedback attached to a project,
+plan, task, owner and next action. Its gate checks coverage, dependencies, WIP and closure
+evidence. Repeated complaints reopen work; imported legacy claims stay unverified.
+
 A green code suite is implementation evidence. Use [outcome acceptance](docs/outcome-quality.md)
 to bind complete, repeated user-journey results to the delivered artifact, retain
 first-attempt failures and reject missing cases or measured regressions. Start with

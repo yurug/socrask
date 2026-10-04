@@ -29,6 +29,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `tools/guard-kit-artifacts.sh` | enrolled personal paths in the index; limited force-add convenience hook |
 | `tools/inject-profile.sh` | lifecycle helper: injects only the explicitly enrolled personal profile |
 | `tools/outcome-check.py` | incomplete/stale user outcomes, missing cases, erased first-attempt failures, mismatched release/contract and measured regressions |
+| `tools/project-check.py` | orphaned commitments, unknown ownership, stale reviews, dependency/WIP violations and closure without matching delivery/acceptance evidence |
 | `tools/sync-skills.py` | installation conflicts or missing/drifting selected Claude/Codex skill links (`--check`) |
 
 ## Budgets

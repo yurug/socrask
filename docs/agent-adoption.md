@@ -36,6 +36,11 @@ its append-only protocol and real sender identities; never write another agent's
    first-attempt outcomes on the exact delivered version. Confirm state/bytes/UI for
    the affected journey; a test count or new methodology document is not that proof.
 
+For project-control adoption, also reconcile the declared feedback/backlog inventory
+into the project's work ledger. Execute its checker and an omission/false-closure
+negative through the actual CI launcher. Record remaining imported uncertainty,
+owners and review dates; a coherent registry does not close its product outcomes.
+
 Keep a small adoption receipt in the project's established evidence location:
 agent, kit SHA, resolved path, ACK reference, executed command/result, application
 artifact and remaining gaps. Mark missing replies pending; silence and elapsed time

@@ -96,6 +96,11 @@ mailbox acknowledgement plus an executed adoption receipt (`docs/agent-adoption.
 
 ## Project-specific rules
 
+Maintain operational status in `kb/work/ledger.json` and explanation in linked plans.
+Every feedback/commitment has a task, owner, next action and review date. Repeated
+failure reopens that task. Run `tools/project-check.py --root . --ledger kb/work/ledger.json`
+in CI/handoff; follow the kit's `docs/project-management.md` for adoption and limits.
+
 Keep this file limited to non-negotiable rules and repeated procedures that must be
 present in every session. Put specifications, properties, decisions, external-system
 research, implementation plans, and detailed conventions in the routed KB instead of

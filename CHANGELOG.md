@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — project control
+
+- Add a versioned project/plan/task/feedback ledger and read-only consistency gate.
+- Check captured-request coverage, ownership, next review/action, dependencies and WIP.
+- Refuse product closure without matching implementation, delivery and case evidence;
+  repeated failed feedback invalidates older acceptance and reopens the same task.
+- Expose unverified imported history instead of treating legacy status as acceptance.
+- Route the method through the skill, project template, CI self-tests and adoption guide.
+
 ## 0.2.0 — 2026-10-02
 
 - Add a read-only user-outcome gate: complete required scenarios, exact contract digest,
