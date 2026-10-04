@@ -46,3 +46,5 @@ Prose quality, whether a property is the *right* property, whether a decision
 was wise, and whether the KB says something true about the world. Those are
 audit and human judgment, and no line in this table should be read as covering
 them.
+
+| `tools/test-ci-hook.py` | Git hook environment leaking into nested fixture repositories in the actual CI runner |

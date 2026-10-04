@@ -124,3 +124,8 @@ Start adoption by reconciling existing commitments into explicit unknowns. Resol
 the oldest reopened and blocked outcomes before expanding work. Keep dates and
 owners visible, preserve original reports, and never present the size of the KB,
 number of tests, or publication of this method as evidence of product improvement.
+
+Event freshness is checked within the supplied snapshot. The gate does not compare
+event history with a trusted prior ledger: removing a failed event can evade that
+check. Preserve append-only evidence in review; a trusted-base history comparison
+remains a separate, unimplemented control.

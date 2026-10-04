@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — project control
+## 0.3.0 — 2026-10-04
 
 - Add a versioned project/plan/task/feedback ledger and read-only consistency gate.
 - Check captured-request coverage, ownership, next review/action, dependencies and WIP.
@@ -8,6 +8,12 @@
   repeated failed feedback invalidates older acceptance and reopens the same task.
 - Expose unverified imported history instead of treating legacy status as acceptance.
 - Route the method through the skill, project template, CI self-tests and adoption guide.
+- Isolate Git hook environment so repository fixtures run under the same local CI gate.
+
+Compatibility: existing projects opt in by declaring their feedback sources and wiring
+`tools/project-check.py` into their actual CI/handoff entrypoint. Historical claims can be
+imported explicitly as unverified. A coherent ledger does not prove product acceptance;
+source capture, evidence authenticity and semantic review remain the team's responsibility.
 
 ## 0.2.0 — 2026-10-02
 

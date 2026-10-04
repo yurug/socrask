@@ -100,7 +100,7 @@ whose phases lean on four disciplines:
 1. **Software engineering**, because the agent reads your code as input; structure now pays
    twice.
 2. **Knowledge engineering**: specifications, properties, invariants, and acceptance
-   criteria, written for exactly one reader, the agent.
+   criteria, navigable by agents and understandable to the engineers maintaining them.
 3. **Harness engineering**: the checking machinery that makes a stochastic process converge,
    from deterministic checks to auditors to Ralph loops.
 4. **Engineer engineering**: keeping the accountable human's mental model aligned with the
@@ -126,7 +126,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.2.0** — outcome acceptance and verified agent adoption. The methodology is still evolving, but every deterministic
+**v0.3.0** — accountable project control from original feedback to observed acceptance. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

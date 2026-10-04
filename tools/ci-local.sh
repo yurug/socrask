@@ -12,6 +12,12 @@
 #   ln -sf ../../tools/ci-local.sh .git/hooks/pre-commit
 set -eu
 cd "$(git rev-parse --show-toplevel)"
+# Git exports repository-local variables to hooks. Clear them after locating this
+# checkout so tests creating their own repositories do not inherit this index or
+# recursively execute this repository's hook against an unrelated fixture.
+for git_local_var in $(git rev-parse --local-env-vars); do
+  unset "$git_local_var"
+done
 
 status=0
 run() {
