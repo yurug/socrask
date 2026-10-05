@@ -226,7 +226,7 @@ def fold_target_dirs(repo_root):
     """Scan roots for folded files, from .forebrief/config.json's foldIn block.
 
     Dogfooding gap 2 (2026-07-26): this used to hardcode `kb`, so a repo whose
-    fold targets live elsewhere (the agentic-loop-kit folds into `methodology/`)
+    fold targets live elsewhere (Socrask itself folds into `methodology/`)
     got NO verbatim checking at all -- silently, which is the worst way for a
     gate to be absent. Targets now come from the same config the fold itself
     reads, so the two can never disagree.

@@ -19,7 +19,7 @@ base SHA, matching coordinator task ID (`work_id`), demand tier, Inbrief disposi
 human completion to start a claim; do independent investigation while it is pending.
 
 ```sh
-KIT=/absolute/path/to/agentic-dev-kit
+KIT=/absolute/path/to/socrask
 BASE=$(git rev-parse HEAD)
 ALIGNMENT=/absolute/path/to/this-change-alignment.json
 python3 "$KIT/tools/agent-work.py" claim --task integration --owner lead \

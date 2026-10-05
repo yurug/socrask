@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Renamed to Socrask: the public repository is `yurug/socrask` (formerly
+  `yurug/agentic-loop-kit`; GitHub redirects the old URL). Update clones with
+  `git remote set-url origin https://github.com/yurug/socrask.git`.
+
 ## 0.3.1 — 2026-10-05
 
 - Preserve prior feedback IDs and event records against a fixed Git rollout commit

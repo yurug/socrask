@@ -42,8 +42,8 @@ cannot weigh a silence.
 ## Prerequisites (once per machine)
 
 ```bash
-git clone https://github.com/yurug/agentic-loop-kit.git
-cd agentic-loop-kit && ./sync-skills.sh
+git clone https://github.com/yurug/socrask.git
+cd socrask && ./sync-skills.sh
 ```
 
 For the full workflow, install the public engineer-engineering tools too:
@@ -95,8 +95,8 @@ regressed or a different model cuts corners, the prompt still forces the harness
 ## Adopting the methodology on an existing project
 
 ```
-Read `/path/to/agentic-loop-kit/methodology/spec-driven-development.md` and
-`/path/to/agentic-loop-kit/skills/spec-driven-dev/SKILL.md`, then retrofit this project:
+Read `/path/to/socrask/methodology/spec-driven-development.md` and
+`/path/to/socrask/skills/spec-driven-dev/SKILL.md`, then retrofit this project:
 1. Build the KB (Phase 2 structure) from the existing code and docs —
    ambiguities you cannot resolve from the code become questions for me
    in kb/questions-round1.md.

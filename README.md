@@ -1,6 +1,6 @@
-# Agentic Loop Kit
+# Socrask
 
-[![CI](https://github.com/yurug/agentic-loop-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/yurug/agentic-loop-kit/actions/workflows/ci.yml)
+[![CI](https://github.com/yurug/socrask/actions/workflows/ci.yml/badge.svg)](https://github.com/yurug/socrask/actions/workflows/ci.yml)
 
 The loop I run when I build software with coding agents, packaged so you can run it too.
 

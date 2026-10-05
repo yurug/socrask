@@ -105,7 +105,7 @@ try:
     additions = ['/' + n for n in owned if '/' + n not in lines]
     if additions:
         with exclude.open('a') as f:
-            f.write('\n# agentic-dev-kit personal paths\n' + '\n'.join(additions) + '\n')
+            f.write('\n# socrask personal paths\n' + '\n'.join(additions) + '\n')
     if settings is not None:
         local.parent.mkdir(exist_ok=True)
         local.write_text(json.dumps(settings, indent=2) + '\n')
