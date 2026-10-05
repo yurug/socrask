@@ -13,6 +13,8 @@ from pathlib import Path
 import re
 import sys
 
+from project_history import check_history
+
 
 WORK_STATUSES = {'planned', 'active', 'blocked', 'deferred', 'imported-unverified', 'closed'}
 FEEDBACK_STATUSES = {'open', 'deferred', 'imported-unverified', 'accepted', 'rejected', 'waived'}
@@ -264,14 +266,19 @@ def main():
     parser.add_argument('--ledger', required=True)
     parser.add_argument('--root', required=True)
     parser.add_argument('--as-of', default=dt.datetime.now(dt.timezone.utc).date().isoformat())
+    parser.add_argument('--history-base', help='trusted full Git commit; preserve all subsequent feedback observations')
     parser.add_argument('--summary', action='store_true', help='omit per-entity next actions')
     args = parser.parse_args()
     ledger = None
+    history = {'checked': False}
     try:
-        data = json.loads(Path(args.ledger).read_text(), object_pairs_hook=object_pairs,
+        raw = Path(args.ledger).read_bytes()
+        data = json.loads(raw.decode('utf-8'), object_pairs_hook=object_pairs,
                           parse_constant=lambda value: require(False, f'invalid JSON constant: {value}'))
         ledger = Ledger(args.root, args.as_of)
         result = ledger.check(data)
+        if args.history_base is not None:
+            history = check_history(args.root, args.ledger, args.history_base, data, raw)
         if not args.summary:
             result['pending'] = [{k: row[k] for k in ('id', 'status', 'owner', 'next_action', 'review_on')}
                                  for rows in ledger.groups.values() for row in rows.values() if row['status'] not in TERMINAL]
@@ -281,6 +288,7 @@ def main():
                   'counts': {g: len(rows) for g, rows in ledger.groups.items()} if ledger else {},
                   'migration_gaps': ledger.gaps if ledger else []}
         code = 2
+    result['history'] = history
     print(json.dumps(result, indent=2, allow_nan=False))
     return code
 

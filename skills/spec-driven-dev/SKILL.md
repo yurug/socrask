@@ -278,8 +278,10 @@ handling feedback. Keep one `kb/work/ledger.json`: project → plan → task →
 request, with owner, next action, review date, dependencies and acceptance cases.
 Reopen repeated failures; preserve previous evidence. Reconcile every declared
 feedback/backlog source, limit active work, and run `tools/project-check.py` in the
-real CI/handoff path. Imported uncertainty stays visible; code completion never
-closes product acceptance. Review blocked, overdue and unverified work each session.
+real CI/handoff path with a fixed trusted `--history-base` in Git projects. A
+snapshot-only receipt is not evidence of retained history. Imported uncertainty
+stays visible; code completion never closes product acceptance. Review blocked,
+overdue and unverified work each session.
 
 Create `kb/plan.md` — incremental implementation plan:
 - 3-4 implementation steps maximum (not counting quality audit). If you need more, the slice

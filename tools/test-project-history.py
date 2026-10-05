@@ -267,6 +267,24 @@ class ProjectHistory(unittest.TestCase):
         (self.root / '.git/objects' / blob[:2] / blob[2:]).unlink()
         self.gate(2, 'history')
 
+    def test_T_PM_HISTORY_leaf_symlink_cannot_select_another_history(self):
+        decoy = self.root / 'kb/work/older.json'
+        decoy.write_text(json.dumps(opened()))
+        self.base = self.commit()
+        (self.root / LEDGER).unlink()
+        (self.root / LEDGER).symlink_to('older.json')
+        self.gate(2, 'symlink')
+
+    def test_T_PM_HISTORY_parent_symlink_cannot_select_another_history(self):
+        decoy = self.root / 'kb/older'
+        decoy.mkdir()
+        (decoy / 'ledger.json').write_text(json.dumps(opened()))
+        self.base = self.commit()
+        (self.root / LEDGER).unlink()
+        (self.root / 'kb/work').rmdir()
+        (self.root / 'kb/work').symlink_to('older', target_is_directory=True)
+        self.gate(2, 'symlink')
+
     def test_T_PM_HISTORY_nonrepository_and_outside_ledger_fail(self):
         with tempfile.TemporaryDirectory() as other:
             other = Path(other)

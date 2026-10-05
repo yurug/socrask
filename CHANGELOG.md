@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.1 — 2026-10-05
+
+- Preserve prior feedback IDs and event records against a fixed Git rollout commit
+  and intervening branch/merge ledger states; deletion cannot hide behind a later commit.
+- Reject symlink paths that would compare a different ledger’s history.
+- Ignore replacement objects; refuse incomplete or grafted history and report the exact comparison scope.
+- Keep snapshot-only imports explicit; adopting projects must wire the history base
+  and prove a removed-event refusal through their real CI launcher.
+
+Compatibility: ledger version 1 is unchanged. History checking is enabled by
+`--history-base`; without it, the receipt explicitly reports that history was not checked.
+
+
 ## 0.3.0 — 2026-10-04
 
 - Add a versioned project/plan/task/feedback ledger and read-only consistency gate.

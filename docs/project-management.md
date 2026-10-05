@@ -125,7 +125,42 @@ the oldest reopened and blocked outcomes before expanding work. Keep dates and
 owners visible, preserve original reports, and never present the size of the KB,
 number of tests, or publication of this method as evidence of product improvement.
 
-Event freshness is checked within the supplied snapshot. The gate does not compare
-event history with a trusted prior ledger: removing a failed event can evade that
-check. Preserve append-only evidence in review; a trusted-base history comparison
-remains a separate, unimplemented control.
+## Retain committed observations across revisions
+
+For a Git-backed project, choose one reviewed rollout commit containing the initial
+ledger. Keep that full commit ID fixed in the consuming CI configuration and pass it
+at every preflight and handoff:
+
+```sh
+python3 tools/project-check.py --root . --ledger kb/work/ledger.json \
+  --history-base FULL_REVIEWED_COMMIT
+```
+
+Vendor both `tools/project-check.py` and `tools/project_history.py`. The selected
+ledger path must stay inside the supplied root and cannot traverse a symlink.
+The base must be an actual ancestor of the pinned HEAD. The checker reads that
+ledger and every distinct ledger state reachable from HEAD but not from the base,
+including side branches forked before rollout and changes made by merges. Every
+prior feedback ID survives, and its exact event sequence remains a subsequence of
+the current sequence. Concurrent events can interleave; dispositions, ownership
+and task links can change. Deleting, rewriting or reordering an old event fails.
+Old snapshots are checked structurally, without applying today's review deadline
+or requiring old reference paths to exist in today's tree.
+
+The receipt reports the fixed base, resolved HEAD, distinct snapshot count and
+current ledger digest. Missing objects, an absent/nonancestor base, corrupt ledger
+history, shallow repositories and grafts are refused. Git replacement objects and
+inherited repository-local environment cannot substitute another history. Fetch
+complete history before running CI; do not fall back to the snapshot check on error.
+
+Without `--history-base`, the checker remains usable for non-Git imports and fixtures
+but reports `history.checked: false`. A project claiming history retention must
+wire the flag into its real launcher and prove refusal with a removed-event fixture.
+Do not advance the base to make a failure disappear. Review changes to the pinned
+base and checker as control changes, not routine metadata updates.
+
+This preserves committed records within the trusted available Git graph. It does
+not authenticate events or recover observations never committed. Two independent
+byte-identical JSON events on separate branches lack identities: multiplicity is
+preserved within each historical sequence, not as invented global occurrences.
+Replacing the trusted repository or checker is outside this control's guarantee.

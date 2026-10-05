@@ -38,7 +38,9 @@ its append-only protocol and real sender identities; never write another agent's
 
 For project-control adoption, also reconcile the declared feedback/backlog inventory
 into the project's work ledger. Execute its checker and an omission/false-closure
-negative through the actual CI launcher. Record remaining imported uncertainty,
+negative through the actual CI launcher. For Git-backed work, pin the reviewed rollout
+commit and verify `history.checked: true`; retain a removed-failure negative through
+the same launcher, including a missing-pin refusal. Record remaining imported uncertainty,
 owners and review dates; a coherent registry does not close its product outcomes.
 
 Keep a small adoption receipt in the project's established evidence location:

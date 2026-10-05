@@ -99,7 +99,8 @@ mailbox acknowledgement plus an executed adoption receipt (`docs/agent-adoption.
 Maintain operational status in `kb/work/ledger.json` and explanation in linked plans.
 Every feedback/commitment has a task, owner, next action and review date. Repeated
 failure reopens that task. Run `tools/project-check.py --root . --ledger kb/work/ledger.json`
-in CI/handoff; follow the kit's `docs/project-management.md` for adoption and limits.
+in CI/handoff with a fixed `--history-base` for Git-backed work; follow the kit's
+`docs/project-management.md` for adoption and limits.
 
 Keep this file limited to non-negotiable rules and repeated procedures that must be
 present in every session. Put specifications, properties, decisions, external-system

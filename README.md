@@ -126,7 +126,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.3.0** — accountable project control from original feedback to observed acceptance. The methodology is still evolving, but every deterministic
+**v0.3.1** — retain committed feedback observations through branch merges and CI. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer
