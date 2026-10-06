@@ -69,6 +69,15 @@ For `decision`, exactly one of `card` or `prompt` is required. `mode` is
 `applied_state {commit, plan_step}`. `source_channel` is `ui`, `chat`, or
 `file`. Rationale may be absent only after the tool's nudge has been handled.
 
+A browser `reconciliation` carries `dwell_ms`: how long the card's options were
+open before the human confirmed or overrode it. The browser only offers Confirm
+after the human has had the options open for a short minimum time (ADR-012).
+`digest` and `fold` therefore tell the two cases apart: a provisional with no
+reconciliation reads "not yet reviewed by the human", and a ui confirmation
+reads "after N s of review". Post a `confirmed` reconciliation yourself only
+when the human confirmed in chat (`source_channel:"chat"`), never on your own
+judgment.
+
 Records append forever. Corrections and late decisions append reconciliation
 records; they never rewrite history. Consumers take the highest sequence for
 current state, while fold output preserves rationale and question threads
