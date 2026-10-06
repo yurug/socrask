@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-10-06
 
 - Phase 1 asks more of the right questions: an assumption ledger (`kb/assumptions.md`)
   records every unsettled choice, an independent subagent writes its own questions each
@@ -10,6 +10,14 @@
 - Renamed to Socrask: the public repository is `yurug/socrask` (formerly
   `yurug/agentic-loop-kit`; GitHub redirects the old URL). Update clones with
   `git remote set-url origin https://github.com/yurug/socrask.git`.
+- Primitives: choose the perception before the renderer. New rail, lanes and layers
+  entries, a visual-language reference and composition specs; diagrams are reserved
+  for topology. Package paths move from `@backbrief/primitives` to `@brief/primitives`.
+
+Compatibility: projects already past Phase 1 are unaffected. Projects adopting the exit
+gate vendor `assumption-check.py` into `tools/` and create `kb/assumptions.md` from
+`templates/kb/assumptions.md`; run it without `--exit` in CI, with `--exit` at Phase 1 exit.
+Primitives consumers update imports to `@brief/primitives`.
 
 ## 0.3.1 — 2026-10-05
 
