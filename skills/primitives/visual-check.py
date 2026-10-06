@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Visual honesty gate for generated artifacts.
+"""Visual honesty and diversity gate for generated artifacts.
 
-Two checks, deliberately asymmetric, because a decision round settled the
-asymmetry: an UNMARKED hand-rolled visual is a hard error (that is a mechanical
-fact about the file, and it is the failure that looks like success), while a
-MISSING visual is only ever a warning (relevance is a judgment, and a diagram
-produced to satisfy a gate costs the reader more than the prose it replaced).
+The checks are deliberately asymmetric. An UNMARKED hand-rolled visual is a
+hard error (that is a mechanical fact about the file, and it is the failure
+that looks like success). A MISSING visual and a DIAGRAM-ONLY visual corpus are
+warnings: relevance and composition are judgments, so the gate asks rather
+than pretending it can decide.
 
     skills/primitives/visual-check.py [DIR ...]
 
@@ -36,9 +36,9 @@ DRAWING_RE = re.compile(r"<svg[\s>]|<canvas[\s>]|```mermaid|class=\"mermaid\"", 
 SPEC_RE = re.compile(
     # data-primitive is the renderers' own provenance stamp; the other two forms
     # catch a spec embedded as JSON or an import of an entry point.
-    r'data-primitive="(diagram|filmstrip|chart|matrix|claim)"'
-    r"|primitives/(diagram|filmstrip|chart|matrix|claim)"
-    r'|"kind"\s*:\s*"(diagram|filmstrip|chart|matrix|claim)"',
+    r'data-primitive="(diagram|filmstrip|chart|matrix|claim|rail|lanes|layers)"'
+    r"|primitives/(diagram|filmstrip|chart|matrix|claim|rail|lanes|layers)"
+    r'|"kind"\s*:\s*"(diagram|filmstrip|chart|matrix|claim|rail|lanes|layers)"',
 )
 MARKER_RE = re.compile(r"unvalidated visual", re.I)
 
@@ -75,14 +75,22 @@ def default_dirs():
     return [os.path.join(root, d) for d in ("kb/reports", "reports", "research", "methodology")]
 
 
+def primitive_kinds(text):
+    kinds = set()
+    for match in SPEC_RE.finditer(text):
+        kinds.update(group for group in match.groups() if group)
+    return kinds
+
+
 def check_file(path, errors, warnings):
     try:
         with open(path, encoding="utf-8") as f:
             text = f.read()
     except (OSError, UnicodeDecodeError):
-        return
+        return set()
     drawn = bool(DRAWING_RE.search(text))
-    spec = bool(SPEC_RE.search(text))
+    kinds = primitive_kinds(text)
+    spec = bool(kinds)
     marked = bool(MARKER_RE.search(text))
 
     if drawn and not spec and not marked:
@@ -92,17 +100,18 @@ def check_file(path, errors, warnings):
         )
     if not drawn and not spec:
         if NO_VISUAL_REASON_RE.search(text):
-            return  # asked and answered
+            return kinds  # asked and answered
         base = os.path.basename(path).lower()
         for genre, why in GENRE_HINTS.items():
             if genre in base:
                 warnings.append((path, f"W-no-visual: a {genre} artifact with no visual ({why})"))
                 break
+    return kinds
 
 
 def main():
     dirs = sys.argv[1:] or default_dirs()
-    errors, warnings, scanned = [], [], 0
+    errors, warnings, scanned, visual_files = [], [], 0, []
     for d in dirs:
         if not os.path.isdir(d):
             continue
@@ -111,7 +120,20 @@ def main():
             for name in sorted(names):
                 if name.endswith((".html", ".md")):
                     scanned += 1
-                    check_file(os.path.join(root, name), errors, warnings)
+                    path = os.path.join(root, name)
+                    kinds = check_file(path, errors, warnings)
+                    if kinds:
+                        visual_files.append((path, kinds))
+
+    if len(visual_files) >= 3 and all(kinds == {"diagram"} for _, kinds in visual_files):
+        warnings.append(
+            (
+                "visual corpus",
+                "W-diagram-monoculture: every validated visual is a diagram; "
+                "name the intended perception and consider a rail, lanes, layers, "
+                "matrix, scorecard, prose, or table",
+            )
+        )
 
     for path, msg in errors:
         print(f"ERROR {path}: {msg}")

@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Primitives — visual language specimen</title>
+  <style>
+    :root {
+      --canvas: #eeeae1;
+      --surface: #fbfaf6;
+      --surface-subtle: #f4f1e9;
+      --surface-strong: #e5e0d4;
+      --ink: #172126;
+      --ink-muted: #657076;
+      --border: #d5cfc2;
+      --border-strong: #aaa396;
+      --accent: #176b73;
+      --accent-soft: #d9ecea;
+      --signal: #c2603d;
+      --signal-soft: #f4dfd5;
+      --success: #47745b;
+      --success-soft: #dfe9e1;
+      --conjecture: #a46824;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 24px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-12: 48px;
+      --space-16: 64px;
+      --sans: Inter, Aptos, "Segoe UI", Helvetica, Arial, sans-serif;
+      --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--canvas); color: var(--ink); }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 16px auto 80px;
+    }
+
+    .page-header,
+    .language-block,
+    .specimen,
+    .closing {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+
+    .page-header {
+      min-height: 520px;
+      padding: clamp(28px, 6vw, 72px);
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(250px, .65fr);
+      gap: var(--space-12);
+      align-items: end;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      right: -140px;
+      top: -140px;
+      border: 72px solid var(--accent-soft);
+      border-radius: 50%;
+      opacity: .72;
+    }
+
+    .page-header > div {
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 760px;
+      margin-bottom: var(--space-6);
+      font-family: var(--display);
+      font-size: clamp(52px, 8vw, 96px);
+      font-weight: 500;
+      letter-spacing: -.055em;
+      line-height: .94;
+      text-wrap: balance;
+    }
+
+    .lede {
+      max-width: 680px;
+      margin-bottom: 0;
+      color: var(--ink-muted);
+      font-size: clamp(17px, 2vw, 22px);
+      line-height: 1.55;
+    }
+
+    .status-card {
+      position: relative;
+      z-index: 1;
+      border-top: 2px solid var(--signal);
+      padding-top: var(--space-4);
+    }
+
+    .status-card strong {
+      display: block;
+      margin-bottom: var(--space-2);
+      color: var(--signal);
+      font-size: 12px;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .status-card p { color: var(--ink-muted); }
+
+    .status-card dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 16px;
+      margin: 24px 0 0;
+      font-size: 13px;
+    }
+
+    .status-card dt { color: var(--ink-muted); }
+    .status-card dd { margin: 0; font-weight: 650; }
+
+    .language-block {
+      margin-top: var(--space-4);
+      padding: clamp(24px, 4vw, 48px);
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+      align-items: start;
+    }
+
+    .section-heading h2 {
+      margin-bottom: 0;
+      font-family: var(--display);
+      font-size: clamp(30px, 4vw, 48px);
+      font-weight: 500;
+      letter-spacing: -.035em;
+      line-height: 1.05;
+    }
+
+    .section-heading p {
+      max-width: 700px;
+      margin-bottom: 0;
+      color: var(--ink-muted);
+      font-size: 17px;
+    }
+
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    .swatch {
+      min-height: 142px;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      background: var(--swatch);
+      color: var(--label, var(--ink));
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .primitive-grid {
+      margin-top: var(--space-8);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-3);
+    }
+
+    .primitive {
+      min-height: 120px;
+      padding: var(--space-4);
+      background: var(--surface-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .primitive span {
+      color: var(--ink-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .primitive strong { font-size: 18px; }
+
+    .grammar {
+      margin-top: var(--space-8);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+    }
+
+    .grammar-step {
+      padding: var(--space-6);
+      border-top: 1px solid var(--border-strong);
+    }
+
+    .grammar-step b {
+      display: block;
+      margin-bottom: var(--space-3);
+      color: var(--accent);
+      font-family: var(--display);
+      font-size: 38px;
+      font-weight: 500;
+    }
+
+    .grammar-step strong { display: block; margin-bottom: 6px; }
+    .grammar-step p { margin: 0; color: var(--ink-muted); }
+
+    .specimen {
+      margin-top: var(--space-4);
+      padding: clamp(20px, 4vw, 48px);
+      overflow: hidden;
+    }
+
+    .specimen-header {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr) minmax(220px, .58fr);
+      gap: var(--space-6);
+      align-items: start;
+      margin-bottom: var(--space-8);
+    }
+
+    .specimen-number {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border-strong);
+      border-radius: 50%;
+      font-family: var(--display);
+      font-size: 22px;
+    }
+
+    .specimen-title h2 {
+      margin-bottom: 6px;
+      font-family: var(--display);
+      font-size: clamp(30px, 4vw, 46px);
+      font-weight: 500;
+      letter-spacing: -.035em;
+      line-height: 1.08;
+    }
+
+    .specimen-title p,
+    .specimen-note p { margin: 0; color: var(--ink-muted); }
+
+    .specimen-note {
+      padding-left: var(--space-4);
+      border-left: 2px solid var(--accent);
+      font-size: 13px;
+    }
+
+    .specimen-note strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .canvas {
+      padding: clamp(20px, 4vw, 40px);
+      background: var(--surface-subtle);
+      border-radius: var(--radius-lg);
+    }
+
+    .canvas-title {
+      margin-bottom: var(--space-8);
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      align-items: baseline;
+    }
+
+    .canvas-title strong { font-size: 20px; }
+    .canvas-title span { color: var(--ink-muted); font-size: 12px; }
+
+    /* 01 — Narrative rail */
+    .rail {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+    }
+
+    .rail-stop {
+      position: relative;
+      padding: 38px 16px 0 0;
+      border-top: 2px solid var(--border-strong);
+    }
+
+    .rail-stop::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 0;
+      width: 14px;
+      height: 14px;
+      background: var(--surface-subtle);
+      border: 2px solid var(--border-strong);
+      border-radius: 50%;
+    }
+
+    .rail-stop.is-focus { border-color: var(--accent); }
+    .rail-stop.is-focus::before { background: var(--accent); border-color: var(--accent); }
+
+    .rail-stop small {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink-muted);
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .rail-stop strong { display: block; margin-bottom: 6px; }
+    .rail-stop p { margin: 0; color: var(--ink-muted); font-size: 13px; }
+
+    /* 02 — Swimlanes */
+    .lanes { display: grid; gap: 8px; }
+
+    .lane {
+      display: grid;
+      grid-template-columns: 110px repeat(5, minmax(90px, 1fr));
+      min-height: 90px;
+      gap: 4px;
+    }
+
+    .lane-name {
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      color: var(--ink-muted);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border-right: 1px solid var(--border);
+    }
+
+    .activity {
+      padding: 12px;
+      align-self: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.35;
+    }
+
+    .activity.accent { background: var(--accent-soft); border-color: #9bcac6; color: #13545a; }
+    .activity.signal { background: var(--signal-soft); border-color: #dfad98; color: #8f442b; }
+    .activity.success { background: var(--success-soft); border-color: #aec9b6; color: #315b43; }
+    .handoff { align-self: center; color: var(--signal); text-align: center; font-size: 22px; }
+
+    /* 03 — Layered stack */
+    .stack-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 150px;
+      gap: var(--space-4);
+    }
+
+    .layers { display: grid; gap: 8px; }
+
+    .layer {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: var(--space-4);
+      align-items: center;
+      min-height: 88px;
+      padding: var(--space-4);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    .layer-label small {
+      display: block;
+      color: var(--ink-muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .layer-label strong { font-size: 15px; }
+    .layer-content { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .chip {
+      padding: 7px 10px;
+      background: var(--surface-subtle);
+      border-radius: 999px;
+      color: var(--ink-muted);
+      font-size: 12px;
+    }
+
+    .chip.accent { background: var(--accent-soft); color: #13545a; }
+
+    .trust-rail {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--accent);
+      border-radius: var(--radius-md);
+      color: white;
+    }
+
+    .trust-rail small { opacity: .72; letter-spacing: .08em; text-transform: uppercase; }
+    .trust-rail strong { font-family: var(--display); font-size: 25px; font-weight: 500; line-height: 1.05; }
+
+    /* 04 — Matrix */
+    .choice-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .choice-table th, .choice-table td { padding: 15px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    .choice-table thead th { color: var(--ink-muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .choice-table tbody th { width: 22%; font-size: 15px; }
+    .choice-table tr.recommended { background: var(--accent-soft); }
+    .choice-table tr.recommended th { color: var(--accent); }
+    .rec-badge { display: inline-block; margin-top: 5px; padding: 3px 7px; background: var(--accent); color: white; border-radius: 999px; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; }
+    .rating { display: inline-flex; gap: 3px; vertical-align: middle; }
+    .rating i { width: 7px; height: 7px; background: var(--border-strong); border-radius: 50%; }
+    .rating i.on { background: var(--accent); }
+
+    /* 05 — Scorecard */
+    .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+
+    .score {
+      min-height: 190px;
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    .score small { color: var(--ink-muted); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+    .score-value { font-family: var(--display); font-size: 52px; letter-spacing: -.04em; line-height: 1; }
+    .score-value span { color: var(--ink-muted); font-family: var(--sans); font-size: 14px; letter-spacing: 0; }
+    .meter { height: 6px; overflow: hidden; background: var(--surface-strong); border-radius: 999px; }
+    .meter span { display: block; width: var(--value); height: 100%; background: var(--accent); border-radius: inherit; }
+    .score p { margin: 10px 0 0; color: var(--ink-muted); font-size: 12px; }
+
+    /* 06 — Relationship map */
+    .map {
+      height: 430px;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    .map-links {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .map-links line {
+      stroke: var(--border-strong);
+      stroke-width: 2;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .map-links line.accent {
+      stroke: var(--accent);
+      stroke-width: 3;
+    }
+
+    .map-links text {
+      fill: var(--ink-muted);
+      stroke: var(--surface);
+      stroke-width: 7;
+      paint-order: stroke;
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-anchor: middle;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .map-links text.accent { fill: var(--accent); }
+
+    .map-node {
+      width: 164px;
+      min-height: 74px;
+      padding: 13px 14px;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-self: center;
+      justify-self: center;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+    }
+
+    .map-node small { color: var(--ink-muted); font-size: 9px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .map-node strong { font-size: 14px; }
+    .map-node.focus { width: 184px; grid-column: 3; grid-row: 2; background: var(--accent); border-color: var(--accent); color: white; }
+    .map-node.focus small { color: rgba(255,255,255,.68); }
+    .map-node.human { grid-column: 1; grid-row: 1; }
+    .map-node.server { grid-column: 3; grid-row: 1; }
+    .map-node.agent { grid-column: 5; grid-row: 1; }
+    .map-node.cursor { grid-column: 2; grid-row: 3; }
+    .map-node.reply { grid-column: 4; grid-row: 3; }
+
+    .map-key {
+      position: absolute;
+      z-index: 3;
+      left: 16px;
+      bottom: 14px;
+      padding: 6px 9px;
+      background: rgba(251,250,246,.92);
+      border-radius: 6px;
+      color: var(--ink-muted);
+      font-size: 10px;
+    }
+
+    .closing {
+      margin-top: var(--space-4);
+      padding: clamp(28px, 5vw, 64px);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, .7fr);
+      gap: var(--space-12);
+    }
+
+    .closing h2 {
+      margin-bottom: var(--space-4);
+      font-family: var(--display);
+      font-size: clamp(36px, 5vw, 58px);
+      font-weight: 500;
+      letter-spacing: -.04em;
+      line-height: 1.02;
+    }
+
+    .closing p { max-width: 670px; color: var(--ink-muted); font-size: 17px; }
+    .rules { counter-reset: rules; display: grid; gap: 14px; }
+    .rule { padding: 0 0 14px 42px; position: relative; border-bottom: 1px solid var(--border); }
+    .rule::before { counter-increment: rules; content: counter(rules, decimal-leading-zero); position: absolute; left: 0; color: var(--accent); font-family: var(--display); font-size: 20px; }
+
+    @media (max-width: 900px) {
+      .page-header, .closing { grid-template-columns: 1fr; }
+      .page-header { min-height: auto; }
+      .section-heading, .specimen-header { grid-template-columns: 1fr; }
+      .swatches { grid-template-columns: repeat(4, 1fr); }
+      .primitive-grid { grid-template-columns: repeat(2, 1fr); }
+      .grammar { grid-template-columns: 1fr; }
+      .lane { grid-template-columns: 90px repeat(5, minmax(100px, 1fr)); width: 850px; }
+      .lanes { overflow-x: auto; }
+      .score-grid { grid-template-columns: repeat(2, 1fr); }
+      .stack-layout { grid-template-columns: 1fr; }
+      .trust-rail { min-height: 130px; }
+    }
+
+    @media (max-width: 640px) {
+      main { width: min(100% - 16px, 1180px); margin-top: 8px; }
+      .page-header, .language-block, .specimen, .closing { border-radius: 18px; }
+      .swatches { grid-template-columns: repeat(2, 1fr); }
+      .primitive-grid, .score-grid { grid-template-columns: 1fr; }
+      .rail { grid-template-columns: 1fr; }
+      .rail-stop { min-height: 112px; padding: 0 0 24px 30px; border-top: 0; border-left: 2px solid var(--border-strong); }
+      .rail-stop::before { top: 0; left: -8px; }
+      .rail-stop.is-focus { border-left-color: var(--accent); }
+      .layer { grid-template-columns: 1fr; }
+      .choice-table { min-width: 720px; }
+      .table-scroll { overflow-x: auto; }
+      .map { height: auto; padding: 12px; grid-template-columns: 1fr; grid-template-rows: none; gap: 8px; }
+      .map-node { width: auto !important; min-height: auto; position: static; }
+      .map-node.human { grid-column: 1; grid-row: auto; order: 1; }
+      .map-node.server { grid-column: 1; grid-row: auto; order: 2; }
+      .map-node.focus { grid-column: 1; grid-row: auto; order: 3; }
+      .map-node.agent { grid-column: 1; grid-row: auto; order: 4; }
+      .map-node.reply { grid-column: 1; grid-row: auto; order: 5; }
+      .map-node.cursor { grid-column: 1; grid-row: auto; order: 6; }
+      .map-links { display: none; }
+      .map-key { position: static; order: 10; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="page-header">
+      <div>
+        <div class="eyebrow">Primitives / visual language 0.1</div>
+        <h1>Make the relationship visible.</h1>
+        <p class="lede">A composition system for explanatory visuals: choose the perception first, build with a small grammar, and let the renderer carry the craft.</p>
+      </div>
+      <aside class="status-card">
+        <strong>Unvalidated visual</strong>
+        <p>This is a design-language specimen, not output from the validated primitives renderer. It defines the target before schemas absorb it.</p>
+        <dl>
+          <dt>Case study</dt><dd>Browser answer → agent wake-up</dd>
+          <dt>Compositions</dt><dd>Six</dd>
+          <dt>Graph share</dt><dd>One of six</dd>
+        </dl>
+      </aside>
+    </header>
+
+    <section class="language-block">
+      <div class="section-heading">
+        <div class="eyebrow">Foundation</div>
+        <div>
+          <h2>Roles, not decoration.</h2>
+          <p>Color establishes semantic continuity. Space sets hierarchy. Surfaces group. A composition can change without changing what accent, signal, success, or conjecture mean.</p>
+        </div>
+      </div>
+      <div class="swatches" aria-label="Semantic color tokens">
+        <div class="swatch" style="--swatch:var(--ink);--label:white">Ink</div>
+        <div class="swatch" style="--swatch:var(--surface-subtle)">Surface</div>
+        <div class="swatch" style="--swatch:var(--border)">Border</div>
+        <div class="swatch" style="--swatch:var(--accent);--label:white">Accent</div>
+        <div class="swatch" style="--swatch:var(--signal);--label:white">Signal</div>
+        <div class="swatch" style="--swatch:var(--success);--label:white">Success</div>
+        <div class="swatch" style="--swatch:var(--conjecture);--label:white">Conjecture</div>
+      </div>
+
+      <div class="primitive-grid">
+        <div class="primitive"><span>Content</span><strong>Label · title · caption · metric</strong></div>
+        <div class="primitive"><span>Grouping</span><strong>Frame · surface · card · lane</strong></div>
+        <div class="primitive"><span>Relation</span><strong>Rail · connector · scale</strong></div>
+        <div class="primitive"><span>Annotation</span><strong>Badge · callout · trust mark</strong></div>
+      </div>
+
+      <div class="grammar">
+        <div class="grammar-step"><b>01</b><strong>Name the perception</strong><p>Order, ownership, boundary, difference, magnitude, or topology.</p></div>
+        <div class="grammar-step"><b>02</b><strong>Choose the reading order</strong><p>Left-to-right, top-to-bottom, center-out, or scan-anywhere.</p></div>
+        <div class="grammar-step"><b>03</b><strong>Compose, then subtract</strong><p>Use only the primitives that preserve the relationship.</p></div>
+      </div>
+    </section>
+
+    <section class="specimen" data-composition="narrative-rail">
+      <header class="specimen-header">
+        <div class="specimen-number">01</div>
+        <div class="specimen-title"><h2>Narrative rail</h2><p>One dominant sequence, with the meaningful transition made explicit.</p></div>
+        <div class="specimen-note"><strong>Perception</strong><p>The response crosses a five-step path; the sentinel removes the waiting gap.</p></div>
+      </header>
+      <div class="canvas">
+        <div class="canvas-title"><strong>An answer becomes agent context</strong><span>Reading order → left to right</span></div>
+        <div class="rail">
+          <div class="rail-stop"><small>00:00</small><strong>Human answers</strong><p>The browser records a question, decision, or mastery signal.</p></div>
+          <div class="rail-stop"><small>+20 ms</small><strong>Server appends</strong><p>The event receives a cursor and enters the session stream.</p></div>
+          <div class="rail-stop is-focus"><small>+35 ms</small><strong>Sentinel wakes</strong><p>A matching human event ends the follow immediately.</p></div>
+          <div class="rail-stop"><small>+80 ms</small><strong>Agent reads</strong><p>The exact user response returns with its actor and cursor.</p></div>
+          <div class="rail-stop"><small>Next turn</small><strong>Cursor advances</strong><p>Replay stays safe; already-seen events are not forgotten or duplicated.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="specimen" data-composition="swimlanes">
+      <header class="specimen-header">
+        <div class="specimen-number">02</div>
+        <div class="specimen-title"><h2>Swimlanes</h2><p>Responsibility stays visible while work moves between actors.</p></div>
+        <div class="specimen-note"><strong>Perception</strong><p>The hand-off belongs to the sentinel; the user should not have to announce completion twice.</p></div>
+      </header>
+      <div class="canvas">
+        <div class="canvas-title"><strong>Who owns attention?</strong><span>Rows are persistent actors</span></div>
+        <div class="lanes">
+          <div class="lane">
+            <div class="lane-name">Human</div><div class="activity signal">Acts in browser</div><div></div><div></div><div></div><div class="activity">Sees response</div>
+          </div>
+          <div class="lane">
+            <div class="lane-name">Brief tool</div><div></div><div class="activity">Persists event</div><div class="activity accent">Streams human event</div><div class="handoff">→</div><div></div>
+          </div>
+          <div class="lane">
+            <div class="lane-name">Agent</div><div></div><div></div><div></div><div class="activity success">Resumes with context</div><div class="activity">Replies and advances cursor</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="specimen" data-composition="layered-stack">
+      <header class="specimen-header">
+        <div class="specimen-number">03</div>
+        <div class="specimen-title"><h2>Layered stack</h2><p>System boundaries answer “where does this responsibility live?”</p></div>
+        <div class="specimen-note"><strong>Perception</strong><p>Interaction, transport, attention, and reasoning remain separate layers with one evidence boundary.</p></div>
+      </header>
+      <div class="canvas">
+        <div class="canvas-title"><strong>Attention is infrastructure, not etiquette</strong><span>Reading order ↓ top to bottom</span></div>
+        <div class="stack-layout">
+          <div class="layers">
+            <div class="layer"><div class="layer-label"><small>Layer 04</small><strong>Interaction</strong></div><div class="layer-content"><span class="chip">browser UI</span><span class="chip">question</span><span class="chip">mastery</span></div></div>
+            <div class="layer"><div class="layer-label"><small>Layer 03</small><strong>Event transport</strong></div><div class="layer-content"><span class="chip">append-only event</span><span class="chip">SSE</span><span class="chip">actor filter</span></div></div>
+            <div class="layer"><div class="layer-label"><small>Layer 02</small><strong>Attention</strong></div><div class="layer-content"><span class="chip accent">fast sentinel</span><span class="chip">exit on first match</span><span class="chip">cursor-safe replay</span></div></div>
+            <div class="layer"><div class="layer-label"><small>Layer 01</small><strong>Reasoning</strong></div><div class="layer-content"><span class="chip">agent context</span><span class="chip">response</span><span class="chip">next agenda</span></div></div>
+          </div>
+          <aside class="trust-rail"><small>Evidence boundary</small><strong>One session.<br>One cursor.<br>No silent loss.</strong><span>grounded</span></aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="specimen" data-composition="comparison-matrix">
+      <header class="specimen-header">
+        <div class="specimen-number">04</div>
+        <div class="specimen-title"><h2>Comparison matrix</h2><p>Alternatives share criteria; the recommendation emerges from evidence.</p></div>
+        <div class="specimen-note"><strong>Perception</strong><p>A direct event sentinel dominates polling and a response-processing sub-agent on the important criteria.</p></div>
+      </header>
+      <div class="canvas">
+        <div class="canvas-title"><strong>Choose the wake-up mechanism</strong><span>More filled dots are better</span></div>
+        <div class="table-scroll">
+          <table class="choice-table">
+            <thead><tr><th>Approach</th><th>Latency</th><th>Replay safety</th><th>Complexity</th><th>User attention</th></tr></thead>
+            <tbody>
+              <tr><th>Periodic polling</th><td><span class="rating"><i class="on"></i><i></i><i></i></span></td><td><span class="rating"><i class="on"></i><i class="on"></i><i></i></span></td><td><span class="rating"><i class="on"></i><i class="on"></i><i></i></span></td><td>User still waits</td></tr>
+              <tr><th>Fast sub-agent</th><td><span class="rating"><i class="on"></i><i class="on"></i><i></i></span></td><td><span class="rating"><i class="on"></i><i class="on"></i><i></i></span></td><td><span class="rating"><i class="on"></i><i></i><i></i></span></td><td>Extra reasoning hop</td></tr>
+              <tr class="recommended"><th>Event sentinel<br><span class="rec-badge">Recommended</span></th><td><span class="rating"><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td><span class="rating"><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td><span class="rating"><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td>Automatic wake-up</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="specimen" data-composition="scorecard">
+      <header class="specimen-header">
+        <div class="specimen-number">05</div>
+        <div class="specimen-title"><h2>Scorecard</h2><p>A handful of measures communicate health without inventing topology.</p></div>
+        <div class="specimen-note"><strong>Perception</strong><p>The patch improves responsiveness while retaining replay and keeping the mechanism small.</p></div>
+      </header>
+      <div class="canvas">
+        <div class="canvas-title"><strong>Response channel health</strong><span>Targets shown in context</span></div>
+        <div class="score-grid">
+          <div class="score"><small>Wake-up latency</small><div class="score-value">&lt;1<span>s target</span></div><div><div class="meter"><span style="--value:92%"></span></div><p>Ends on the first matching human event.</p></div></div>
+          <div class="score"><small>Replay safety</small><div class="score-value">100<span>% cursor-based</span></div><div><div class="meter"><span style="--value:100%"></span></div><p>Resume from the last observed event.</p></div></div>
+          <div class="score"><small>Tool coverage</small><div class="score-value">3<span>/3 briefs</span></div><div><div class="meter"><span style="--value:100%"></span></div><p>Inbrief, Forebrief, and Backbrief.</p></div></div>
+          <div class="score"><small>Reasoning hops</small><div class="score-value">0<span>extra agents</span></div><div><div class="meter"><span style="--value:88%"></span></div><p>The event stream wakes the owner directly.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="specimen" data-composition="relationship-map">
+      <header class="specimen-header">
+        <div class="specimen-number">06</div>
+        <div class="specimen-title"><h2>Relationship map</h2><p>The graph earns its place when reachability and feedback topology are the question.</p></div>
+        <div class="specimen-note"><strong>Perception</strong><p>The sentinel is the focal junction connecting user action, durable history, and agent attention.</p></div>
+      </header>
+      <div class="canvas">
+        <div class="canvas-title"><strong>What depends on the sentinel?</strong><span>Reading order → center out</span></div>
+        <div class="map">
+          <svg class="map-links" viewBox="0 0 1000 430" preserveAspectRatio="none" aria-hidden="true">
+            <line x1="100" y1="72" x2="500" y2="72"></line>
+            <line class="accent" x1="500" y1="72" x2="500" y2="215"></line>
+            <line class="accent" x1="500" y1="215" x2="900" y2="72"></line>
+            <line x1="300" y1="358" x2="500" y2="215"></line>
+            <line x1="900" y1="72" x2="700" y2="358"></line>
+            <text x="300" y="62">records</text>
+            <text class="accent" x="525" y="148">streams</text>
+            <text class="accent" x="715" y="132">wakes</text>
+            <text x="390" y="310">resumes</text>
+            <text x="835" y="235">responds</text>
+          </svg>
+          <div class="map-node human"><small>Origin</small><strong>Human browser action</strong></div>
+          <div class="map-node server"><small>Durability</small><strong>Brief event server</strong></div>
+          <div class="map-node agent"><small>Consumer</small><strong>Owning agent</strong></div>
+          <div class="map-node cursor"><small>Continuity</small><strong>Replay cursor</strong></div>
+          <div class="map-node reply"><small>Feedback</small><strong>Visible response</strong></div>
+          <div class="map-node focus"><small>Attention junction</small><strong>Human-event sentinel</strong></div>
+          <div class="map-key">Connectors encode dependency; position encodes focal distance.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="closing">
+      <div>
+        <div class="eyebrow">Quality bar</div>
+        <h2>A visual is successful before it is beautiful.</h2>
+        <p>Beauty here is coherent hierarchy, balanced density, stable semantics, and an immediate reading path. The composition should make the intended relationship hard to miss and every other relationship quiet.</p>
+      </div>
+      <div class="rules">
+        <div class="rule">One primary perception.</div>
+        <div class="rule">One obvious entry point.</div>
+        <div class="rule">At most three typographic levels.</div>
+        <div class="rule">Color keeps the same meaning.</div>
+        <div class="rule">Graphs must justify every connector.</div>
+        <div class="rule">Trust owns the outer evidence boundary.</div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

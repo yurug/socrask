@@ -1,6 +1,6 @@
 ---
 name: primitives
-description: "Render explanatory visuals from validated JSON specs instead of hand-rolling HTML or SVG — diagrams, stepped sequences (filmstrips), charts, trade-off matrices, and assertion-evidence cards, with evidence-backed defaults baked in. Use whenever you are about to draw something for a human: a diagram in a report, a comparison in an artifact, a mechanism walkthrough, a chart of measurements. Also use before choosing to animate anything."
+description: "Render explanatory visuals from validated JSON specs instead of hand-rolling HTML or SVG — rails, swimlanes, layers, diagrams, stepped sequences, charts, trade-off matrices, and assertion-evidence cards, with evidence-backed defaults baked in. Use whenever you are about to draw something for a human: a sequence, ownership map, architecture, diagram, comparison, mechanism walkthrough, or chart. Also use before choosing to animate anything."
 ---
 
 # Communication primitives
@@ -11,23 +11,48 @@ paid once, in the renderer, instead of re-derived every time you draw.
 
 ## Is the library available?
 
-`ls node_modules/@backbrief/primitives` (or the sibling checkout at
-`../backbrief/packages/primitives`). If absent: write plain prose and a table,
+`ls node_modules/@brief/primitives` (or the sibling checkout at
+`../brief/packages/primitives`). If absent: write plain prose and a table,
 mark nothing as a visual, and stop reading this file. Never half-apply this.
 
-## The five primitives, and when each one is right
+## Choose the perception before the renderer
+
+Complete: **"The reader must see ___ before reading the details."** Name one
+relationship: order, ownership, boundary, difference, magnitude, or topology.
+Then choose a composition. Read
+[the visual language](references/visual-language.md) before creating a visual
+or when the output starts looking like a generic graph. Its specimen gallery is
+`assets/visual-language.html`.
+
+Use `diagram` only when topology is the point: adjacency, reachability, cycles,
+or dependency. If removing the connectors would leave the answer intact, use a
+rail, lanes, layers, matrix, scorecard, prose, or a table instead. Do not force
+an unsupported composition into a graph; use the gap procedure below.
+
+Set the reading order and density before writing the spec. Prefer one obvious
+entry point, at most three typographic levels, stable semantic colors, and
+layout primitives over coordinates.
+
+## The eight renderer entries
+
+These are implementation entries, not the whole visual vocabulary.
 
 | You are showing | Use | Entry |
 |---|---|---|
-| A structure or relationship (flow, state machine, dependencies, causality) | diagram | `@backbrief/primitives/diagram` |
+| One dominant order, duration, or progression | rail | `@brief/primitives/rail` |
+| Persistent actors and hand-offs across phases | lanes | `@brief/primitives/lanes` |
+| Ordered responsibility or abstraction boundaries | layers | `@brief/primitives/layers` |
+| Non-linear topology (state transitions, dependencies, causality with branches) | diagram | `@brief/primitives/diagram` |
 | How a mechanism unfolds, step by step | **filmstrip** | `.../filmstrip` |
 | Quantities, trends, distributions, comparisons | chart | `.../chart` |
 | Options against criteria | matrix | `.../matrix` |
 | One claim with one piece of evidence | claim | `.../claim` |
 
-Specs are documented in the host repo's KB when it has one (backbrief:
-`kb/primitives/primitive-specs`). Read that before writing your first spec of
-a kind; the schemas reject unknown fields, and the error names the field.
+Start with the working [composition specs](references/composition-specs.md)
+for rail, lanes, and layers. For the older entries, use the package schemas or
+the host repo's primitive KB when present. Read the relevant schema before
+writing your first spec of a kind; schemas reject unknown fields, and the error
+names the field.
 
 ## The rules that are not yours to relitigate
 
@@ -53,9 +78,11 @@ is a headline. "Authentication" is a topic phrase and the schema rejects it.
 a legend; diagram edge labels ride the edge. The strongest effects in the
 evidence base are contiguity and subtraction, in that order.
 
-**Nothing decorative.** No gradients, shadows, background fills, 3D, or
-decorative color. One accent plus neutrals. If an element carries no
-information, delete it.
+**Nothing merely decorative inside the evidence frame.** Page chrome may carry
+quiet identity, but it never enters the data encoding. No gradients, shadows,
+3D, or color without a semantic role. Surfaces may group content; whitespace
+establishes hierarchy; accent, signal, success, and conjecture keep stable
+meanings. If an element carries no information, delete it.
 
 **Charts are server/build-time only.** Import the chart entry for its schema
 and compiler freely, but calling the renderer pulls ~767 KB — do it in Node or
@@ -104,6 +131,11 @@ in backbrief) rather than editing the spec to match an old schema.
 
 ## Self-check before you ship a visual
 
+- What must the reader perceive first: order, ownership, boundary, difference,
+  magnitude, or topology?
+- Did I choose `diagram` because topology matters, or because nouns were easy
+  to connect with arrows?
+- Is there one obvious entry point and reading order?
 - Would a static filmstrip do what I was about to animate? (Almost always: yes.)
 - Does every claim in this visual actually hold, or is the frame lying?
 - Is there a legend I could have made an inline label?

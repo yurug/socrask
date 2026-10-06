@@ -42,7 +42,7 @@ for dir in $DIRS; do
     # data-primitive is the renderers' own provenance stamp — added after the
     # first real artifact embedded a spec-rendered SVG and this script counted
     # it as hand-rolled, because nothing in the output said otherwise.
-    if grep -qE 'data-primitive="(diagram|filmstrip|chart|matrix|claim)"|primitives/(diagram|filmstrip|chart|matrix|claim)|"kind": *"(diagram|filmstrip|chart|matrix|claim)"' "$f" 2>/dev/null; then
+    if grep -qE 'data-primitive="(diagram|filmstrip|chart|matrix|claim|rail|lanes|layers)"|primitives/(diagram|filmstrip|chart|matrix|claim|rail|lanes|layers)|"kind": *"(diagram|filmstrip|chart|matrix|claim|rail|lanes|layers)"' "$f" 2>/dev/null; then
       spec=$((spec + 1))
       printf 'spec        %s\n' "$f"
     elif grep -qE '<svg|<table' "$f" 2>/dev/null; then

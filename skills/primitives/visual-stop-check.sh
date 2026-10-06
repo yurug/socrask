@@ -66,7 +66,8 @@ reason = (
     "Visual check on this repo's artifacts:\n\n" + sys.argv[1] + "\n\n"
     "An ERROR is a hand-drawn visual with no \"unvalidated visual\" marker — fix it.\n"
     "A WARN is an artifact of a diagrammable genre carrying no visual: either add "
-    "one (the `primitives` skill; a stepped sequence of stills beats an animation) "
+    "one (the `primitives` skill; name the perception before the renderer, and "
+    "use a diagram only when topology is the point) "
     "or say in one line why prose is better there. Both answers are fine — silence "
     "is not. Asked once per session."
 )
