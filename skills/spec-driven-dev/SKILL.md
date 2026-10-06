@@ -136,7 +136,9 @@ Decide the tier first, out loud, in one line:
   the KB only if behaviour described there changed (the same-commit rule still
   binds). Do not open Phase 1.
 - **Slice** — one bounded change with its own acceptance criteria, on ground the
-  KB already covers. Phases 3–6, skipping KB creation.
+  KB already covers. Phases 3–6, skipping KB creation — but first check that
+  the KB settles every choice the slice needs: unsettled ones go in the
+  assumption ledger, and any open row gets a short Phase 1 round on it alone.
 - **Full** — new project, new subsystem, or a change whose meaning is not settled.
   Everything from Phase 0.5.
 
@@ -261,9 +263,18 @@ imperative for the whole phase:
   the question count, then wait for them to edit the file before starting the next
   round.
 
-Iterate until no ambiguities remain.
+**Coverage — the failure here is too few questions.** Read
+[references/ambiguity-resolution.md](references/ambiguity-resolution.md). In short:
+- Record every choice the KB or a human decision does not settle — each proposed
+  default included — as a row in `kb/assumptions.md`, the assumption ledger.
+- Each round, a fresh judgment-tier subagent that has NOT seen your questions
+  writes its own from the brief, KB and ledger; merge them in.
+- If the human overrode any default, run another round: the model that missed
+  that intent also chose which questions to skip.
 
-**Exit criterion:** User confirms all ambiguities resolved.
+**Exit criterion:** `python3 tools/assumption-check.py kb/assumptions.md --exit` passes (no
+open row), and the last round closed with no override and nothing new from the
+independent pass. Not "the user confirms": that asks them to spot unasked questions.
 
 ## Phase 2: Knowledge Base Creation
 

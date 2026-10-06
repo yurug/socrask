@@ -10,6 +10,7 @@ skills/                Claude Code skills, one directory per skill (<name>/SKILL
   spec-driven-dev/     The main skill, plus:
                          kb-lint.py                  mechanical KB validation
                          ratchet.py                  what passed stays passed
+                         assumption-check.py         Phase 1 exit gate
                          kb-lint-forebrief.py        verbatim-rationale check
                          fixtures/kb-lint/           fixtures for the enforcement channels
                          fixtures/forebrief-lint/    fixtures for the verbatim rule

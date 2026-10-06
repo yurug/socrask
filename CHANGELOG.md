@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Phase 1 asks more of the right questions: an assumption ledger (`kb/assumptions.md`)
+  records every unsettled choice, an independent subagent writes its own questions each
+  round, an overridden default forces another round, and `assumption-check.py --exit`
+  replaces "the user confirms" as the exit gate. Slices check the ledger before planning.
+  The ledger's completeness remains unchecked: a choice nobody noticed has no row.
 - Renamed to Socrask: the public repository is `yurug/socrask` (formerly
   `yurug/agentic-loop-kit`; GitHub redirects the old URL). Update clones with
   `git remote set-url origin https://github.com/yurug/socrask.git`.

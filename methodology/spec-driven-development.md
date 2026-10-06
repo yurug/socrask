@@ -110,8 +110,11 @@ See [the checkpoint contract](../docs/alignment.md) and
 workers return tested commits and findings rather than opening competing conversations.
 
 ### Phase 1: Ambiguity Resolution
-Generate questions, propose defaults, iterate with the human. Exit when no blind spots
-remain. The cost of one extra question round is negligible; the cost of a wrong assumption
+Generate questions, propose defaults, iterate with the human. The failure mode is asking
+too few: record every unsettled choice in an assumption ledger, have an independent
+agent write its own questions each round, and run another round after any overridden
+default. Exit when the ledger has no open row, checked by a script, not by asking the
+human whether anything is left. The cost of one extra question round is negligible; the cost of a wrong assumption
 is architectural rework.
 
 ### Phase 2: Knowledge Base Creation

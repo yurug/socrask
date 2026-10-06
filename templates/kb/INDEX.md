@@ -17,6 +17,7 @@ related: [by-task, glossary]
 **Before anything else**, read:
 - `GLOSSARY.md` -- canonical terms used throughout
 - `architecture/overview.md` -- system shape
+- `assumptions.md` -- choices not yet settled; an open row means ask before relying on it
 
 **Then navigate by task** -- see `indexes/by-task.md`
 

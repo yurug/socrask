@@ -76,8 +76,9 @@ Step 2d of the skill specifies —
 2. the SessionStart hook from templates/settings/kb-sessionstart.settings.json
    merged into .claude/settings.json, so kb/INDEX.md is injected into every
    future session;
-3. kb-lint.py and ratchet.py copied from the skill directory into tools/ and
-   wired into pre-commit and CI, errors failing the build;
+3. kb-lint.py, ratchet.py and assumption-check.py copied from the skill directory
+   into tools/ and wired into pre-commit and CI, errors failing the build
+   (assumption-check without `--exit` there: open rows are normal mid-Phase 1);
 4. a one-line-per-check harness inventory with a fixed line budget.
 Then prove it: kb-lint exits 0, and a fresh subagent given only this
 directory names the KB routing protocol without being told where to look.
