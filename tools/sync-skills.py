@@ -6,6 +6,8 @@ real files/directories are never replaced. The shell entrypoint preserves the le
 """
 import argparse
 import os
+import re
+import subprocess
 from pathlib import Path
 import sys
 import uuid
@@ -21,12 +23,36 @@ def directory_conflict(directory):
     return None
 
 
+def revision_error(root, revision):
+    """Bind the kit contents to a reviewed checkout before touching host links.
+
+    This checks local Git identity and changes, not release publication or what an
+    already-running agent read. Git-ignored files are outside this check.
+    """
+    if not re.fullmatch(r'[0-9a-f]{40}', revision):
+        return 'expected revision must be a full lowercase 40-character Git commit'
+    try:
+        head = subprocess.run(['git', '-C', str(root), 'rev-parse', '--verify', 'HEAD'],
+                              capture_output=True, text=True, check=True).stdout.strip()
+        if head != revision:
+            return f'source revision mismatch: expected {revision}, found {head}'
+        changes = subprocess.run(['git', '-C', str(root), 'status', '--porcelain',
+                                  '--untracked-files=all'],
+                                 capture_output=True, text=True, check=True).stdout
+        if changes:
+            return 'kit source differs from the reviewed revision:\n'+changes.rstrip()
+    except (OSError, subprocess.CalledProcessError):
+        return 'cannot verify source revision from the local Git checkout'
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--target', choices=['claude', 'codex', 'both'], default='claude')
     parser.add_argument('--only', action='append', help='install/check this skill; repeat for several')
     parser.add_argument('--claude-dir', type=Path, default=Path.home()/'.claude/skills')
     parser.add_argument('--codex-dir', type=Path, default=Path.home()/'.codex/skills')
+    parser.add_argument('--expected-revision', help='require this exact Git commit and an unchanged kit checkout')
     parser.add_argument('--check', action='store_true', help='read-only verification; nonzero on drift')
     parser.add_argument('--replace-links', action='store_true', help='explicitly retarget selected foreign symlinks')
     args = parser.parse_args()
@@ -37,6 +63,11 @@ def main():
     if missing or not names:
         print(f'Unknown/empty skill selection: {sorted(missing)}', file=sys.stderr)
         return 2
+    if args.expected_revision is not None:
+        error = revision_error(source.parent, args.expected_revision)
+        if error:
+            print(error, file=sys.stderr)
+            return 1
     targets = [('claude', args.claude_dir), ('codex', args.codex_dir)]
     plan, errors = [], []
     for host, directory in targets:

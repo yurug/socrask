@@ -21,6 +21,19 @@ its append-only protocol and real sender identities; never write another agent's
    this is a local convenience tool, not a transactional or hostile-user boundary.
    Other skills and host settings are untouched when `--only` is used.
 
+   For a project that declares an exact kit commit, bind the check to that commit:
+
+   ```sh
+   ./sync-skills.sh --target both --only spec-driven-dev --check --expected-revision <full-commit-sha>
+   ```
+
+   This refuses a different source HEAD or tracked/untracked changes anywhere in the kit
+   before installing any links, including shared instructions and tools. Git-ignored files are excluded; unrelated kit edits must also be committed before this check. Without this option,
+   `--check` validates link destinations only: a link to a moving checkout does not pin
+   a version. This is a point-in-time check, not an immutable installation; rerun it at
+   adoption and release gates. Concurrent changes are not prevented by an atomic snapshot.
+   It does not establish publication or active-agent loading.
+
 3. Ask each active agent to re-read the installed skill and outcome/adoption references
    now; an active conversation may retain old instructions despite updated files.
    Project instructions take precedence, so reconcile conflicting local rules in a
