@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.1 — 2026-10-08
+
+- Add `sync-skills.sh --expected-revision <full-commit-sha>` to refuse a different
+  source HEAD or Git-visible changes anywhere in the kit before changing host links.
+  Empty pins are refused. Shared instructions and tools are covered alongside skills.
+- Preserve link-only checking when the option is omitted. The revision check is
+  point-in-time: Git-ignored files and concurrent mutations are outside its guarantee;
+  it does not prove release publication or what an active agent has loaded.
+- Clarify forebrief cards: each option states its effect on the plan and who acts.
+  Document human review evidence and forbid agent-authored UI confirmations.
+
+Compatibility: existing installation commands are unchanged. Projects with a declared
+kit revision opt in with `--check --expected-revision <full-commit-sha>` and keep
+publication, installation and executed agent adoption as separate evidence.
+
 ## 0.4.0 — 2026-10-06
 
 - Phase 1 asks more of the right questions: an assumption ledger (`kb/assumptions.md`)
