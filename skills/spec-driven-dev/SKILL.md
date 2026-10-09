@@ -315,14 +315,18 @@ Create `kb/plan.md` — incremental implementation plan:
   If you catch yourself proposing an "easy warm-up step" before the hard one, that is the
   failure mode this rule exists to prevent — re-order.
 - Subsequent steps add depth: more commands, edge cases, error handling, quality
-- Each step: modules, relevant properties, acceptance criteria
+- Each step: tier (`execution` or `judgment`), modules, relevant properties, acceptance
+  criteria. An `execution` step settles every choice in the plan, using the format in
+  [references/execution-ready-steps.md](references/execution-ready-steps.md); read it
+  before writing the plan. `python3 tools/plan-check.py kb/plan.md` must exit 0.
 - Each step must produce observable progress (new command, new behavior)
 - For each step, name the **single biggest unknown** ("what if X doesn't work?") in the
   step's acceptance criteria. Phase 4 will prove that piece works first.
 
 **Plan-simulation gate:** before showing the plan to the user, spawn a fresh subagent with the
 plan and the KB. Ask it to walk each step end-to-end, list ambiguities and uncertainties, and
-generate questions for the user. Resolve every question before exit.
+generate questions for the user. Resolve every question before exit. For `execution` steps
+run this subagent on the execution model: any question it raises means the step is not ready.
 
 **Plan premortem:** for plans with high cost-of-being-wrong (irreversible data shapes,
 public APIs, multi-week slices), re-run the `premortem` skill on the plan itself. The Phase 0.5
@@ -335,7 +339,7 @@ load-bearing concepts before asking for a decision. Consult a persistent enginee
 model only if its owner opted in. Answer questions with relevant sources; do not
 infer ignorance or automatically record a knowledge rating from a question.
 
-**Exit criterion:** User approves the plan.
+**Exit criterion:** `plan-check.py` exits 0, and the user approves the plan.
 
 ## Phase 4–5: Implementation and Quality Audits
 

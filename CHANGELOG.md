@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.5.0 — 2026-10-09
+
+- Phase 3 plans now mark each step's tier: `execution` or `judgment`. An execution step
+  settles every choice in the plan: files, interfaces, one checking command per
+  acceptance criterion, what is out of scope, and when to hand off. The format is in
+  `skills/spec-driven-dev/references/execution-ready-steps.md`.
+- New `plan-check.py` gate: it refuses a step with no tier or no checking command. It
+  also refuses an execution step with a missing field, or with open-choice wording
+  ("choose", "TBD", "as needed", ...) outside its scope, hand-off and unknown fields.
+- For execution steps, the plan-simulation subagent now runs on the execution model.
+  Any question it raises means the step is not ready. Execution agents end an attempt
+  rather than settle an open choice.
+- `plan-check.py` checks the shape of a step only. It does not show that the choices are
+  right or that a command tests its criterion. It also does not show that the execution
+  model can handle the task class: the capable-reference rule still applies.
+
+Compatibility: projects adopting the gate vendor `plan-check.py` into `tools/` and add
+`Tier:` and the execution fields to `kb/plan.md`. Existing plans fail the gate until
+every step declares a tier.
+
 ## 0.4.1 — 2026-10-08
 
 - Add `sync-skills.sh --expected-revision <full-commit-sha>` to refuse a different

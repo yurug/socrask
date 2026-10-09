@@ -134,6 +134,11 @@ public APIs, multi-week slices), run a second premortem on the plan itself befor
 showing it to the user — Phase 0.5 stress-tested the idea, this one stress-tests the
 implementation strategy.
 
+Each step declares its tier. An execution-tier step leaves the cheaper model nothing to
+decide: files, interfaces, one checking command per acceptance criterion, scope and a
+hand-off condition are all in the plan. `plan-check.py` checks that shape, and a
+simulation pass on the execution model must raise no questions.
+
 ### Phase 4: Implementation (Ralph Loops)
 For each step: identify the riskiest sub-task and attack it first, implement with literate
 style, write comprehensive tests, validate, fix, repeat. The loop converges because each

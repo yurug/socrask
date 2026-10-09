@@ -82,7 +82,11 @@ observed user outcome described in `docs/outcome-quality.md`.
 - Inputs in the prompt: the full step text from `kb/plan.md`; pointer to `kb/INDEX.md` and
   `kb/indexes/by-task.md#implement`; property IDs to satisfy (e.g. "enforce P3, P7, P12");
   acceptance criteria; the iteration budget (2 on the execution tier; the remaining cap after
-  escalation); this Phase 4 section so it can run the loop itself.
+  escalation); this Phase 4 section so it can run the loop itself. Dispatch on the step's
+  `Tier:` field; only a step that passes `plan-check.py` goes to the execution tier.
+- Execution-tier agents do not settle choices. A choice the step leaves open, or a
+  `Hand off` condition, ends the attempt with the failure report below, and the planner
+  fixes the step.
 - Returns on success: commit hash(es) produced; test results (pass/fail counts, names of any
   failures); any KB drift it noticed (file + line + expected-vs-found); any unresolved ambiguities.
 - Returns on budget exhaustion — the failure report: failing test names with verbatim error

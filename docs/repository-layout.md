@@ -11,11 +11,13 @@ skills/                Claude Code skills, one directory per skill (<name>/SKILL
                          kb-lint.py                  mechanical KB validation
                          ratchet.py                  what passed stays passed
                          assumption-check.py         Phase 1 exit gate
+                         plan-check.py               Phase 3 step-readiness gate
                          kb-lint-forebrief.py        verbatim-rationale check
                          fixtures/kb-lint/           fixtures for the enforcement channels
                          fixtures/forebrief-lint/    fixtures for the verbatim rule
                          test-kb-lint.sh             runs the kb-lint fixture suite
                          test-ratchet.sh             runs the ratchet suite
+                         test-plan-check.sh          runs the plan-check suite
                          test-kb-lint-forebrief.sh   runs the forebrief fixture suite
   forebrief/           Skill and public wire references for forebrief decision sessions
 sync-skills.sh         Installs/checks selected skill links for Claude and/or Codex
@@ -54,6 +56,7 @@ are:
 ```bash
 tools/ci-local.sh                    # everything below, one exit code
 ./skills/spec-driven-dev/test-ratchet.sh
+./skills/spec-driven-dev/test-plan-check.sh
 tools/harness-inventory.sh           # every checker is listed in docs/harness.md
 python3 skills/spec-driven-dev/kb-lint.py <path-to-kb>
 ./skills/spec-driven-dev/test-kb-lint.sh
