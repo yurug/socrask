@@ -32,6 +32,8 @@ class HookEnvironment(unittest.TestCase):
                      'skills/forebrief/SKILL.md': '# Fixture\n',
                      'templates/claude-md/spec-driven.md': '# Fixture\n',
                      'tools/harness-inventory.sh': '#!/bin/sh\nexit 0\n',
+                     'CHANGELOG.md': '## 0.0.0\n\n- Fixture.\n',
+                     'skills/spec-driven-dev/ste-check.py': '',
                      'skills/probe/test-child.sh': '''#!/bin/sh
 set -eu
 mkdir child

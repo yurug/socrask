@@ -17,7 +17,10 @@ All terms that appear in more than one KB file. Terms specific to a single file 
 
 ## Terms
 
-- **[Term]**: [Definition]. See also `[related-file]`.
+- **[Term]**: [Definition]. See also `[related-file]`. Not: [rejected synonym], [another].
+
+A `Not:` list names words to avoid in favour of the term. `ste-check.py` fails a
+human-facing file that uses one.
 
 ## Controlled tag vocabulary
 

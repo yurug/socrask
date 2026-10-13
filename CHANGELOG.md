@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.6.0 — 2026-10-13
+
+- Human-facing artifacts now follow a writing standard: the rules of ASD-STE100,
+  Simplified Technical English. The project glossary replaces the STE dictionary.
+  The standard is in `docs/writing-standard.md`.
+- New `ste-check.py`: it fails a sentence over 25 words, or over 20 in a numbered
+  procedure. It also fails a word that the glossary rejects with `Not:`.
+  It warns on *should*, *may*, *might* and on the passive voice.
+- The plan exit gate runs `ste-check.py` on `kb/plan.md`. Forebrief card text and
+  the kit's newest changelog entry follow the same standard.
+- The checks are structural. The kit uses no readability score. The script does
+  not check that a sentence says one thing or that the reader can act on it.
+
+Compatibility: projects copy `ste-check.py` into `tools/`. Existing plans can fail
+on long sentences until someone shortens them. Glossary entries without `Not:`
+behave as before.
+
 ## 0.5.0 — 2026-10-09
 
 - Phase 3 plans now mark each step's tier: `execution` or `judgment`. An execution step

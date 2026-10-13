@@ -334,12 +334,15 @@ premortem stress-tested the idea; this one stress-tests the implementation strat
 report in `kb/reports/premortem-plan-<timestamp>.{html,md}` and fold its checklist items into
 the plan's acceptance criteria.
 
+**Writing standard:** plans, reports and briefs follow [the writing standard](../../docs/writing-standard.md);
+`python3 tools/ste-check.py kb/plan.md` must exit 0.
+
 **Calibrated presentation:** use the conversation context to gloss unfamiliar
 load-bearing concepts before asking for a decision. Consult a persistent engineer
 model only if its owner opted in. Answer questions with relevant sources; do not
 infer ignorance or automatically record a knowledge rating from a question.
 
-**Exit criterion:** `plan-check.py` exits 0, and the user approves the plan.
+**Exit criterion:** `plan-check.py` and `ste-check.py` exit 0, and the user approves the plan.
 
 ## Phase 4–5: Implementation and Quality Audits
 

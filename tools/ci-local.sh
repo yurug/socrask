@@ -67,6 +67,12 @@ persistent_context_budget() {
   fi
 }
 run "persistent context line budget" persistent_context_budget
+# The changelog is human-facing, so its newest entry meets the writing
+# standard. Older entries are history and stay as written.
+newest_changelog_entry() {
+  awk '/^## /{n++} n==1' CHANGELOG.md | python3 skills/spec-driven-dev/ste-check.py -
+}
+run "writing standard on the newest changelog entry" newest_changelog_entry
 run "harness inventory (the KISS bound)" tools/harness-inventory.sh
 
 # Not run here: kb-lint against templates/kb. That template is meant to fail on

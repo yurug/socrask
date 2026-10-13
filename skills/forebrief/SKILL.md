@@ -117,3 +117,4 @@ readable only in your own transcript. Give every option one consequence that
 says what it adds to or removes from the plan ("the retry step goes").
 Say who does what ("the worker retries", not "it is retried"); write *must*
 for a rule and *can* for a possibility, never *should*, *may* or *might*.
+Card text follows the [writing standard](../../docs/writing-standard.md).

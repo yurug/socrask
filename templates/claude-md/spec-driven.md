@@ -28,6 +28,8 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    weigh a stated reason and cannot weigh a silence.
 6. **Keep communication concise and alignment explicit.** Lead with the outcome or
    decision, explain only what is needed to act, and state important uncertainty.
+   Plans, reports and briefs follow the kit's writing standard (STE rules, glossary
+   terms); `tools/ste-check.py` checks them.
    Use Inbrief when unfamiliar concepts affect a decision; use Backbrief on the
    final aggregate diff for every non-Direct change. The coordinator owns human
    checkpoints; child agents return evidence without prompting independently.

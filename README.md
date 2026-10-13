@@ -126,7 +126,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.5.0** — plan steps meant for a cheaper execution model are checked to leave it nothing to decide. The methodology is still evolving, but every deterministic
+**v0.6.0** — plans, reports and decision cards follow a checked writing standard based on Simplified Technical English. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer
