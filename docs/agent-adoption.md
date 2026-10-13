@@ -72,3 +72,16 @@ installation/refusal, and `tools/outcome-check.py` checks supplied outcome evide
 Authenticity of mailbox replies, whether an agent read instructions, quality of human
 judgment, and actual project gate integration still require inspection; no script here
 claims to guarantee those facts.
+
+## Stay current
+
+Merge `templates/settings/kit-update.settings.json` into `~/.claude/settings.json`.
+At session start, `tools/update-check.py` compares the installed release tag with
+the newest tag on the kit's `origin`. It checks the network at most once a day.
+When a newer release exists, the agent gets a notice and proposes the update once.
+The agent reads the changelog entries in between before it asks. It updates only
+with consent: `git pull --ff-only` to the release tag, then `sync-skills.sh --check`.
+A project that pins a kit commit updates its pin in a separate commit.
+
+The notice reaches new sessions only. A running session learns of a release at its
+next start.

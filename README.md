@@ -28,6 +28,9 @@ Selected skill directories are symlinked into `~/.claude/skills/` and/or
 `~/.codex/skills/`. The default remains Claude. Real directories are never replaced;
 retargeting a foreign symlink requires `--replace-links`. Active agents must reload
 the skill and return an executed [adoption receipt](docs/agent-adoption.md).
+To have agents propose new releases, merge
+`templates/settings/kit-update.settings.json` into `~/.claude/settings.json`
+(see [stay current](docs/agent-adoption.md#stay-current)).
 
 Then, from any project:
 
@@ -126,7 +129,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.7.0** — every plan step carries a proof sketch against a proof-ready model, so a mechanized proof can start at any time. The methodology is still evolving, but every deterministic
+**v0.8.0** — agents notice new kit releases at session start and propose the update. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

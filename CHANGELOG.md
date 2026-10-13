@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.0 — 2026-10-13
+
+- Agents now learn about new kit releases. `tools/update-check.py` runs from a
+  session-start hook and compares the installed release tag with the newest tag
+  on the kit's `origin`. It checks the network at most once a day.
+- When a newer release exists, the agent proposes the update once per session.
+  It summarizes the changelog entries in between, and updates only with consent.
+  The update is a fast-forward to the release tag, then `sync-skills.sh --check`.
+- The script stays silent when the kit is current, offline or untagged. It always
+  exits 0, so a failed check never blocks a session.
+
+Compatibility: opt in per user. Merge `templates/settings/kit-update.settings.json`
+into `~/.claude/settings.json`. The notice reaches new sessions only.
+
 ## 0.7.0 — 2026-10-13
 
 - The design stays proof-ready without a proof assistant. At any time, someone can

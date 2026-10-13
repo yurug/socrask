@@ -1,0 +1,16 @@
+{
+  "//": "Merge into ~/.claude/settings.json (user scope: the kit is installed per user, not per project). At session start, reports a newer Socrask release to the agent, which proposes the update and waits for consent. Checks the network at most once a day; silent when current or offline. Resolves the kit through the installed spec-driven-dev skill link.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "k=$(readlink -f \"$HOME/.claude/skills/spec-driven-dev\" 2>/dev/null) && python3 \"$k/../../tools/update-check.py\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

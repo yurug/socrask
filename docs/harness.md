@@ -30,6 +30,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `tools/alignment-check.py` | unresolved declared human checkpoints and stale diff bounds; does not authenticate human evidence |
 | `tools/enroll-shared-repo.sh` | tracked/foreign artifact replacement and predictable enrollment conflicts |
 | `tools/guard-kit-artifacts.sh` | enrolled personal paths in the index; limited force-add convenience hook |
+| `tools/update-check.py` | lifecycle helper: tells the agent at session start that a newer kit release exists; never updates |
 | `tools/inject-profile.sh` | lifecycle helper: injects only the explicitly enrolled personal profile |
 | `tools/outcome-check.py` | incomplete/stale user outcomes, missing cases, erased first-attempt failures, mismatched release/contract and measured regressions |
 | `tools/project-check.py`, `tools/project_history.py` | orphaned commitments, unsupported closure and, with a fixed Git base, removed or rewritten committed feedback history |
