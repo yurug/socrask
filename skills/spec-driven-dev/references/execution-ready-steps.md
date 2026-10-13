@@ -33,6 +33,9 @@ Acceptance:
 - P7: `dune test -- -only P7` passes
 Out of scope: retries (step 3), auth refresh
 Hand off: if pagination is not cursor-based, stop and return the failure report
+Proof: preserves `kb/models/sync.md#I2` (the cursor never moves backwards)
+  Argument: induction on pulls; each pull sets the cursor to max(old, last item)
+  Refinement: `Sync.t.cursor` is the model cursor; `Sync.pull` is `pull`
 ```
 
 | Field | Execution-tier rule |
@@ -42,8 +45,9 @@ Hand off: if pagination is not cursor-based, stop and return the failure report
 | Acceptance | one item per criterion, each with the exact command that checks it |
 | Out of scope | what it must not touch, so it does not "helpfully" widen the change |
 | Hand off | the condition under which it stops instead of deciding |
+| Proof | a cited model invariant, the argument and the refinement map; see [proof-ready design](proof-ready-design.md) |
 
-Judgment steps need only Tier and Acceptance. An execution step must not contain
+Judgment steps need only Tier, Acceptance and Proof. An execution step must not contain
 open-choice wording such as "choose", "decide", "TBD", "as needed" or "etc." in
 any field except Out of scope, Hand off and Biggest unknown. Those three fields
 exist to name choices.

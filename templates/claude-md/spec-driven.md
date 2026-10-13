@@ -38,6 +38,8 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    A launched session is pending, not complete. Only actual human evidence or
    explicit degraded authorization settles a required checkpoint. Questions never
    automatically demote knowledge; persistent personal models require owner opt-in.
+7. **Keep the design proof-ready.** Before changing behavior, know the argument: which
+   `kb/models/` invariant the change preserves, and why. Write it in the step's `Proof:`.
 
 ## Before you start: size it, and after it fails: route it
 

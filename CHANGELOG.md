@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.7.0 — 2026-10-13
+
+- The design stays proof-ready without a proof assistant. At any time, someone can
+  start a Rocq or Lean proof of the underlying model, and the code maps onto it.
+- Each stateful subsystem gets a model in `kb/models/`: state, operations,
+  invariants `I<n>`, a refinement map and proof notes. The new template is
+  `templates/kb/models/_TEMPLATE-MODEL.md`.
+- Every plan step carries a `Proof:` sketch. An execution step cites an existing
+  model invariant and gives an `Argument:` and a `Refinement:`. A step with no
+  behavior change writes `Proof: none: <reason>`. `plan-check.py` checks this shape.
+- Design rules keep code close to the model: a pure core, explicit state, total
+  functions and one entry point per operation. Breaking the refinement map needs an ADR.
+- Each cited invariant gets a property-based test named by its ID. An agent stops
+  and fixes the sketch when the code needs an argument the sketch does not give.
+- A sketch is not a proof. The script checks that the sketch exists and cites a real
+  invariant. It does not check the argument.
+
+Compatibility: existing plans fail `plan-check.py` until every step has a `Proof:`
+field. Projects without models start with `Proof: none: <reason>` on each step,
+then add models one subsystem at a time.
+
 ## 0.6.0 — 2026-10-13
 
 - Human-facing artifacts now follow a writing standard: the rules of ASD-STE100,

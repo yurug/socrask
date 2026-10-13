@@ -47,7 +47,7 @@ them, and pays a context cost for every hop. Design the KB to fit that consumer.
 ### Step 2a: Create the directory structure
 
 ```bash
-mkdir -p kb/indexes kb/domain kb/spec kb/properties \
+mkdir -p kb/indexes kb/domain kb/spec kb/models kb/properties \
          kb/architecture/decisions kb/external \
          kb/conventions kb/runbooks kb/reports
 ```
@@ -64,6 +64,9 @@ mkdir -p kb/indexes kb/domain kb/spec kb/properties \
    - `config-and-formats.md` — config schema, file formats with examples
    - `error-taxonomy.md` — every error type, when it occurs, user message
    - `INDEX.md` — routing table for spec files
+   - **`kb/models/`** — one proof-ready model per stateful subsystem: state, operations,
+     invariants `I<n>`, refinement map. Start from `templates/kb/models/_TEMPLATE-MODEL.md`;
+     read [proof-ready design](proof-ready-design.md).
 4. **`kb/properties/`** — split into:
    - `functional.md` — P1, P2, ... invariants (ID, name, statement, violation example, WHY)
    - `non-functional.md` — NF1, NF2, ... measurable criteria

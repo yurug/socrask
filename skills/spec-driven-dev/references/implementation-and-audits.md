@@ -98,6 +98,9 @@ observed user outcome described in `docs/outcome-quality.md`.
 - Read `kb/INDEX.md` -> follow `kb/indexes/by-task.md#implement`
 - Read `kb/external/` for SDK behavior constraints
 - Identify relevant properties from `kb/properties/`
+- Read the step's `Proof:` sketch and the cited `kb/models/` file. Keep the design rules
+  of [proof-ready design](proof-ready-design.md). If the code needs an argument the sketch
+  does not give, stop and fix the sketch and the model, in the same commit as the code.
 - Evaluate the ambiguities and uncertainties of the implementation task, refine the task expectations if any.
 - **Identify the riskiest piece of THIS step** — the one sub-task whose failure would
   invalidate the rest of the step (an unknown SDK behavior, an unproven algorithm, a
@@ -129,6 +132,8 @@ observed user outcome described in `docs/outcome-quality.md`.
 - Unit tests (mocked deps), integration tests, edge-case tests (T-entries), error-path tests
 - Property-based and fuzzing-based tests for critical invariants (randomized inputs)
 - Test names start with property reference: `"P4: roundtrip preserves fields"`
+- Each invariant the step's proof sketch cites gets a property-based test named by its ID:
+  `"I2: cursor never decreases"`
 - At least one test per function
 - Mutation testing to improve quality of tests
 

@@ -19,10 +19,14 @@ Acceptance:
 - P7: `dune test -- -only P7` passes
 Out of scope: retries; we decide them in step 3.
 Hand off: if pagination needs a choice the KB does not settle, stop and report.
+Proof: preserves `kb/models/sync.md#I2` (the cursor never moves backwards).
+  Argument: induction on pulls; each pull sets the cursor to max(old, last item).
+  Refinement: `Sync.t.cursor` is the model cursor; `Sync.pull` is `pull`.
 """
 
 JUDGMENT = """## Step 2: Design retry policy
 Tier: judgment
+Proof: establishes a new invariant I3 on retry counts.
 Acceptance:
 - `dune test -- -only P9` passes
 """
@@ -33,6 +37,9 @@ class PlanCheckTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.plan = Path(self.temp.name) / "plan.md"
+        models = Path(self.temp.name) / "kb" / "models"
+        models.mkdir(parents=True)
+        (models / "sync.md").write_text("## Invariants\n- **I2**: the cursor never decreases.\n")
 
     def run_check(self, text, code=0):
         self.plan.write_text("# Plan\n\n" + text)
@@ -94,6 +101,29 @@ class PlanCheckTests(unittest.TestCase):
 
     def test_open_choice_is_allowed_in_judgment_step(self):
         self.run_check(JUDGMENT.replace("Acceptance:", "Choose a backoff curve.\nAcceptance:"))
+
+    def test_every_step_needs_a_proof(self):
+        out = self.run_check(JUDGMENT.replace("Proof: establishes a new invariant I3 on retry counts.\n", ""), code=1)
+        self.assertIn("E-field: step 2 has no Proof", out)
+
+    def test_proof_none_needs_a_reason(self):
+        text = JUDGMENT.replace("establishes a new invariant I3 on retry counts.", "none")
+        self.assertIn("E-proof: step 2 says `Proof: none`", self.run_check(text, code=1))
+        self.run_check(text.replace("Proof: none", "Proof: none: documentation only, no behavior"))
+
+    def test_execution_proof_must_cite_an_existing_invariant(self):
+        out = self.run_check(READY.replace("sync.md#I2", "sync.md#I9"), code=1)
+        self.assertIn("cites I9, which `kb/models/sync.md` does not declare", out)
+        out = self.run_check(READY.replace("kb/models/sync.md", "kb/models/gone.md"), code=1)
+        self.assertIn("`kb/models/gone.md`, which does not exist", out)
+        out = self.run_check(READY.replace("`kb/models/sync.md#I2`", "the cursor invariant"), code=1)
+        self.assertIn("cites no `kb/models/<file>.md#I<n>`", out)
+
+    def test_execution_proof_needs_argument_and_refinement(self):
+        out = self.run_check(READY.replace("  Argument:", "  Because:"), code=1)
+        self.assertIn("has no Argument:", out)
+        out = self.run_check(READY.replace("  Refinement:", "  Mapping:"), code=1)
+        self.assertIn("has no Refinement:", out)
 
     def test_more_than_four_steps_warns(self):
         steps = "".join(JUDGMENT.replace("Step 2", f"Step {n}") for n in range(1, 6))

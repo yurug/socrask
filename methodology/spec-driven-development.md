@@ -134,6 +134,12 @@ public APIs, multi-week slices), run a second premortem on the plan itself befor
 showing it to the user — Phase 0.5 stress-tested the idea, this one stress-tests the
 implementation strategy.
 
+The design stays proof-ready even when nobody runs a proof assistant. Each stateful
+subsystem has an abstract model in `kb/models/`: state, operations, invariants and a map
+from code to model. Each step carries a proof sketch: the invariant it preserves, the
+argument and the refinement map. At any time, someone can start a mechanized proof from
+the model. A pure core, explicit state and total functions keep the code close to it.
+
 Each step declares its tier. An execution-tier step leaves the cheaper model nothing to
 decide: files, interfaces, one checking command per acceptance criterion, scope and a
 hand-off condition are all in the plan. `plan-check.py` checks that shape, and a

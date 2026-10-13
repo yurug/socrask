@@ -21,8 +21,11 @@ Checks (E = error, W = warning):
     E-missing     the plan file does not exist
     E-no-steps    no `## Step <n>` heading
     E-tier        a step without `Tier: execution` or `Tier: judgment`
-    E-field       a step without Acceptance, or an execution step without
-                  Files, Interfaces, Out of scope or Hand off
+    E-field       a step without Acceptance or Proof, or an execution step
+                  without Files, Interfaces, Out of scope or Hand off
+    E-proof       an execution step whose Proof cites no existing
+                  `kb/models/<file>.md#I<n>` invariant, or has no Argument or
+                  Refinement; `Proof: none: <reason>` needs a reason
     E-command     an Acceptance item (or the whole field) with no `command`
                   in backticks, so nothing says how the criterion is checked
     E-files       an execution step whose Files field names no `path`
@@ -31,10 +34,10 @@ Checks (E = error, W = warning):
                   Hand off, where naming a choice is the point
     W-steps       more than 4 steps: the slice is probably too large
 
-What this does NOT check: that the settled choices are right, that a command
-actually tests its criterion, or that the execution model can do this class
-of task. The execution-tier simulation pass is what finds the questions a
-well-formed step still leaves open.
+What this does NOT check: that the proof argument holds, that the settled
+choices are right, that a command actually tests its criterion, or that the
+execution model can do this class of task. The execution-tier simulation pass
+is what finds the questions a well-formed step still leaves open.
 """
 
 import argparse
@@ -53,6 +56,7 @@ FIELDS = {
     "acceptance": "acceptance",
     "out of scope": "out-of-scope",
     "hand off": "hand-off",
+    "proof": "proof",
     "handoff": "hand-off",
 }
 EXECUTION_FIELDS = ["files", "interfaces", "out-of-scope", "hand-off"]
@@ -63,6 +67,8 @@ OPEN_CHOICE_RE = re.compile(
     r"\b(TBD|TODO|FIXME|decide|choose|pick|figure out|as needed|if needed|"
     r"as appropriate|somehow|etc\.?|or similar|some kind of)\b", re.IGNORECASE)
 CODE_RE = re.compile(r"`[^`]+`")
+INVARIANT_RE = re.compile(r"`?(kb/models/[\w./-]+\.md)#(I\d+)`?")
+NONE_RE = re.compile(r"^none:\s*(\S.*)", re.IGNORECASE | re.DOTALL)
 
 
 def parse_steps(text):
@@ -101,7 +107,38 @@ def tier_of(fields):
     return (fields.get("tier", "").splitlines() or [""])[0].strip("`* ").lower()
 
 
-def check_step(sid, fields):
+def check_proof(sid, body, tier, roots):
+    """A proof sketch: `none: <reason>`, or (execution tier) an existing
+    invariant plus an argument and a refinement map."""
+    if not body:
+        return [f"E-field: step {sid} has no Proof"]
+    if body.lower().startswith("none"):
+        m = NONE_RE.match(body)
+        if m and len(m.group(1).split()) >= 3:
+            return []
+        return [f"E-proof: step {sid} says `Proof: none` without a reason "
+                "(`Proof: none: <reason>`)"]
+    if tier != "execution":
+        return []
+    errors = []
+    cited = INVARIANT_RE.findall(body)
+    if not cited:
+        errors.append(f"E-proof: execution step {sid} cites no `kb/models/<file>.md#I<n>`")
+    for path, inv in cited:
+        model = next((r / path for r in roots if (r / path).is_file()), None)
+        if model is None:
+            errors.append(f"E-proof: step {sid} cites `{path}`, which does not exist")
+        elif not re.search(rf"\b{inv}\b", model.read_text(encoding="utf-8")):
+            errors.append(f"E-proof: step {sid} cites {inv}, which `{path}` does not declare")
+    for label in ("argument", "refinement"):
+        if not re.search(rf"^\s*(?:\*\*)?{label}(?:\*\*)?\s*:", body,
+                         re.IGNORECASE | re.MULTILINE):
+            errors.append(f"E-proof: execution step {sid} has no {label.capitalize()}: "
+                          "in its Proof")
+    return errors
+
+
+def check_step(sid, fields, roots):
     errors = []
     tier = tier_of(fields)
     if tier not in ("execution", "judgment"):
@@ -114,6 +151,7 @@ def check_step(sid, fields):
             if not CODE_RE.search(item):
                 errors.append(f"E-command: step {sid} acceptance `{item.strip()}` "
                               "names no command in backticks")
+    errors.extend(check_proof(sid, fields.get("proof", ""), tier, roots))
     if tier != "execution":
         return errors
     for name in EXECUTION_FIELDS:
@@ -145,9 +183,11 @@ def main():
         print(f"{plan}: E-no-steps: no `## Step <n>: <title>` heading")
         return 1
 
+    # The plan normally sits in kb/, and model paths are written from the repo root.
+    roots = (plan.parent.parent, plan.parent, Path("."))
     errors, warnings = [], []
     for sid, fields in steps:
-        errors.extend(check_step(sid, fields))
+        errors.extend(check_step(sid, fields, roots))
     if len(steps) > 4:
         warnings.append(f"W-steps: {len(steps)} steps; more than 4 means the slice is "
                         "probably too large")

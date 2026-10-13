@@ -319,6 +319,8 @@ Create `kb/plan.md` — incremental implementation plan:
   criteria. An `execution` step settles every choice in the plan, using the format in
   [references/execution-ready-steps.md](references/execution-ready-steps.md); read it
   before writing the plan. `python3 tools/plan-check.py kb/plan.md` must exit 0.
+- **Every step carries a proof sketch** (`Proof:`): the model invariant it preserves, the
+  argument and the refinement map. Read [references/proof-ready-design.md](references/proof-ready-design.md).
 - Each step must produce observable progress (new command, new behavior)
 - For each step, name the **single biggest unknown** ("what if X doesn't work?") in the
   step's acceptance criteria. Phase 4 will prove that piece works first.
