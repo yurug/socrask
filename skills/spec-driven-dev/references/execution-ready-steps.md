@@ -47,7 +47,8 @@ Proof: preserves `kb/models/sync.md#I2` (the cursor never moves backwards)
 | Hand off | the condition under which it stops instead of deciding |
 | Proof | a cited model invariant, the argument and the refinement map; see [proof-ready design](proof-ready-design.md) |
 
-Judgment steps need only Tier, Acceptance and Proof. An execution step must not contain
+Any step can add `Budget: ~200k tokens`. It is optional; `task-meter.py` compares
+it with the measured total. Judgment steps need only Tier, Acceptance and Proof. An execution step must not contain
 open-choice wording such as "choose", "decide", "TBD", "as needed" or "etc." in
 any field except Out of scope, Hand off and Biggest unknown. Those three fields
 exist to name choices.

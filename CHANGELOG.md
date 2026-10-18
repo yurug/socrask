@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.9.0 — 2026-10-18
+
+- Tokens and time are now measured per task. `tools/task-meter.py start` and
+  `stop` mark a ledger task. The meter adds up the token usage that Claude Code
+  or Codex recorded between the marks, subagents included.
+- It reads only usage numbers and timestamps, never message content. Results go
+  to `kb/work/meter.jsonl`, committed with the task.
+- `task-meter.py report` shows per task: tokens by class, active and wall-clock
+  time, and budget against actual. From the ledger, it adds the first result,
+  failed observations and time to acceptance.
+- A task over twice the median of its tier is an outlier. `report --check` fails
+  until the outlier has a retrospective: its cause and one harness or KB fix.
+- Plan steps can carry an optional `Budget:` field. `plan-check.py` checks its format.
+- There is no token budget gate, because a gate rewards skipping verification.
+  The meter does not price tokens or tell useful tokens from wasted ones.
+
+Compatibility: opt in per project by copying `tools/task-meter.py` into `tools/`.
+Existing plans pass unchanged. Without a session ID (Codex), concurrent agents
+need separate worktrees.
+
 ## 0.8.0 — 2026-10-13
 
 - Agents now learn about new kit releases. `tools/update-check.py` runs from a

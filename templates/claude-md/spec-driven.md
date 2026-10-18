@@ -40,6 +40,8 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    automatically demote knowledge; persistent personal models require owner opt-in.
 7. **Keep the design proof-ready.** Before changing behavior, know the argument: which
    `kb/models/` invariant the change preserves, and why. Write it in the step's `Proof:`.
+8. **Meter every task.** `tools/task-meter.py start|stop <task>` around the work; an
+   outlier over twice its tier median gets a retrospective with one harness or KB fix.
 
 ## Before you start: size it, and after it fails: route it
 

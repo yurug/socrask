@@ -48,7 +48,8 @@ unfamiliar load-bearing concept, or decision whose meaning needs explanation.
 A Slice on familiar ground may mark it `not-required` with a concrete reason.
 Full work normally requires Inbrief. Backbrief is required for every non-Direct
 change. A Direct change records why both are unnecessary and still receives a
-short result summary. Reassess the tier if scope grows.
+short result summary. Reassess the tier if scope grows. Meter each task with
+`tools/task-meter.py start|stop` and report tokens beside quality; see [delivery metrics](../../docs/delivery-metrics.md).
 
 Run the checker at start and finish. `required` and `pending` are unfinished;
 `human-complete` cites actual human event evidence for the checkpoint;

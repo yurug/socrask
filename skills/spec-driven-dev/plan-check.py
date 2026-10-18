@@ -32,6 +32,9 @@ Checks (E = error, W = warning):
     E-open-choice an execution step that still says TBD/TODO/decide/choose/
                   pick/figure out/as needed/... outside Out of scope and
                   Hand off, where naming a choice is the point
+    E-budget      an optional Budget field that is not a token count
+                  (`Budget: ~200k tokens`, `1.5M`); task-meter.py compares it
+                  with the measured total
     W-steps       more than 4 steps: the slice is probably too large
 
 What this does NOT check: that the proof argument holds, that the settled
@@ -57,6 +60,7 @@ FIELDS = {
     "out of scope": "out-of-scope",
     "hand off": "hand-off",
     "proof": "proof",
+    "budget": "budget",
     "handoff": "hand-off",
 }
 EXECUTION_FIELDS = ["files", "interfaces", "out-of-scope", "hand-off"]
@@ -68,6 +72,7 @@ OPEN_CHOICE_RE = re.compile(
     r"as appropriate|somehow|etc\.?|or similar|some kind of)\b", re.IGNORECASE)
 CODE_RE = re.compile(r"`[^`]+`")
 INVARIANT_RE = re.compile(r"`?(kb/models/[\w./-]+\.md)#(I\d+)`?")
+BUDGET_RE = re.compile(r"^~?\s*\d+(?:\.\d+)?\s*[kKmM]?\s*(?:tokens?)?$")
 NONE_RE = re.compile(r"^none:\s*(\S.*)", re.IGNORECASE | re.DOTALL)
 
 
@@ -152,6 +157,9 @@ def check_step(sid, fields, roots):
                 errors.append(f"E-command: step {sid} acceptance `{item.strip()}` "
                               "names no command in backticks")
     errors.extend(check_proof(sid, fields.get("proof", ""), tier, roots))
+    budget = fields.get("budget")
+    if budget is not None and not BUDGET_RE.match(budget.splitlines()[0].strip() if budget else ""):
+        errors.append(f"E-budget: step {sid} budget `{budget}` is not a token count like 200k")
     if tier != "execution":
         return errors
     for name in EXECUTION_FIELDS:
