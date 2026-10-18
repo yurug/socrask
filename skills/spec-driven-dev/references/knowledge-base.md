@@ -98,7 +98,10 @@ mkdir -p kb/indexes kb/domain kb/spec kb/models kb/properties \
    `templates/kb/properties/functional.md`, which carries the vocabulary and a worked entry.
    Reach for `none:` last — most unchecked properties are properties whose thirty-line
    checker nobody has written yet.
-5. **`kb/architecture/overview.md`** — module structure, DI pattern, dependency graph, error hierarchy
+5. **`kb/architecture/overview.md`** — module structure, DI pattern, dependency graph, error hierarchy;
+   per component: interface, hidden decision, owned state, authority. Then
+   **`kb/architecture/critical-core.md`** — critical outputs and their kernels
+   ([component design](component-design.md)); `core-check.py` checks it
 6. **`kb/architecture/decisions/`** — at least 2 ADRs for significant design choices
    - Format: Context, Decision, Consequences, What this means for implementers,
      What this does not cover (adjacent decisions not made here; what breaks if the context changes)

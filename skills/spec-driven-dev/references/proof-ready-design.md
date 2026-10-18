@@ -25,7 +25,8 @@ restating it.
 
 ## Design rules
 
-These rules keep the gap between code and model small:
+These rules keep the gap between code and model small. The broader component rules
+are in [component design](component-design.md).
 
 1. Keep a pure core. Effects (I/O, clocks, randomness, network) stay at the edges
    and pass their results into the core as values.

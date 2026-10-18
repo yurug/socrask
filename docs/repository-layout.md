@@ -13,6 +13,7 @@ skills/                Claude Code skills, one directory per skill (<name>/SKILL
                          assumption-check.py         Phase 1 exit gate
                          plan-check.py               Phase 3 step-readiness gate
                          ste-check.py                writing standard for human-facing prose
+                         core-check.py               de Bruijn kernel declarations
                          kb-lint-forebrief.py        verbatim-rationale check
                          fixtures/kb-lint/           fixtures for the enforcement channels
                          fixtures/forebrief-lint/    fixtures for the verbatim rule
@@ -20,6 +21,7 @@ skills/                Claude Code skills, one directory per skill (<name>/SKILL
                          test-ratchet.sh             runs the ratchet suite
                          test-plan-check.sh          runs the plan-check suite
                          test-ste-check.sh           runs the ste-check suite
+                         test-core-check.sh          runs the core-check suite
                          test-kb-lint-forebrief.sh   runs the forebrief fixture suite
   forebrief/           Skill and public wire references for forebrief decision sessions
 sync-skills.sh         Installs/checks selected skill links for Claude and/or Codex

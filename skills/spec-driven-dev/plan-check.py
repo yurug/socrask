@@ -32,6 +32,9 @@ Checks (E = error, W = warning):
     E-open-choice an execution step that still says TBD/TODO/decide/choose/
                   pick/figure out/as needed/... outside Out of scope and
                   Hand off, where naming a choice is the point
+    E-kernel      an execution step whose Files include a de Bruijn kernel file
+                  declared in kb/architecture/critical-core.md (needs
+                  core-check.py beside this script)
     E-budget      an optional Budget field that is not a token count
                   (`Budget: ~200k tokens`, `1.5M`); task-meter.py compares it
                   with the measured total
@@ -44,6 +47,7 @@ is what finds the questions a well-formed step still leaves open.
 """
 
 import argparse
+import importlib.util
 from pathlib import Path
 import re
 import sys
@@ -107,6 +111,19 @@ def acceptance_items(body):
     return items or [body]
 
 
+def kernel_files(roots):
+    """Kernel checker paths, parsed by core-check.py so the format lives in one place."""
+    module = Path(__file__).with_name("core-check.py")
+    decl = next((r / "kb/architecture/critical-core.md" for r in roots
+                 if (r / "kb/architecture/critical-core.md").is_file()), None)
+    if decl is None or not module.is_file():
+        return set()
+    spec = importlib.util.spec_from_file_location("core_check", module)
+    core = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(core)
+    return core.kernel_files(decl)
+
+
 def tier_of(fields):
     # Only the label's own line: prose after it belongs to the step, not the tier.
     return (fields.get("tier", "").splitlines() or [""])[0].strip("`* ").lower()
@@ -143,7 +160,7 @@ def check_proof(sid, body, tier, roots):
     return errors
 
 
-def check_step(sid, fields, roots):
+def check_step(sid, fields, roots, kernel=frozenset()):
     errors = []
     tier = tier_of(fields)
     if tier not in ("execution", "judgment"):
@@ -165,6 +182,9 @@ def check_step(sid, fields, roots):
     for name in EXECUTION_FIELDS:
         if not fields.get(name):
             errors.append(f"E-field: execution step {sid} has no {name}")
+    for path in sorted(set(CODE_RE.findall(fields.get("files", ""))) & {f"`{k}`" for k in kernel}):
+        errors.append(f"E-kernel: execution step {sid} touches kernel file {path}; "
+                      "kernel changes run on the judgment tier")
     if fields.get("files") and not CODE_RE.search(fields["files"]):
         errors.append(f"E-files: execution step {sid} names no `path` under Files")
     for name, body in fields.items():
@@ -193,9 +213,10 @@ def main():
 
     # The plan normally sits in kb/, and model paths are written from the repo root.
     roots = (plan.parent.parent, plan.parent, Path("."))
+    kernel = kernel_files(roots)
     errors, warnings = [], []
     for sid, fields in steps:
-        errors.extend(check_step(sid, fields, roots))
+        errors.extend(check_step(sid, fields, roots, kernel))
     if len(steps) > 4:
         warnings.append(f"W-steps: {len(steps)} steps; more than 4 means the slice is "
                         "probably too large")

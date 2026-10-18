@@ -129,7 +129,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.9.0** — tokens and time are measured per task, next to quality, and outliers get a retrospective. The methodology is still evolving, but every deterministic
+**v0.10.0** — ten component design principles, with a checked de Bruijn kernel for each critical output. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

@@ -130,6 +130,16 @@ class PlanCheckTests(unittest.TestCase):
         self.run_check(READY + "Budget: 1.5M\n")
         self.assertIn("E-budget: step 1", self.run_check(READY + "Budget: a lot\n", code=1))
 
+    def test_execution_step_cannot_touch_a_kernel_file(self):
+        arch = Path(self.temp.name) / "kb" / "architecture"
+        arch.mkdir()
+        (arch / "critical-core.md").write_text(
+            "| Output | Checker | Budget | Spec |\n|---|---|---|---|\n"
+            "| cursor | `src/sync.ml` | 100 | `kb/models/sync.md` |\n")
+        out = self.run_check(READY, code=1)
+        self.assertIn("E-kernel: execution step 1 touches kernel file `src/sync.ml`", out)
+        self.run_check(READY.replace("Tier: execution", "Tier: judgment"))
+
     def test_more_than_four_steps_warns(self):
         steps = "".join(JUDGMENT.replace("Step 2", f"Step {n}") for n in range(1, 6))
         self.assertIn("W-steps: 5 steps", self.run_check(steps))

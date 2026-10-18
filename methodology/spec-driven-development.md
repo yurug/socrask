@@ -140,6 +140,12 @@ from code to model. Each step carries a proof sketch: the invariant it preserves
 argument and the refinement map. At any time, someone can start a mechanized proof from
 the model. A pure core, explicit state and total functions keep the code close to it.
 
+Components follow ten design principles: general and composable, DRY, information hiding,
+a de Bruijn kernel for each critical output, minimal and segmented state, illegal states
+unrepresentable, least authority, determinism and idempotence, versioned data, and
+observability. The kernel principle shapes the architecture: a large producer may be
+heuristic, because a small, specified checker decides before any critical effect.
+
 Each step declares its tier. An execution-tier step leaves the cheaper model nothing to
 decide: files, interfaces, one checking command per acceptance criterion, scope and a
 hand-off condition are all in the plan. `plan-check.py` checks that shape, and a

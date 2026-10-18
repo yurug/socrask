@@ -122,6 +122,9 @@ observed user outcome described in `docs/outcome-quality.md`.
 - Every algorithm step: WHAT comment
 - Every magic value: explained
 - DI everywhere, no `any`, functions < 30 lines, files < 200 lines
+- Follow [component design](component-design.md): general and composable, DRY, information
+  hiding, de Bruijn kernels, minimal state, precise types, least authority, determinism,
+  versioned data, structured logs
 - **Use explanation length as a cohesion signal.** Explain each changed module's purpose in
   one sentence without joining independent responsibilities with “and”. If that requires
   multiple unrelated clauses, split the module or record the invariant that makes those
@@ -173,6 +176,7 @@ reviews when authorized and useful; seven parallel agents are not a quality crit
    direct approach, and can each changed component's purpose be explained without joining
    independent responsibilities with “and”?
 7. **Provability**: is there a property from `kb/properties/` that explains why this change is correct?
+8. **Component design**: the review questions in [component design](component-design.md#review-questions).
 
 **Auditors have a stopping rule.** Flag what affects correctness or a stated
 requirement; stay quiet about the rest. An auditor that comments on everything

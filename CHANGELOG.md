@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.10.0 — 2026-10-18
+
+- Ten component design principles, in
+  `skills/spec-driven-dev/references/component-design.md`:
+  1. general and composable components, extracted at the second real use;
+  2. don't repeat yourself;
+  3. information hiding behind interfaces;
+  4. a de Bruijn kernel for each critical output;
+  5. minimal, segmented state, and destructive operations only with a reason;
+  6. illegal states unrepresentable: parse at the boundary, then trust the type;
+  7. least authority;
+  8. determinism and idempotence;
+  9. versioned data formats with migrations;
+  10. structured logs at component boundaries.
+- The architecture overview lists, per component: interface, hidden decision,
+  owned state and authority. `kb/architecture/critical-core.md` declares each kernel.
+- New `core-check.py`: it fails a kernel whose checker files or specification are
+  missing, or whose checker exceeds its line budget.
+- `plan-check.py` now refuses an execution-tier step that touches a kernel file.
+- The Phase 5 review adds one question per principle. Most principles depend on
+  the language, so the review checks them, not a script.
+
+Compatibility: projects copy `core-check.py` beside `plan-check.py` in `tools/`.
+Projects without `critical-core.md` pass `plan-check.py` unchanged.
+
 ## 0.9.0 — 2026-10-18
 
 - Tokens and time are now measured per task. `tools/task-meter.py start` and

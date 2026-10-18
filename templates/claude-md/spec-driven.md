@@ -42,6 +42,8 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    `kb/models/` invariant the change preserves, and why. Write it in the step's `Proof:`.
 8. **Meter every task.** `tools/task-meter.py start|stop <task>` around the work; an
    outlier over twice its tier median gets a retrospective with one harness or KB fix.
+9. **Design components by the kit's component rules**: hide decisions, keep state minimal,
+   route every critical output through its small kernel (`kb/architecture/critical-core.md`).
 
 ## Before you start: size it, and after it fails: route it
 

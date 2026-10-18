@@ -15,7 +15,8 @@ listed here, so the page cannot silently fall behind the machinery.
 | `skills/spec-driven-dev/kb-lint.py` | a KB that drifts: broken links, missing frontmatter, oversized files, missing indexes, dishonest `last-updated`, and a property that names nothing to enforce it |
 | `skills/spec-driven-dev/kb-lint-forebrief.py` | a folded decision whose rationale is not the human's own words, and a questions file competing with the decision log |
 | `skills/spec-driven-dev/assumption-check.py` | leaving Phase 1 with an open assumption (`--exit`), and a settled assumption that cites no decision or names a KB file that does not exist |
-| `skills/spec-driven-dev/plan-check.py` | a plan step without a tier, a proof sketch or a checking command per acceptance criterion; an execution step whose sketch cites no existing model invariant; and an execution-tier step that lacks files, interfaces, scope or hand-off, or still leaves a choice open |
+| `skills/spec-driven-dev/plan-check.py` | an execution step that touches a kernel file; a plan step without a tier, a proof sketch or a checking command per acceptance criterion; an execution step whose sketch cites no existing model invariant; and an execution-tier step that lacks files, interfaces, scope or hand-off, or still leaves a choice open |
+| `skills/spec-driven-dev/core-check.py` | a declared de Bruijn kernel whose checker files or specification are missing, or whose checker exceeds its line budget |
 | `skills/spec-driven-dev/ste-check.py` | a human-facing sentence over the length limit, or a word the glossary rejects; warns on hedges and the passive voice |
 | `skills/spec-driven-dev/ratchet.py` | a set of passing obligations that shrinks without a stated reason |
 | `skills/spec-driven-dev/resolve-engineering-tool.sh` | an unknown tool name or a false “installed” result when no executable exists in PATH, npm/user bins, or the development checkout |
