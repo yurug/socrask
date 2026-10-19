@@ -76,7 +76,7 @@ Step 2d of the skill specifies —
 2. the SessionStart hook from templates/settings/kb-sessionstart.settings.json
    merged into .claude/settings.json, so kb/INDEX.md is injected into every
    future session;
-3. kb-lint.py, ratchet.py, assumption-check.py, plan-check.py, ste-check.py and core-check.py
+3. kb-lint.py, ratchet.py, assumption-check.py, plan-check.py, ste-check.py, core-check.py and log-check.py
    copied from the skill directory, plus tools/task-meter.py and tools/roadmap-check.py from the kit into tools/ and wired into pre-commit and CI, errors
    failing the build (assumption-check without `--exit` there: open rows are
    normal mid-Phase 1; plan-check once kb/plan.md exists);

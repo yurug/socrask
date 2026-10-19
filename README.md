@@ -129,7 +129,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.11.0** — complex projects get a roadmap the engineer approves: milestones, parallel schedule and execution risks. The methodology is still evolving, but every deterministic
+**v0.12.0** — observability by design: event conventions, defects diagnosed from events, no secrets in logs. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

@@ -31,6 +31,7 @@ component is also the easiest one to state a model for.
    The kernel is small, deterministic and independent of the producer. It has a
    clear specification in `kb/models/`, from which someone can rewrite it.
    It gets the strongest assurance: a proof, or property and mutation tests.
+   Each rejection emits an event: a silent kernel hides the failures that matter.
    Every change to it runs on the judgment tier, with human review.
 5. **Minimal, segmented state.** Stateless by default. Each piece of mutable
    state has one owner component, and no other component changes it. In-place
@@ -53,9 +54,12 @@ component is also the easiest one to state a model for.
    version. Each version change comes with a migration. Readers tolerate fields
    they do not know. Decide a data shape as an ADR before code writes it.
 10. **Observable by design.** Log structured events at component boundaries:
-    the operation, an input identifier, the result. A failure in production can
-    then be traced to its operation and input without reading the code first.
-    Never log secrets or personal data.
+    the operation, a correlation ID, an input identifier, the result. A failure
+    in production can then be traced to its operation and input without reading
+    the code first. `kb/conventions/observability.md` fixes the format, the
+    boundary events and the metrics of critical outputs (start from
+    `templates/kb/conventions/observability.md`). Never log secrets or personal
+    data; `log-check.py` refuses a log call that names a secret-like value.
 
 ## Where the decisions live
 

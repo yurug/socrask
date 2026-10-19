@@ -76,22 +76,9 @@ Cost is measured per accepted task, including repair and review, not per token a
 | **Judgment** | strongest available; inherit the session model | premortems, question generation, spec/properties/ADR authoring, planning, plan simulation, adversarial verification of findings, escalation target for stuck loops |
 | **Execution** | a model already validated for this bounded task class | routine implementation, mechanical transformations, KB navigation checks |
 
-Rules:
-
-1. Phases 0–3 run in the main session — run the skill itself on the judgment tier.
-2. Select a supported execution model explicitly when the host exposes that choice;
-   `sonnet` is the Claude example, not a portable model name. Judgment tasks inherit
-   the session model. If routing is unavailable, state that once and use the host default.
-3. **Establish a capable reference before optimizing cost.** Use judgment capability
-   for unfamiliar integration, acceptance design and consequential repairs, even with
-   a written spec. A weaker model's failure does not prove the spec is wrong. Execution
-   agents get at most two unsuccessful iterations before a structured handoff; repeated
-   failures require a changed hypothesis. Preserve the shared seven-iteration ceiling.
-4. **Test KB navigation with the agents that consume it.** Keep that diagnostic
-   separate from product acceptance. For product agents, record the effective model
-   of every decision-making helper, not just the model selected in the chat UI.
-5. Machine checks (kb-lint, type checker, linter, tests) cost zero model tokens — run
-   them before every model-based pass, at any tier.
+Apply the tiers by [references/model-routing.md](references/model-routing.md): Phases 0–3
+on the judgment tier, a capable reference before cost optimization, two failed execution
+attempts before handoff, machine checks before every model pass.
 
 ## User outcome quality
 
@@ -156,7 +143,9 @@ at Phase 4. Before anything is repaired, it must arrive with two things, and
 both become spec:
 
 1. **A reproduction** — the failing input, as a test that fails now. That test
-   is the acceptance criterion.
+   is the acceptance criterion. Start from the events (`kb/conventions/observability.md`)
+   and cite those that locate the defect before reading code. If none do, the fix also
+   adds the missing event, and the test asserts that it is emitted.
 2. **The behaviours that must not change while it is fixed** — named as existing
    property IDs. That list is what the ratchet holds during the repair.
 

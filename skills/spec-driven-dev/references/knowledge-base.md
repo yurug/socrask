@@ -118,7 +118,8 @@ mkdir -p kb/indexes kb/domain kb/spec kb/models kb/properties \
      synthesis and became load-bearing while the only questions ever asked were which
      package of that engine to bundle and which of its modes to use — both presupposing
      the choice nobody made.
-8. **`kb/conventions/`** — code-style.md, error-handling.md, testing-strategy.md
+8. **`kb/conventions/`** — code-style.md, error-handling.md, testing-strategy.md,
+   observability.md (event format, boundary events, metrics; from the template)
 9. **`kb/runbooks/audit-checklist.md`** — structured quality checklist
 10. **`kb/indexes/by-task.md`** — for each task type (implement, audit, debug, test): ordered file list + "key questions this answers"
 11. **`kb/INDEX.md`** — LAST (needs to reference everything):

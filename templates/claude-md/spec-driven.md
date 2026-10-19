@@ -38,14 +38,10 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    A launched session is pending, not complete. Only actual human evidence or
    explicit degraded authorization settles a required checkpoint. Questions never
    automatically demote knowledge; persistent personal models require owner opt-in.
-7. **Keep the design proof-ready.** Before changing behavior, know the argument: which
-   `kb/models/` invariant the change preserves, and why. Write it in the step's `Proof:`.
-8. **Meter every task.** `tools/task-meter.py start|stop <task>` around the work; an
-   outlier over twice its tier median gets a retrospective with one harness or KB fix.
-9. **Design components by the kit's component rules**: hide decisions, keep state minimal,
-   route every critical output through its small kernel (`kb/architecture/critical-core.md`).
-10. **Complex project: roadmap first.** The engineer approves milestones, schedule and
-   execution risks before work starts; `tools/roadmap-check.py` gates it.
+7. **Kit gates.** Before changing behavior, know which `kb/models/` invariant it preserves
+   (the step's `Proof:`). Follow the kit's component rules; route critical outputs through
+   their kernel. Meter each task (`tools/task-meter.py`). A complex project needs an
+   engineer-approved roadmap first (`tools/roadmap-check.py`).
 
 ## Before you start: size it, and after it fails: route it
 

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.12.0 — 2026-10-19
+
+- Observability gets a place in the KB: `kb/conventions/observability.md`, from a new
+  template. It fixes the event format with a correlation ID, the boundary events of
+  each component, and the metrics of critical outputs.
+- The production-defect path starts from the events. The agent cites the events that
+  locate the defect before it reads code. If none do, the fix adds the missing event,
+  and its regression test asserts that the event is emitted.
+- Each rejection by a de Bruijn kernel emits an event.
+- New `log-check.py`: it fails a log call that names a secret-like value, in any of
+  the common languages. A false positive needs a suppression comment with a reason.
+  The kit runs it on its own code.
+- `SKILL.md` moves its model routing rules to `references/model-routing.md`, and the
+  CLAUDE.md template merges the kit gates into one item, to stay within budget.
+- `log-check.py` does not see a secret held in a neutrally named variable, or
+  personal data. Whether events are emitted at run time needs a test.
+
+Compatibility: projects copy `log-check.py` into `tools/` and run it in CI, with
+`--exclude` for test files that hold secrets on purpose.
+
 ## 0.11.0 — 2026-10-19
 
 - Complex projects get a roadmap before work starts. It applies to Full work, or to a

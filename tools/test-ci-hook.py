@@ -34,6 +34,7 @@ class HookEnvironment(unittest.TestCase):
                      'tools/harness-inventory.sh': '#!/bin/sh\nexit 0\n',
                      'CHANGELOG.md': '## 0.0.0\n\n- Fixture.\n',
                      'skills/spec-driven-dev/ste-check.py': '',
+                     'skills/spec-driven-dev/log-check.py': '',
                      'skills/probe/test-child.sh': '''#!/bin/sh
 set -eu
 mkdir child
