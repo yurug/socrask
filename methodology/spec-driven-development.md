@@ -127,6 +127,11 @@ Maintain an accountable project/plan/task ledger alongside the narrative plan, f
 owners, next actions, review dates, dependencies, WIP and evidence-backed closure in CI.
 Repeated complaints reopen the same task; imported claims remain explicitly unverified.
 
+A project with more than one slice first gets a roadmap: milestones that are accepted
+outcomes, a schedule of parallel waves around the critical path, and execution risks,
+each retired by an early spike. The engineer approves it before work starts, and again
+whenever it changes.
+
 Incremental steps, each traceable to properties and acceptance criteria. 3-4 steps max,
 ordered by risk: the first step is a vertical slice through the riskiest path, not the
 easiest happy path. For plans with high cost-of-being-wrong (irreversible data shapes,

@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.11.0 — 2026-10-19
+
+- Complex projects get a roadmap before work starts. It applies to Full work, or to a
+  project that needs more than one slice. The procedure is in
+  `skills/spec-driven-dev/references/roadmap.md`.
+- The roadmap has milestones that are accepted outcomes with acceptance cases.
+  It has a schedule of parallel waves around the critical path, weighted by
+  `estimate_hours`. It lists execution risks, each with the spike that retires it.
+- The data lives in the ledger, on the project. The tables in `kb/roadmap.md` are
+  generated from it, so they cannot drift from the ledger.
+- The engineer approves the roadmap through a forebrief card. The approval records
+  the digest of the roadmap the engineer saw. Any change to the roadmap needs a
+  new approval.
+- New `tools/roadmap-check.py`: it fails on started work without a current approval.
+  It also fails on blocked work scheduled before its spike, dependency cycles,
+  milestones without acceptance cases and stale tables.
+- It does not check that estimates are right or that the risk list is complete.
+
+Compatibility: projects without a `roadmap` entry pass unchanged. Projects copy
+`tools/roadmap-check.py` and run it in CI.
+
 ## 0.10.0 — 2026-10-18
 
 - Ten component design principles, in

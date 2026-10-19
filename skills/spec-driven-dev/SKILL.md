@@ -295,6 +295,9 @@ snapshot-only receipt is not evidence of retained history. Imported uncertainty
 stays visible; code completion never closes product acceptance. Review blocked,
 overdue and unverified work each session.
 
+**Roadmap first for Full work or more than one slice:** read [references/roadmap.md](references/roadmap.md).
+The engineer approves milestones, schedule and execution risks; `tools/roadmap-check.py` gates it.
+
 Create `kb/plan.md` — incremental implementation plan:
 - 3-4 implementation steps maximum (not counting quality audit). If you need more, the slice
   is too large — close this invocation after one slice and re-run the skill for the next.

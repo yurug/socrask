@@ -44,6 +44,8 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    outlier over twice its tier median gets a retrospective with one harness or KB fix.
 9. **Design components by the kit's component rules**: hide decisions, keep state minimal,
    route every critical output through its small kernel (`kb/architecture/critical-core.md`).
+10. **Complex project: roadmap first.** The engineer approves milestones, schedule and
+   execution risks before work starts; `tools/roadmap-check.py` gates it.
 
 ## Before you start: size it, and after it fails: route it
 
