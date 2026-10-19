@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.13.0 — 2026-10-19
+
+- Agents on different machines or under different engineers can now work on one
+  project. New `tools/team-work.py` keeps a claim registry in the Git remote, as
+  the ref `refs/socrask/registry`. It needs no server and works with any forge.
+- Each registry update is a commit with the previous state as parent. A concurrent
+  update fails as a non-fast-forward push and retries, so two claims never overlap.
+  The commit history is the audit log.
+- Claims carry a lease of four hours by default. An expired lease frees the paths,
+  and `takeover` with a reason transfers the task on the record.
+- A handoff across machines cites a pull request and CI `success` on the exact commit.
+  `integrated` closure needs that commit merged into the default branch.
+- Each engineer decides for their own area. `CODEOWNERS` entries for other people
+  become a `consult` list; decisions there go to them through forebrief.
+- A claim is refused when the agent's kit revision differs from `kb/work/kit-revision`.
+- Local coordination is unchanged and nests inside: `agent-work.py claim --team-task T`
+  refuses a local claim outside the team claim.
+- It does not authenticate engineers beyond Git push access or correct clock skew.
+
+Compatibility: `agent-work.py` works as before without `--team-task`. Teams follow
+`docs/team-collaboration.md` to set up CI, branch protection and union merges.
+
 ## 0.12.0 — 2026-10-19
 
 - Observability gets a place in the KB: `kb/conventions/observability.md`, from a new

@@ -28,6 +28,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `skills/primitives/visual-stop-check.sh` | a session that ends with an artifact and no visual — asks once, and a stated reason closes it (a gate, not a verdict) |
 | `tools/ci-local.sh` | nothing itself — it is the runner that gives all of the above one exit code |
 
+| `tools/team-work.py` | overlapping claims across machines or engineers, takeover of a live lease, a cross-machine handoff without CI success on the commit, integrated closure of an unmerged commit, a kit revision other than the project pin |
 | `tools/agent-work.py` | overlapping worktree claims, resource contention, stale handoffs and unaligned integration closure |
 | `tools/alignment-check.py` | unresolved declared human checkpoints and stale diff bounds; does not authenticate human evidence |
 | `tools/enroll-shared-repo.sh` | tracked/foreign artifact replacement and predictable enrollment conflicts |

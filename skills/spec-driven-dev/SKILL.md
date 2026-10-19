@@ -51,6 +51,8 @@ change. A Direct change records why both are unnecessary and still receives a
 short result summary. Reassess the tier if scope grows. Meter each task with
 `tools/task-meter.py start|stop` and report tokens beside quality; see [delivery metrics](../../docs/delivery-metrics.md).
 
+Across machines or engineers, claim through [team collaboration](../../docs/team-collaboration.md).
+
 Run the checker at start and finish. `required` and `pending` are unfinished;
 `human-complete` cites actual human event evidence for the checkpoint;
 `degraded-authorized` cites explicit human authorization to use a limited or

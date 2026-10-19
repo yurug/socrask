@@ -7,7 +7,9 @@ perform read-only reviews without a writing claim. They never answer as the huma
 
 The supplied `tools/agent-work.py` is a POSIX/Python 3 CLI for agents sharing the
 **same local Git common directory**, including linked worktrees. Independent
-clones, different hosts and network filesystems are not coordinated. The protocol
+clones, different hosts and network filesystems are not coordinated here; use
+[team collaboration](team-collaboration.md) for those, with local claims nested
+inside a team claim (`claim --team-task`). The protocol
 is agent-neutral; automated Claude session hooks remain a separate integration.
 
 ## Start a change

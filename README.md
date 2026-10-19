@@ -76,6 +76,10 @@ paths and shared test resources, records command results, and requires a clean t
 commit for handoff. Inbrief and Backbrief have explicit coordinator checkpoints;
 a worker finishing does not claim the human understood the combined change.
 
+Across machines or engineers, `tools/team-work.py` adds a shared claim registry in the
+Git remote, leases, and CI-backed handoffs; local coordination nests inside it. See
+[team collaboration](docs/team-collaboration.md).
+
 Start with [the concurrent-agent walkthrough](docs/concurrent-agents.md) and
 [human checkpoint policy](docs/alignment.md). For personal tooling in a shared
 repository, read [safe enrollment](docs/shared-repositories.md).
@@ -129,7 +133,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.12.0** — observability by design: event conventions, defects diagnosed from events, no secrets in logs. The methodology is still evolving, but every deterministic
+**v0.13.0** — agents on different machines or under different engineers share a claim registry in the Git remote. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

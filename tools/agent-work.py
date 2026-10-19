@@ -106,6 +106,22 @@ def alignment(record, stage, base, head=None, work_id=None, tier=None):
     return data
 
 
+def team_scope(task_id, paths):
+    """Local claims nest inside one engineer's cross-machine claim (team-work.py)."""
+    subprocess.run(['git', 'fetch', '-q', 'origin', '+refs/socrask/registry:refs/socrask/registry-remote'],
+                   capture_output=True)
+    try:
+        registry = json.loads(git('show', 'refs/socrask/registry-remote:registry.json'))
+    except subprocess.CalledProcessError:
+        raise ValueError('no team registry; run team-work.py claim first')
+    team = registry['tasks'].get(task_id)
+    if not team or team['status'] not in ('active', 'ready'):
+        raise ValueError(f'team task {task_id} is not active')
+    outside = [p for p in paths if not any(p == t or p.startswith(t + '/') for t in team['paths'])]
+    if outside:
+        raise ValueError(f'paths outside team claim {task_id}: ' + ', '.join(outside))
+
+
 def parser():
     ap = argparse.ArgumentParser(description=__doc__)
     sub = ap.add_subparsers(dest='action', required=True)
@@ -121,6 +137,7 @@ def parser():
             p.add_argument('--role', choices=['coordinator', 'worker'], default='coordinator')
             p.add_argument('--alignment')
             p.add_argument('--coordinator')
+            p.add_argument('--team-task', help='team-work.py task whose paths must contain this claim')
         if command == 'run':
             p.add_argument('--resource', action='append', default=[])
             p.add_argument('command', nargs=argparse.REMAINDER)
@@ -172,6 +189,8 @@ def main():
             if subprocess.run(['git', 'merge-base', '--is-ancestor', base, 'HEAD']).returncode:
                 raise ValueError('base must be an ancestor of HEAD')
             paths = sorted(set(normalized(p) for p in args.path))
+            if args.team_task:
+                team_scope(args.team_task, paths)
             if args.role == 'coordinator':
                 if not args.alignment:
                     raise ValueError('coordinator requires --alignment; see docs/alignment.md')

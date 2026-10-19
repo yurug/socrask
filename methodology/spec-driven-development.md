@@ -108,6 +108,9 @@ pending; an explicitly authorized fallback records its limitations.
 See [the checkpoint contract](../docs/alignment.md) and
 [concurrent worktrees](../docs/concurrent-agents.md). The coordinator owns the sessions;
 workers return tested commits and findings rather than opening competing conversations.
+Across machines or engineers, claims go to a registry in the Git remote, handoffs cite CI on
+the exact commit, and each engineer decides for their own area
+([team collaboration](../docs/team-collaboration.md)).
 
 ### Phase 1: Ambiguity Resolution
 Generate questions, propose defaults, iterate with the human. The failure mode is asking
