@@ -121,7 +121,9 @@ observed user outcome described in `docs/outcome-quality.md`.
 - Every conditional whose why is not obvious from the surrounding code: WHY comment
 - Every algorithm step: WHAT comment
 - Every magic value: explained
-- DI everywhere, no `any`, functions < 30 lines, files < 200 lines
+- DI everywhere, no `any`. Size is a review trigger, not a limit: a file over ~400 lines or a
+  function over ~50 lines states in review why it is still one concept (a parser, a state
+  machine, a test table can be). The cohesion test below decides
 - Follow [component design](component-design.md): general and composable, DRY, information
   hiding, de Bruijn kernels, minimal state, precise types, least authority, determinism,
   versioned data, structured logs

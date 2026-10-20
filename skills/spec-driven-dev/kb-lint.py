@@ -26,7 +26,7 @@ Checks (E = error, W = warning):
     E-dup-id        duplicate `id` across the KB
     E-link          markdown/backtick link to a KB .md path that does not exist
     E-id-ref        depends-on/refines/related names an id that no file declares
-    E-length        file exceeds max lines (default 200; override with
+    W-length        file exceeds max lines (default 200; override with
                     `lint-max-lines: N` in frontmatter, which documents the
                     exception where reviewers will see it)
     E-index         directory holding 2+ md files has no INDEX.md
@@ -498,9 +498,11 @@ def main():
         max_lines = int(fm.get("lint-max-lines", DEFAULT_MAX_LINES))
         n = text.count("\n") + 1
         if n > max_lines:
-            errors.append((rel, f"E-length: {n} lines > {max_lines} "
-                                "(split the file, or document the exception "
-                                "with `lint-max-lines: N`)"))
+            # A warning, not an error: size costs agent context, but a long file
+            # that is still one idea must not block the build.
+            warnings.append((rel, f"W-length: {n} lines > {max_lines} "
+                                  "(split the file, or document the exception "
+                                  "with `lint-max-lines: N`)"))
 
         if not args.no_git and lu:
             commit, dirty = git_dates(kb, rel)

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.14.0 — 2026-10-20
+
+- Code size is now a review trigger, not a limit. The rule "files under 200 lines,
+  functions under 30" goes. A file over about 400 lines, or a function over about 50,
+  states in review why it is still one concept. The cohesion test decides.
+- KB files keep a 200-line budget, because agents load them whole. `kb-lint` now warns
+  (`W-length`) instead of failing the build. `lint-max-lines: N` still documents a
+  deliberate exception.
+- The audit checklist template follows the same rule.
+- The concurrency test of `team-work.py` closes its pipes, which removes the
+  `ResourceWarning` noise in CI.
+
+Compatibility: no project fails where it passed before. A KB file over its budget
+now passes with a warning.
+
 ## 0.13.0 — 2026-10-19
 
 - Agents on different machines or under different engineers can now work on one

@@ -81,8 +81,8 @@ class TeamWorkTests(unittest.TestCase):
                  "--criteria", "tests pass", "--path", f"src/r{round_}"],
                 cwd=clone, env=ENV, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                 for who, clone in (("alice", self.alice), ("bob", self.bob))]
-            codes = [p.wait(timeout=60) for p in procs]
-            self.assertEqual(sorted(codes), [0, 2], [p.stdout.read() for p in procs])
+            outputs = [p.communicate(timeout=60)[0] for p in procs]
+            self.assertEqual(sorted(p.returncode for p in procs), [0, 2], outputs)
         self.assertEqual(len(self.registry(self.alice)["tasks"]), 3)
 
     def test_local_claim_must_stay_inside_the_team_claim(self):

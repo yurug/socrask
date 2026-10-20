@@ -133,7 +133,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.13.0** — agents on different machines or under different engineers share a claim registry in the Git remote. The methodology is still evolving, but every deterministic
+**v0.14.0** — size limits relaxed: code size is a review trigger, KB size a warning. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

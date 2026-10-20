@@ -21,8 +21,8 @@ Does NOT cover: how to fix findings (see conventions/ files for guidance).
 - [ ] Every source file has a module header comment
 - [ ] Every public function has complete documentation (params, returns, throws, invariant)
 - [ ] Files under ~30% comment ratio checked for missing WHYs (ratio is a smoke alarm, never a target -- no comment that restates the code)
-- [ ] No function > 30 lines
-- [ ] No file > 200 lines
+- [ ] Each function over ~50 lines and file over ~400 lines states why it is one concept
+- [ ] Each changed component's purpose fits one sentence without "and"
 - [ ] No `any` types (use `unknown` and narrow)
 - [ ] Dependency injection everywhere (interfaces, not implementations)
 - [ ] No circular imports

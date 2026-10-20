@@ -26,6 +26,12 @@ for dir in fixtures/kb-lint/pass-*; do
     echo "$out" | sed 's/^/       /'
     status=1
   fi
+  # Size costs agent context, so an over-long file is said out loud, not failed.
+  if [ "$name" = "pass-long-warns" ] && ! echo "$out" | grep -q "W-length"; then
+    echo "FAIL $name -- expected a W-length warning, got none:"
+    echo "$out" | sed 's/^/       /'
+    status=1
+  fi
   # The strongest channels pass, and a proof with no stated boundary still warns.
   if [ "$name" = "pass-structural-proof" ] && ! echo "$out" | grep -q "W-trust"; then
     echo "FAIL $name -- expected a W-trust warning on the boundary-less proof:"

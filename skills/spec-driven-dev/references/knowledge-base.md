@@ -41,8 +41,10 @@ them, and pays a context cost for every hop. Design the KB to fit that consumer.
   gloss per entry. Folders are invisible to retrieval; indexes are the navigation layer.
 - **Header-aligned content** — H2/H3 sections bound one self-contained idea so chunkers split on
   semantic boundaries, not mid-argument.
-- **Each file < 200 lines** — split when longer. Sinks (raw source data) are linked from the graph
-  but only loaded when the agent needs to dive in.
+- **Each file < 200 lines, as a rule** — agents load files whole, so split when longer;
+  `kb-lint` warns (`W-length`) and `lint-max-lines: N` documents a deliberate exception.
+  Sinks (raw source data) are linked from the graph but only loaded when the agent needs
+  to dive in.
 
 ### Step 2a: Create the directory structure
 
