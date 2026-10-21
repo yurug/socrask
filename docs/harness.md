@@ -34,6 +34,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `tools/enroll-shared-repo.sh` | tracked/foreign artifact replacement and predictable enrollment conflicts |
 | `tools/guard-kit-artifacts.sh` | enrolled personal paths in the index; limited force-add convenience hook |
 | `tools/roadmap-check.py` | started work without a current engineer approval of the roadmap, blocked work scheduled before its spike, dependency cycles, milestones without acceptance cases, stale generated tables |
+| `tools/source-check.py` | an external source without owner, tool or cadence, an internal source feeding a public KB, a sync without its digest, a digest item whose disposition does not resolve; warns when a source is overdue |
 | `tools/task-meter.py` | an outlier task (over twice its tier median in tokens) without a retrospective (`report --check`); never fails on cost alone |
 | `tools/update-check.py` | lifecycle helper: tells the agent at session start that a newer kit release exists; never updates |
 | `tools/inject-profile.sh` | lifecycle helper: injects only the explicitly enrolled personal profile |

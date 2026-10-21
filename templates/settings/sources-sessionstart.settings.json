@@ -1,0 +1,16 @@
+{
+  "//": "Merge into the project's .claude/settings.json. At session start, lists external sources (Slack, feedback, issues) whose sync is overdue, so the agent syncs them first. Silent when none is due or the project declares no sources.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/source-check.py\" --due --sources \"$CLAUDE_PROJECT_DIR/kb/work/sources.json\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

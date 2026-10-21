@@ -159,6 +159,11 @@ decide: files, interfaces, one checking command per acceptance criterion, scope 
 hand-off condition are all in the plan. `plan-check.py` checks that shape, and a
 simulation pass on the execution model must raise no questions.
 
+External sources (a team channel, user feedback, an issue tracker) are declared with an
+owner and a cadence. Each sync gives every new item a disposition: ledger feedback, an
+unverified KB fact, a question for a human, or noise. A discussion never changes the
+spec on its own.
+
 ### Phase 4: Implementation (Ralph Loops)
 For each step: identify the riskiest sub-task and attack it first, implement with literate
 style, write comprehensive tests, validate, fix, repeat. The loop converges because each

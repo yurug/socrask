@@ -352,6 +352,9 @@ standards, auditor fan-out, adversarial verification, and stopping rules.
 
 ## Phase 6: KB Sync
 
+External sources (Slack, user feedback, issues) feed the KB on a cadence: follow
+[references/external-sources.md](references/external-sources.md); `tools/source-check.py` gates it.
+
 After implementation, verify the KB still matches reality. Run `python3 tools/kb-lint.py kb`
 first — its W-stale warnings (file committed after its `last-updated`) are the mechanical
 drift signal; fix every error and triage every warning. Then check what the machine cannot:

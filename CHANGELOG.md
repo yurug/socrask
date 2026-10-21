@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.15.0 — 2026-10-21
+
+- External sources now feed the KB on a cadence: a Slack channel, user feedback,
+  Linear or GitHub issues. `kb/work/sources.json` declares each source with an owner,
+  the tool that reads it, a cadence, a visibility and a cursor.
+- Each sync gives every new item one disposition. It becomes ledger feedback, a fact
+  recorded in the KB as `imported-unverified`, a forebrief question, or noise. A
+  discussion never changes spec, properties or decisions on its own.
+- Each sync writes a digest in `kb/sources/digests/`, one row per item. The KB never
+  copies a message verbatim and names no person.
+- An internal source cannot feed a KB that the project declares public.
+- A new session-start hook lists overdue sources, so the agent syncs them first.
+  A project can also schedule an unattended sync that opens a pull request.
+- New `tools/source-check.py` enforces this in CI and warns on overdue sources.
+  It does not check that items were understood correctly.
+
+Compatibility: projects without `kb/work/sources.json` pass unchanged. The procedure
+is `skills/spec-driven-dev/references/external-sources.md`.
+
 ## 0.14.0 — 2026-10-20
 
 - Code size is now a review trigger, not a limit. The rule "files under 200 lines,
