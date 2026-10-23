@@ -14,7 +14,7 @@ set -eu
 cd "$(git rev-parse --show-toplevel)"
 
 INVENTORY=docs/harness.md
-MAX_LINES=60
+MAX_LINES=70
 status=0
 
 [ -f "$INVENTORY" ] || { echo "harness-inventory: $INVENTORY is missing"; exit 1; }

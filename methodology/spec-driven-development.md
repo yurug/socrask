@@ -148,6 +148,11 @@ from code to model. Each step carries a proof sketch: the invariant it preserves
 argument and the refinement map. At any time, someone can start a mechanized proof from
 the model. A pure core, explicit state and total functions keep the code close to it.
 
+Agents optimize locally, so the structure erodes unless someone questions it. An
+architecture review, with the engineer, checks at each milestone, each Full change and
+each erosion signal from Git history whether the structure still serves the drivers:
+the requirements that shaped it. It ends in an ADR or a justified "keep".
+
 Components follow ten design principles: general and composable, DRY, information hiding,
 a de Bruijn kernel for each critical output, minimal and segmented state, illegal states
 unrepresentable, least authority, determinism and idempotence, versioned data, and

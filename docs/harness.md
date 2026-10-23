@@ -34,6 +34,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `tools/enroll-shared-repo.sh` | tracked/foreign artifact replacement and predictable enrollment conflicts |
 | `tools/guard-kit-artifacts.sh` | enrolled personal paths in the index; limited force-add convenience hook |
 | `tools/roadmap-check.py` | started work without a current engineer approval of the roadmap, blocked work scheduled before its spike, dependency cycles, milestones without acceptance cases, stale generated tables |
+| `tools/arch-check.py` | hidden coupling or scattered changes since the last architecture review, a completed milestone without a review, a missing component map or driver table, an incomplete review record |
 | `tools/source-check.py` | an external source without owner, tool or cadence, an internal source feeding a public KB, a sync without its digest, a digest item whose disposition does not resolve; warns when a source is overdue |
 | `tools/task-meter.py` | an outlier task (over twice its tier median in tokens) without a retrospective (`report --check`); never fails on cost alone |
 | `tools/update-check.py` | lifecycle helper: tells the agent at session start that a newer kit release exists; never updates |
@@ -48,7 +49,7 @@ listed here, so the page cannot silently fall behind the machinery.
 |---|---|
 | `skills/forebrief/SKILL.md` ≤ 120 lines | forebrief's NF1; the file lives here, so the check does too |
 | `templates/claude-md/spec-driven.md` ≤ 120 lines | persistent context carries routing and policy, not a duplicate of the methodology and KB |
-| this page ≤ 60 lines | the KISS bound, applied to the thing that lists the checks |
+| this page ≤ 70 lines | the KISS bound, applied to the thing that lists the checks |
 
 ## What the harness does not check
 

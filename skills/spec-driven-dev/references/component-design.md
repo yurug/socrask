@@ -63,7 +63,8 @@ component is also the easiest one to state a model for.
 
 ## Where the decisions live
 
-`kb/architecture/overview.md` lists, for each component:
+`kb/architecture/overview.md` lists, in its component table (format in
+[architecture review](architecture-review.md)), for each component:
 - its public interface and the design decision it hides;
 - the mutable state it owns, if any;
 - the authority it receives.

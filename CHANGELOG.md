@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.16.0 — 2026-10-23
+
+- Agents optimize locally, so the structure erodes unless someone questions it. An
+  architecture review now asks whether the structure still fits the system and the
+  product. The procedure is `skills/spec-driven-dev/references/architecture-review.md`.
+- `kb/architecture/drivers.md` lists the requirements that shape the structure, and
+  the choice that serves each. The overview gets a component table: paths, declared
+  dependencies, hidden decision, owned state and authority.
+- New `tools/arch-check.py` reads Git history against the component map. It reports
+  hidden coupling, scattered changes, hotspots and unmapped files.
+- A review is due at each milestone, at each Full change, and when a signal fires.
+  It runs with the engineer and ends in an ADR or a "keep" justified per driver.
+  `arch-check.py` fails while a due milestone or signal review is missing.
+- The harness inventory budget rises from 60 to 70 lines.
+- The check finds symptoms; it cannot judge the structure. It cannot detect the
+  tier of a change, so the Full-tier review stays a procedure.
+
+Compatibility: projects without `arch-check.py` pass unchanged. A project that adopts
+it first adds the component table and the drivers file.
+
 ## 0.15.0 — 2026-10-21
 
 - External sources now feed the KB on a cadence: a Slack channel, user feedback,
