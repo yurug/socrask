@@ -76,9 +76,10 @@ Step 2d of the skill specifies —
 2. the SessionStart hook from templates/settings/kb-sessionstart.settings.json
    merged into .claude/settings.json, so kb/INDEX.md is injected into every
    future session;
-3. kb-lint.py, ratchet.py, assumption-check.py, plan-check.py, ste-check.py, core-check.py and log-check.py
-   copied from the skill directory, plus tools/task-meter.py, tools/roadmap-check.py, tools/source-check.py and tools/arch-check.py
-   from the kit into tools/ and wired into pre-commit and CI, errors
+3. the essential kit tools vendored with provenance (docs/adoption-levels.md):
+   `python3 "$KIT/tools/kit-adopt.py" vendor kb-lint.py assumption-check.py plan-check.py
+   ste-check.py ratchet.py ratchet-adapt.py alignment-check.py kit-adopt.py kit-features.json`,
+   then triggered tools as their triggers hold, all into tools/ and wired into pre-commit and CI, errors
    failing the build (assumption-check without `--exit` there: open rows are
    normal mid-Phase 1; plan-check once kb/plan.md exists);
 4. a one-line-per-check harness inventory with a fixed line budget.

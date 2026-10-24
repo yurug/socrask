@@ -1,5 +1,8 @@
 # Verify agent adoption
 
+Which features a project adopts, and how it vendors kit files, is in
+[adoption levels](adoption-levels.md). This page covers agents loading the installed kit.
+
 A published kit is not necessarily the kit an active agent loaded. Use the team's
 existing mailbox, with explicit authorization to message its participants. Preserve
 its append-only protocol and real sender identities; never write another agent's ACK.

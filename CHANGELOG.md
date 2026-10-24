@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.17.0 — 2026-10-24
+
+Found by looking at a real adopter: the ratchet could not be adopted, vendored copies
+had no contract, and each release read as "adopt everything".
+
+- Essential: the ratchet starts coarse. `ratchet.py` accepts suite-level obligations
+  `S-<name>`: weaker evidence, but a suite that passed can no longer fail or vanish
+  unnoticed. New `ratchet-adapt.py` builds results from JUnit XML, TAP or a CI step
+  receipt, never from console logs.
+- Essential: vendoring has a contract. New `tools/kit-adopt.py` copies kit files byte
+  for byte and records revision, tag and hashes in `tools/socrask.json`. Its `check`
+  refuses local edits and the pre-rename manifest `tools/agentic-dev-kit.json`.
+  `status` lists what changed upstream and which features are new; `upgrade` re-vendors.
+- Essential: features have levels. `tools/kit-features.json` marks each feature as
+  essential, triggered (with its trigger) or optional. `kb/work/adoption.json` records
+  each one as adopted, not-applicable with a reason, or deferred with a task and a
+  review date. `check` warns when a deferral passes its date.
+- The update notice now asks to adopt by level, not everything. Each changelog entry
+  names the level of what it adds.
+- `kit-adopt.py` cannot judge whether a trigger holds, and does not merge local edits.
+
+Compatibility: existing vendored copies keep working. To adopt the contract, re-vendor
+with `kit-adopt.py vendor`, move local notes from file headers into the KB, delete
+`tools/agentic-dev-kit.json`, and write `kb/work/adoption.json`.
+
 ## 0.16.0 — 2026-10-23
 
 - Agents optimize locally, so the structure erodes unless someone questions it. An

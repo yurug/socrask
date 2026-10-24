@@ -100,7 +100,9 @@ def main():
 Propose this update to the user once in this session; do not update without consent.
 Before asking, read what changed: `git -C {kit} fetch --tags {args.remote}` then
 `git -C {kit} show {latest}:CHANGELOG.md`, and summarize the entries after {current},
-especially their Compatibility notes.
+especially their Compatibility notes. In a project, adopt by level, not everything:
+`python3 {kit}/tools/kit-adopt.py status` lists what changed; adopt essential changes and
+triggered features whose trigger holds, record the rest as not-applicable.
 If the user agrees: `git -C {kit} pull --ff-only {args.remote} {latest}` (it refuses
 local changes or a diverged checkout: report that, do not force), then
 `{kit}/sync-skills.sh --check`, then re-read the skills this session uses.

@@ -93,7 +93,8 @@ missing/skipped cases and stale evidence never count as validation. Keep first a
 separate from retries. Register the gate in the real delivery command, not only a runbook.
 When the project has no adapter yet, report that gap and implement one bounded journey
 first; do not fabricate outcomes from unit-test totals. Select review dimensions by risk.
-After a kit upgrade, follow [agent adoption](../../docs/agent-adoption.md): publication,
+Adopt kit releases by level, with vendored provenance ([adoption levels](../../docs/adoption-levels.md),
+`tools/kit-adopt.py`). After a kit upgrade, follow [agent adoption](../../docs/agent-adoption.md): publication,
 installation, acknowledgement and demonstrated use are distinct states.
 
 ## Preliminary remark

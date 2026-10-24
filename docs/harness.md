@@ -19,6 +19,8 @@ listed here, so the page cannot silently fall behind the machinery.
 | `skills/spec-driven-dev/core-check.py` | a declared de Bruijn kernel whose checker files or specification are missing, or whose checker exceeds its line budget |
 | `skills/spec-driven-dev/log-check.py` | a log call that names a secret-like value (password, secret, API key, access token, credential) |
 | `skills/spec-driven-dev/ste-check.py` | a human-facing sentence over the length limit, or a word the glossary rejects; warns on hedges and the passive voice |
+| `skills/spec-driven-dev/ratchet-adapt.py` | an adapter result marked complete when the JUnit, TAP or CI-step source says the run did not finish |
+| `tools/kit-adopt.py` | a vendored kit file edited locally, the pre-rename manifest, an adoption record out of step with the pinned kit, an essential feature marked not applicable, a deferral without task or review date |
 | `skills/spec-driven-dev/ratchet.py` | a set of passing obligations that shrinks without a stated reason |
 | `skills/spec-driven-dev/resolve-engineering-tool.sh` | an unknown tool name or a false “installed” result when no executable exists in PATH, npm/user bins, or the development checkout |
 | `skills/primitives/visual-check.py` | a hand-rolled visual with no validation marker; warns when every validated visual defaults to a diagram |

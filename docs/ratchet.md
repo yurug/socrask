@@ -35,6 +35,29 @@ do not transform their partial successes into complete evidence. This tool
 cannot detect an adapter that omits failures or falsely asserts completeness.
 It does not run tests or judge their quality.
 
+## Start coarse: suite-level obligations and adapters
+
+A project whose tests do not carry property IDs can still ratchet. An obligation
+can name a whole suite or CI step as `S-<slug>` (lowercase letters, digits, `.`,
+`_`, `-`). It is weaker evidence: it says the suite passed, not which property
+holds. It still refuses the regression that matters most at the start: a suite
+that passed and now fails, or silently disappears from the run.
+
+`ratchet-adapt.py` converts structured runner output, never console logs:
+
+```sh
+python3 tools/ratchet-adapt.py junit reports/*.xml > results.json   # JUnit XML
+python3 tools/ratchet-adapt.py tap out/*.tap > results.json         # TAP
+python3 tools/ratchet-adapt.py steps ci/results.json > results.json # CI step receipt
+python3 tools/ratchet.py --from-results results.json
+```
+
+A test whose name starts with a property ID reports that property; any other
+test reports its suite. Refine over time by naming tests after properties; the
+ratchet then holds both levels.
+
+## Unsupported inputs
+
 Legacy `--from-log`, regex extraction (`--pattern`), and implicit stdin log
 input are unsupported. Console output can mention passing IDs in failure
 messages, summaries, or unfinished runs. Migrate a runner's structured output

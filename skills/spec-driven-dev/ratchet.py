@@ -17,14 +17,19 @@ from contextlib import contextmanager
 
 
 def claim_id(value):
-    if not isinstance(value, str) or not re.fullmatch(r"(?:P|NF|T)-?\d+", value):
-        raise ValueError(f"invalid obligation ID: {value!r}")
-    return value.replace("-", "")
+    """P/NF/T<n> name a property; S-<slug> names a whole suite or CI step, weaker
+    evidence that lets a project ratchet before its tests carry property IDs."""
+    if isinstance(value, str):
+        if re.fullmatch(r"(?:P|NF|T)-?\d+", value):
+            return value.replace("-", "")
+        if re.fullmatch(r"S-[a-z0-9][a-z0-9._-]{0,80}", value):
+            return value
+    raise ValueError(f"invalid obligation ID: {value!r}")
 
 
 def sort_key(claim):
     m = re.fullmatch(r"([A-Z]+)(\d+)", claim)
-    return m.group(1), int(m.group(2)), claim
+    return (m.group(1), int(m.group(2)), claim) if m else ("S", 0, claim)
 
 
 def load(path):

@@ -64,8 +64,9 @@ behaviours that must not change while it is fixed (named property IDs).
 
 Skipping that decision is how the same defect class comes back next cycle.
 
-**The loop must ratchet.** After each iteration run
-`python3 tools/ratchet.py --from-results <results.json>`. It refuses a run where an obligation
+**The loop must ratchet.** After each iteration run `python3 tools/ratchet.py --from-results
+<results.json>` (`tools/ratchet-adapt.py` makes it from JUnit, TAP or a CI step receipt; suite-level
+`S-<name>` obligations are a valid start). It refuses a run where an obligation
 that passed before no longer does, and names it. An obligation may be retired only on the
 record (`--retire <ID> --reason "<why>"`). Commit `.ratchet.json`.
 
