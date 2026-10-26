@@ -142,6 +142,12 @@ observed user outcome described in `docs/outcome-quality.md`.
 - At least one test per function
 - Mutation testing to improve quality of tests
 
+**No case leak:** never make a general rule specific so that an acceptance case passes.
+A branch on the case's name, a fixture, or a value copied from its data makes the case
+pass and prove nothing. When the general rule cannot pass the case, stop and report: the
+rule or the case is wrong, and the engineer decides which. `case-leak-check.py` refuses
+production code that names a declared case; the review covers the forms it cannot see.
+
 **Validate:**
 - Type checker passes
 - All tests pass

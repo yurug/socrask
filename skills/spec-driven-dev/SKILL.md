@@ -467,14 +467,16 @@ would an unknown-unknown enter, and which auditor would catch it?
 - **Route models by demonstrated quality** — use capable judgment for uncertain integration,
   acceptance and consequential repairs. Optimize cost only after task-class validation;
   investigate model, specification, context and tool limitations as competing causes.
-- **Fix the harness, not the output** — when something is wrong, improve the spec/KB/tests, not just patch the code
+- **Fix the harness, not the output** — when something is wrong, improve the spec/KB/tests, not just patch the code.
+  Never make a general rule specific so that an acceptance case passes (`case-leak-check.py`)
 - **Enforce, don't request** — anything that has to hold gets a deterministic check, written
   when the rule is written: a test, a lint rule, a CI script, a hook. Build the tool on the
   fly — it is usually smaller than the discussion about whether to build it — and prefer a
   crude, inspectable one over none. Prose in a CLAUDE.md raises a probability; an exit code
   decides. Where no check is possible, the rule says so and says why, because an audit can
   weigh a stated reason and cannot weigh a silence.
-- **Invest in the KB** — specifications, properties, and SDK research pay off across every implementation step
+- **Invest in the KB** — specifications, properties, and SDK research pay off across every implementation step.
+  The engineer's rules about the project go to `kb/conventions/method.md`, never only to agent memory
 - **Keep the human aligned** — explain load-bearing concepts before decisions and
   the actual diff before completion. Record real human evidence or explicit
   degraded authorization; personal profiling is optional.

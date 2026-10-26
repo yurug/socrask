@@ -30,8 +30,9 @@ Checks (E = error, W = warning):
                     `lint-max-lines: N` in frontmatter, which documents the
                     exception where reviewers will see it)
     E-index         directory holding 2+ md files has no INDEX.md
-    E-unenforced    a property under properties/ (P<n>/NF<n>/T<n>, written as a
-                    heading, a bullet, or a table row) that declares no
+    E-unenforced    a property under properties/ (P<n>/NF<n>/T<n>), or a project
+                    method rule in conventions/method.md (M<n>), written as a
+                    heading, a bullet, or a table row, that declares no
                     `Enforced-by:` channel — for a table, that means the table
                     has no `Enforced-by` column
     E-channel       `Enforced-by:` names a channel outside the closed set, or
@@ -88,7 +89,7 @@ TERM_DEF_RE = re.compile(r"^\s*-\s+\*\*([^*\[\]<>]+)\*\*\s*:", re.MULTILINE)
 # Real KBs write a claim in one of three shapes — a heading, a bullet, or a
 # table row — and a checker that reads only headings reports "clean" on the
 # other two, which is worse than not checking at all.
-CLAIM_ID = r"(?:P|NF|T)-?\d+"
+CLAIM_ID = r"(?:P|NF|T|M)-?\d+"
 CLAIM_HEADING_RE = re.compile(rf"^#{{2,6}}\s+\**({CLAIM_ID})\b")
 CLAIM_BULLET_RE = re.compile(rf"^(\s*)[-*]\s+\**({CLAIM_ID})\**\s*[:.—–-]?\s")
 BULLET_RE = re.compile(r"^(\s*)[-*]\s")
@@ -371,7 +372,10 @@ def check_enforcement(rel, body, fm, kb, errors, warnings):
     # Any directory named properties/, not just the KB root's: a large KB
     # nests sub-KBs (tezqed carries webapp/properties/), and a rule that only
     # looked at the top level let every nested claim through unchecked.
-    if "properties" in rel.split(os.sep)[:-1]:
+    # conventions/method.md holds the project's own method rules (M<n>), which
+    # the engineer states; a rule only an agent's memory holds binds nobody else.
+    parts = rel.split(os.sep)
+    if "properties" in parts[:-1] or parts[-2:] == ["conventions", "method.md"]:
         for claim, line, values, hint, region in find_claims(body):
             if not values:
                 errors.append((rel, f"E-unenforced: {claim} (line {line}) declares no "

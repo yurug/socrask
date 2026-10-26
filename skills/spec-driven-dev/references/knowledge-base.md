@@ -122,7 +122,8 @@ mkdir -p kb/indexes kb/domain kb/spec kb/models kb/properties \
      package of that engine to bundle and which of its modes to use — both presupposing
      the choice nobody made.
 8. **`kb/conventions/`** — code-style.md, error-handling.md, testing-strategy.md,
-   observability.md (event format, boundary events, metrics; from the template)
+   observability.md (event format, boundary events, metrics; from the template),
+   method.md (the project's own method rules, from the template)
 9. **`kb/runbooks/audit-checklist.md`** — structured quality checklist
 10. **`kb/indexes/by-task.md`** — for each task type (implement, audit, debug, test): ordered file list + "key questions this answers"
 11. **`kb/INDEX.md`** — LAST (needs to reference everything):
@@ -219,6 +220,20 @@ that fails the build: thirty lines, and the rule stops depending on anyone remem
 Do not file this as future work; the rule and its check are one change. When a rule truly
 resists checking, write the reason next to it (`none: <reason>` for a property, a line in
 the ADR otherwise) — an audit can weigh a stated reason and cannot weigh a silence.
+
+**A rule the engineer states about the project goes to the KB, not to agent memory.**
+Agent memory is per machine and per user; other agents, other engineers and other harnesses
+never read it. Memory keeps facts about the person, such as how they like to be briefed.
+A rule about the project, on code or on method, climbs this ladder, as far as it needs:
+1. A rule `M<n>` in `kb/conventions/method.md`, with `Origin:` (the engineer's words or a
+   forebrief card) and `Enforced-by:`. `kb-lint.py` fails a method rule without a channel.
+2. Its check, in the same commit, as for any rule above.
+3. A project skill (`.claude/skills/<name>/`) when the rule is a procedure that recurs,
+   such as a review step. The skill cites the rule ID; the KB stays the source.
+4. A kit proposal when the rule holds beyond this project. Keep the local rule until a kit
+   release covers it.
+`templates/settings/memory-route.settings.json` reminds the agent when it saves a project
+rule to memory.
 
 **Exit criterion:** `python3 tools/kb-lint.py kb` exits 0, and a fresh session (or subagent
 given only the project directory) demonstrably sees `kb/INDEX.md` without being asked.

@@ -89,6 +89,8 @@ The Phase 5 review asks, for each changed component:
 - Does any knowledge now live in two places?
 - Does any other component reach past this interface?
 - Does this change touch a critical output without passing through its kernel?
+- Does this change add a special case to a general rule so that an acceptance case
+  passes? Fix the general rule, or ask the engineer to change the case.
 - Does this state need to exist, and who owns it?
 - Is each destructive operation justified?
 - Can an invalid value of this type be built?

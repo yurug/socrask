@@ -1,0 +1,16 @@
+{
+  "//": "Merge into ~/.claude/settings.json (user scope: agent memory is per user). After a Write or Edit of a feedback or project memory in a project that has kb/INDEX.md, asks the agent to move the rule to kb/conventions/method.md. Never blocks. Resolves the kit through the installed spec-driven-dev skill link.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "k=$(readlink -f \"$HOME/.claude/skills/spec-driven-dev\" 2>/dev/null) && python3 \"$k/memory-route.py\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

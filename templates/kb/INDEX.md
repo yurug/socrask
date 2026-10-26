@@ -18,6 +18,7 @@ related: [by-task, glossary]
 - `GLOSSARY.md` -- canonical terms used throughout
 - `architecture/overview.md` -- system shape
 - `assumptions.md` -- choices not yet settled; an open row means ask before relying on it
+- `conventions/method.md` -- the project's own method rules (`M<n>`), stated by the engineer
 
 **Then navigate by task** -- see `indexes/by-task.md`
 

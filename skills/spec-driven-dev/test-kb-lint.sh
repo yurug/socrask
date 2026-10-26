@@ -51,6 +51,7 @@ for dir in fixtures/kb-lint/fail-*; do
     fail-noreason)        expect="E-noreason" ;;
     fail-table-no-column) expect="E-unenforced" ;;
     fail-nested-properties) expect="E-unenforced" ;;
+    fail-method-unenforced) expect="E-unenforced" ;;
     *)                 expect="" ;;
   esac
   if out=$(python3 kb-lint.py "$dir/kb" --no-git 2>&1); then

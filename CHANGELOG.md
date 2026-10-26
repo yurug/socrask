@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.19.0 — 2026-10-26
+
+Found on a real adopter. The engineer stated a method rule, and the agent saved it
+only to its own memory. Other agents and engineers never read that memory.
+
+- Essential: project rules live in the KB. The new template
+  `kb/conventions/method.md` holds the rules the engineer states about the project.
+  Each rule `M<n>` has an `Origin:` and an `Enforced-by:` line. `kb-lint.py` fails a
+  method rule without a channel, as it does for a property.
+- The `CLAUDE.md` template adds the routing rule: the engineer's rules about the
+  project go to the KB, in the same commit. Agent memory keeps only preferences about
+  the person.
+- `references/knowledge-base.md` gives the ladder for a project rule. First the KB,
+  then its check, then a project skill when the rule is a recurring procedure. Last,
+  a kit proposal when the rule holds beyond the project.
+- Optional: a new user-level hook, `memory-route.py`, runs after the agent saves a
+  feedback or project memory in a KB project. It asks the agent to move the rule to
+  the KB. It never blocks.
+- Triggered: no case leak. An agent must never make a general rule specific so that
+  an acceptance case passes. New `case-leak-check.py` refuses production code that
+  names a declared case, by ID or by fixture stem. The review asks about the forms
+  that name nothing, such as a value copied from the case's data.
+- The hook cannot see whether the agent moved the rule. `case-leak-check.py` cannot
+  see a special case that names nothing.
+
+Compatibility: existing KBs pass unchanged. A rule ID `M<n>` outside
+`kb/conventions/method.md` stays free of the new check.
+
 ## 0.18.0 — 2026-10-26
 
 A de Bruijn kernel makes a proof affordable: only the small checker must be right.

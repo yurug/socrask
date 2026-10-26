@@ -38,6 +38,9 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    A launched session is pending, not complete. Only actual human evidence or
    explicit degraded authorization settles a required checkpoint. Questions never
    automatically demote knowledge; persistent personal models require owner opt-in.
+7. **The engineer's rules about this project go to the KB, not to agent memory.** Write each
+   one as `M<n>` in `kb/conventions/method.md`, with its origin and its check, in the same
+   commit. Agent memory is per machine; it keeps only preferences about the person.
 7. **Kit gates.** Before changing behavior, know which `kb/models/` invariant it preserves
    (the step's `Proof:`). Follow the kit's component rules; route critical outputs through
    their kernel. Meter each task (`tools/task-meter.py`). A complex project needs an

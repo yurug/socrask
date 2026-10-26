@@ -12,11 +12,13 @@ listed here, so the page cannot silently fall behind the machinery.
 
 | Check | What it refuses |
 |---|---|
-| `skills/spec-driven-dev/kb-lint.py` | a KB that drifts: broken links, missing frontmatter, oversized files, missing indexes, dishonest `last-updated`, and a property that names nothing to enforce it |
+| `skills/spec-driven-dev/kb-lint.py` | a KB that drifts: broken links, missing frontmatter, oversized files, missing indexes, dishonest `last-updated`, and a property or project method rule that names nothing to enforce it |
 | `skills/spec-driven-dev/kb-lint-forebrief.py` | a folded decision whose rationale is not the human's own words, and a questions file competing with the decision log |
 | `skills/spec-driven-dev/assumption-check.py` | leaving Phase 1 with an open assumption (`--exit`), and a settled assumption that cites no decision or names a KB file that does not exist |
 | `skills/spec-driven-dev/plan-check.py` | an execution step that touches a kernel file; a plan step without a tier, a proof sketch or a checking command per acceptance criterion; an execution step whose sketch cites no existing model invariant; and an execution-tier step that lacks files, interfaces, scope or hand-off, or still leaves a choice open |
 | `skills/spec-driven-dev/core-check.py` | a declared de Bruijn kernel whose checker files or specification are missing, or whose checker exceeds its line budget; an A1 or A2 claim whose proof is missing, admits a goal, uses an untrusted axiom, or predates a change to the kernel |
+| `skills/spec-driven-dev/case-leak-check.py` | production code that names a declared acceptance case (case ID, fixture stem): a special case added so the case passes |
+| `skills/spec-driven-dev/memory-route.py` | nothing (a hook): after a feedback or project memory is saved in a KB project, asks the agent to move the rule to `kb/conventions/method.md` |
 | `skills/spec-driven-dev/log-check.py` | a log call that names a secret-like value (password, secret, API key, access token, credential) |
 | `skills/spec-driven-dev/ste-check.py` | a human-facing sentence over the length limit, or a word the glossary rejects; warns on hedges and the passive voice |
 | `skills/spec-driven-dev/ratchet-adapt.py` | an adapter result marked complete when the JUnit, TAP or CI-step source says the run did not finish |
