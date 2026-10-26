@@ -70,4 +70,5 @@ Proof: preserves `kb/models/sync.md#I2` (the cursor never moves backwards).
 A sketch is not a proof. `plan-check.py` checks that the sketch exists and cites
 a real invariant. It does not check the argument. Tests sample the invariant;
 they do not prove it. For a critical core, run the proof in an assistant, and
-state its boundary as the `Trusted:` and `Not covered:` lines.
+state its boundary as the `Trusted:` and `Not covered:` lines. When and how to
+do it: [formal assurance](formal-assurance.md).

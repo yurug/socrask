@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.18.0 — 2026-10-26
+
+A de Bruijn kernel makes a proof affordable: only the small checker must be right.
+The kit said "run the proof in an assistant" but did not say when, or how the
+proof stays true.
+
+- Triggered: formal assurance. `references/formal-assurance.md` gives each kernel a
+  level. At A0, tests check the checker. At A1, a Rocq or Lean proof covers the
+  model, and differential tests link the code to it. At A2, extraction from the
+  proof produces the checker.
+- The architecture review decides each promotion with the engineer. A candidate is
+  critical, has a decidable specification and is stable. The proof work is a roadmap
+  task on the judgment tier, beside the slices.
+- `core-check.py` reads optional `Assurance`, `Proof` and `Proved at` columns. It
+  refuses an A1 or A2 claim when a proof file or the commit does not exist. It
+  refuses the claim when the checker, model or proof changed since that commit. It
+  refuses a `.v` or `.lean` proof that admits a goal, or that declares an axiom
+  absent from the model's `Trusted:` line.
+- `core-check.py --report` lists, per kernel, the commits that touched it in a window.
+  It names a stable A0 kernel as a candidate, and does not fail.
+- The engineer reviews the statement; the proof assistant checks the proof.
+- `core-check.py` does not build the proof. CI builds it, and in Rocq compares
+  `Print Assumptions` with the `Trusted:` line. The admit scan is textual.
+
+Compatibility: a declaration without the new columns reads as A0 and passes unchanged.
+
 ## 0.17.0 — 2026-10-24
 
 Found by looking at a real adopter: the ratchet could not be adopted, vendored copies

@@ -31,6 +31,7 @@ component is also the easiest one to state a model for.
    The kernel is small, deterministic and independent of the producer. It has a
    clear specification in `kb/models/`, from which someone can rewrite it.
    It gets the strongest assurance: a proof, or property and mutation tests.
+   A stable kernel is a candidate for a proof ([formal assurance](formal-assurance.md)).
    Each rejection emits an event: a silent kernel hides the failures that matter.
    Every change to it runs on the judgment tier, with human review.
 5. **Minimal, segmented state.** Stateless by default. Each piece of mutable
@@ -77,7 +78,8 @@ python3 tools/core-check.py kb/architecture/critical-core.md
 ```
 
 It refuses a kernel whose checker files or specification do not exist, or whose
-checker files exceed the declared line budget. `plan-check.py` refuses an
+checker files exceed the declared line budget. It also refuses a formal
+assurance claim that no longer holds; `--report` lists the stable kernels. `plan-check.py` refuses an
 execution-tier step whose Files include a kernel file.
 
 ## Review questions

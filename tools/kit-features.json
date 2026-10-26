@@ -25,6 +25,8 @@
       "trigger": "Full-tier work, or a project that needs more than one slice"},
     "critical-core": {"level": "triggered", "since": "v0.10.0", "tools": ["core-check.py"],
       "trigger": "some output has a high cost of error (money, data, safety, irreversible)"},
+    "formal-assurance": {"level": "triggered", "since": "v0.18.0", "tools": ["core-check.py"],
+      "trigger": "a declared kernel is stable and a test sample does not bound its cost of error"},
     "architecture-review": {"level": "triggered", "since": "v0.16.0", "tools": ["arch-check.py"],
       "trigger": "three or more components, or a project that needs more than one slice"},
     "observability": {"level": "triggered", "since": "v0.12.0", "tools": ["log-check.py"],

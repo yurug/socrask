@@ -133,7 +133,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.17.0** — adopt by level: a suite-level ratchet with adapters, vendoring with provenance, and essential vs triggered features. The methodology is still evolving, but every deterministic
+**v0.18.0** — formal assurance levels for de Bruijn kernels: stable kernels get a proof, and the check voids a proof that predates a change. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

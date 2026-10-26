@@ -21,3 +21,7 @@ Engineer: forebrief:[card-id]
 
 ## Signals
 [Each arch-check signal and its explanation.]
+
+## Formal assurance
+[Each kernel that `core-check.py --report` names as a candidate: stay at A0, or
+promote to A1 or A2, with the roadmap task. Omit when no kernel is declared.]

@@ -34,13 +34,16 @@ Run it on the judgment tier, and consult the engineer through a forebrief card.
 1. Run `python3 tools/arch-check.py --report`. Read the signals and hotspots.
 2. Check each driver. Is it still a requirement? Does the structure still serve it?
    A new requirement from the roadmap or the external sources is a new driver.
-3. Explain each signal. A coupling is either a missing declared dependency, or a
+3. Run `python3 tools/core-check.py --report` when the project declares
+   kernels. For each candidate, decide with the engineer: stay at A0, or
+   promote by a roadmap task ([formal assurance](formal-assurance.md)).
+4. Explain each signal. A coupling is either a missing declared dependency, or a
    decision that two components share and neither hides.
-4. Decide with the engineer:
+5. Decide with the engineer:
    - **keep**: the record says, per driver, why the structure still fits;
    - **restructure**: write an ADR with the target structure, and add the
      migration to the roadmap as tasks.
-5. Write the record with `Covers:` (the HEAD you judged), `Outcome:`, the `ADR:`
+6. Write the record with `Covers:` (the HEAD you judged), `Outcome:`, the `ADR:`
    when you restructure, and `Engineer: forebrief:<card-id>`.
 
 ## What the check does not do

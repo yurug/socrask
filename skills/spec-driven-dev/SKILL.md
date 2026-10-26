@@ -318,7 +318,8 @@ Create `kb/plan.md` — incremental implementation plan:
 - **Question the structure** at each milestone, each Full change and each erosion signal:
   [references/architecture-review.md](references/architecture-review.md), gated by `tools/arch-check.py`.
 - **Design components by [references/component-design.md](references/component-design.md)**:
-  generality, DRY, hiding, a de Bruijn kernel for critical outputs, minimal state.
+  generality, DRY, hiding, a de Bruijn kernel for critical outputs, minimal state. Prove
+  stable kernels beside the slices ([references/formal-assurance.md](references/formal-assurance.md)).
 - **Every step carries a proof sketch** (`Proof:`): the model invariant it preserves, the
   argument and the refinement map. Read [references/proof-ready-design.md](references/proof-ready-design.md).
 - Each step must produce observable progress (new command, new behavior)

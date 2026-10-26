@@ -19,12 +19,16 @@ For each one, say what the error costs and why a checker can decide it.
 ## Kernels
 
 Checked by `core-check.py` (spec-driven-dev). Paths are written from the repo root.
+Assurance is A0 (tests), A1 (model proved) or A2 (checker extracted from the proof);
+A1 and A2 name the proof files and the commit at which the proof built.
 
-| Output | Checker | Budget | Spec |
-|---|---|---|---|
-| [critical output] | `[path/to/checker]` | [max lines] | `kb/models/[model].md` |
+| Output | Checker | Budget | Spec | Assurance | Proof | Proved at |
+|---|---|---|---|---|---|---|
+| [critical output] | `[path/to/checker]` | [max lines] | `kb/models/[model].md` | A0 | - | - |
 
 ## Agent notes
 > A kernel change runs on the judgment tier with human review; `plan-check.py` refuses
 > an execution step that touches a kernel file. The kernel must not depend on its
 > producer. See `references/component-design.md` in the spec-driven-dev skill.
+> A change to an A1 or A2 kernel, its model or its proof voids the claim until the
+> proof is checked again (`references/formal-assurance.md`).
