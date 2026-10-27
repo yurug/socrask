@@ -42,7 +42,7 @@ evidence events use timezone-aware timestamps.
 | Entity | Additional fields and meaning |
 |---|---|
 | Source | `path`, `id_pattern`: one regex capture group extracts the commitment IDs that must be covered. Use the original request/backlog table, not a list generated from the ledger itself. |
-| Project | `wip_limit`: maximum simultaneous active/reopened tasks across its plans. Its refs explain the intended outcome. Optional `roadmap`: milestones, risks and the engineer's approval, checked by `tools/roadmap-check.py`. |
+| Project | `wip_limit`: maximum simultaneous active/reopened tasks across its plans. Its refs explain the intended outcome. Optional `roadmap`: milestones, risks and the engineer's approval, checked by `tools/roadmap-check.py`. A completed milestone names its `architecture_review` and its `retrospective` file. |
 | Plan | `project`: owning project ID; refs point to the argued delivery sequence. |
 | Task | `plan`, `kind` (`product`, `engineering`, `process`), `depends_on`, `cases`: stable acceptance case IDs; optional `estimate_hours` (agent-hours). |
 | Feedback | `task`, `events`: retained observations `{at, result, ref}`, where result is `failed` or `accepted`. This also covers backlog commitments. |

@@ -90,6 +90,44 @@ class TaskMeterTests(unittest.TestCase):
         self.assertEqual(stop["usage"]["codex"], {"input": 100, "cache_read": 400,
                                                   "cache_write": 0, "output": 7})
 
+    def test_tool_calls_and_harness_scripts(self):
+        def turn(minutes_ago, role, block, session="s1"):
+            return json.dumps({"type": role, "timestamp": ts(minutes_ago), "sessionId": session,
+                               "cwd": "/repo", "message": {"content": [block]}})
+        lines = [turn(5, "assistant", {"type": "tool_use", "id": "a", "name": "Bash", "input": {
+                     "command": "python3 tools/kb-lint.py kb && python3 tools/task-meter.py report"}}),
+                 turn(5, "user", {"type": "tool_result", "tool_use_id": "a", "is_error": True,
+                                  "content": "Exit code 1"}),
+                 turn(4, "assistant", {"type": "tool_use", "id": "b", "name": "Bash", "input": {
+                     "command": "cd /x; sh skills/spec-driven-dev/test-ratchet.sh"}}),
+                 turn(4, "user", {"type": "tool_result", "tool_use_id": "b", "content": "ok"}),
+                 turn(3, "assistant", {"type": "tool_use", "id": "c", "name": "Read", "input": {}}),
+                 turn(3, "assistant", {"type": "tool_use", "id": "d", "name": "Read", "input": {}},
+                      session="s2")]
+        (self.claude / "proj" / "s1.jsonl").write_text("\n".join(lines) + "\n")
+        self.start_at("T-t", 10)
+        self.run_meter("stop", "T-t")
+        stop = json.loads(self.meter.read_text().splitlines()[-1])
+        self.assertEqual(stop["tools"], {"Bash": [2, 1], "Read": [1, 0]})
+        self.assertEqual(stop["checks"], {"kb-lint.py": [1, 1], "test-ratchet.sh": [1, 0]})
+        self.assertIn("3 tool calls, 1 errors; harness kb-lint.py 1/1 failed, "
+                      "test-ratchet.sh 0/1 failed", self.run_meter("report"))
+
+    def test_codex_tool_calls_fail_on_exit_code(self):
+        def item(minutes_ago, payload):
+            return json.dumps({"timestamp": ts(minutes_ago), "type": "response_item", "payload": payload})
+        (self.codex / "rollout.jsonl").write_text("\n".join([
+            json.dumps({"timestamp": ts(6), "type": "session_meta", "payload": {"cwd": "/repo"}}),
+            item(5, {"type": "custom_tool_call", "call_id": "x", "name": "exec",
+                     "input": 'tools.exec_command({cmd:"python3 tools/plan-check.py kb/plan.md"})'}),
+            item(5, {"type": "custom_tool_call_output", "call_id": "x",
+                     "output": [{"type": "input_text", "text": '{"exit_code":1}'}]})]) + "\n")
+        self.start_at("T-c", 10, session=None)
+        self.run_meter("stop", "T-c")
+        stop = json.loads(self.meter.read_text().splitlines()[-1])
+        self.assertEqual(stop["tools"], {"exec": [1, 1]})
+        self.assertEqual(stop["checks"], {"plan-check.py": [1, 1]})
+
     def test_start_stop_cli_round_trip(self):
         self.assertIn("T-3 started", self.run_meter("start", "T-3", "--tier", "direct",
                                                     "--budget", "1.5M", "--session", "zz"))

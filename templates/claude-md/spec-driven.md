@@ -44,7 +44,8 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
 7. **Kit gates.** Before changing behavior, know which `kb/models/` invariant it preserves
    (the step's `Proof:`). Follow the kit's component rules; route critical outputs through
    their kernel. Meter each task (`tools/task-meter.py`). A complex project needs an
-   engineer-approved roadmap first (`tools/roadmap-check.py`).
+   engineer-approved roadmap first (`tools/roadmap-check.py`), and a harness
+   retrospective at each milestone (`tools/retro.py`).
 
 ## Before you start: size it, and after it fails: route it
 

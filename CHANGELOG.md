@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.20.0 — 2026-10-27
+
+The harness improves only if someone looks at how it behaved. The meter measured
+tokens per task, but not the tool calls or the checks that failed, and no step
+looked at these numbers together.
+
+- Optional: `task-meter.py stop` also counts tool calls and their errors. It
+  counts the runs and failures of each harness script under `tools/` or
+  `skills/<skill>/`, in Claude Code and Codex sessions. It keeps only names and
+  counts, never arguments or output.
+- Triggered by a roadmap: a harness retrospective at each milestone. The new
+  `tools/retro.py draft <milestone> --write` writes the numbers of the milestone
+  into `kb/work/retros/`. The numbers are first-attempt acceptance, repair loops,
+  tokens per task against the previous milestone, tool errors, and the failure
+  rate of each script and gate.
+- Each finding gets a disposition: `change:`, `reject:` or `kit:`. `retro.py
+  check` fails on a completed milestone without a `retrospective` file, and on a
+  finding without a disposition.
+- `retro.py record` writes each local gate result to a journal in the Git
+  directory. Git does not version this journal. The kit's `ci-local.sh` records
+  each gate.
+- The tool does not judge a cause or a fix. It cannot tell a check that caught a
+  defect from a check that failed for nothing. Gates that run only in a remote CI
+  do not reach the journal.
+
+Compatibility: existing meter files report unchanged. A project without
+milestones in its ledger passes `retro.py check`.
+
 ## 0.19.0 — 2026-10-26
 
 Found on a real adopter. The engineer stated a method rule, and the agent saved it

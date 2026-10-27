@@ -49,7 +49,8 @@ A Slice on familiar ground may mark it `not-required` with a concrete reason.
 Full work normally requires Inbrief. Backbrief is required for every non-Direct
 change. A Direct change records why both are unnecessary and still receives a
 short result summary. Reassess the tier if scope grows. Meter each task with
-`tools/task-meter.py start|stop` and report tokens beside quality; see [delivery metrics](../../docs/delivery-metrics.md).
+`tools/task-meter.py start|stop` and report tokens beside quality. Close each milestone
+with a harness retrospective (`tools/retro.py`); see [delivery metrics](../../docs/delivery-metrics.md).
 
 Across machines or engineers, claim through [team collaboration](../../docs/team-collaboration.md).
 

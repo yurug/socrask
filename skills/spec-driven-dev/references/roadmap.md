@@ -47,7 +47,8 @@ python3 tools/roadmap-check.py --digest PR-1
    (`forebrief:<card-id>`). Without a human answer, the approval stays `pending`.
    `degraded-authorized` needs the engineer's explicit authorization.
 4. Present it again at each milestone, with the milestone's architecture review
-   (`architecture_review` on the milestone), and whenever the roadmap changes. A
+   (`architecture_review` on the milestone) and its harness retrospective
+   (`retrospective`, from `tools/retro.py`), and whenever the roadmap changes. A
    changed roadmap changes the digest, and `roadmap-check.py` then fails until
    the engineer approves the new version.
 

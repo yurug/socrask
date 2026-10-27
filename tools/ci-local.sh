@@ -20,13 +20,18 @@ for git_local_var in $(git rev-parse --local-env-vars); do
 done
 
 status=0
+# Each gate's result also goes to the local journal that tools/retro.py reads.
 run() {
   echo "== $1"
+  gate=$1
   shift
-  if "$@"; then :; else
+  started=$(date +%s)
+  if "$@"; then code=0; else
+    code=$?
     echo "-- FAILED: $*"
     status=1
   fi
+  python3 tools/retro.py record "$gate" --exit "$code" --seconds "$(($(date +%s) - started))" || :
 }
 
 # One runner discovery rule: every top-level shell skill suite and Python tool

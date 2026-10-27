@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""task-meter — tokens and time per task, next to the quality signals.
+"""task-meter — tokens, time and tool calls per task, next to the quality signals.
 
 "Cost per accepted task, including repair and review" needs a measurement.
 The agent marks each ledger task with `start` and `stop`; the meter adds up the
 token usage that the host recorded between the two marks. It reads usage
-numbers and timestamps only, never message content.
+numbers, timestamps, tool names and error flags. From a shell command it keeps
+only the name of a harness script under `tools/` or `skills/<skill>/`. It never
+reads other message content.
 
 Usage:
     task-meter.py start TASK [--tier direct|slice|full] [--budget 200k]
@@ -22,15 +24,17 @@ between the marks; without one (Codex), every message whose working directory
 is the directory where `start` ran. Each API request counts once.
 
 Report, per task: tokens by class, wall-clock and active time (gaps over five
-minutes do not count), budget against actual, and from the ledger the first-
-attempt result and the number of failed observations. A task whose total is
+minutes do not count), budget against actual, tool calls and errors, harness
+script runs and failures, and from the ledger the first-attempt result and the
+number of failed observations. A task whose total is
 over twice the median of its tier (three or more earlier tasks) is an outlier.
 
 `report --check` exits 1 when an outlier has no retrospective. It never fails
 on cost alone: a budget gate would reward skipping verification.
 
 What this does NOT do: tell useful tokens from wasted ones, separate two
-sessions working in one directory without a session ID, or price tokens.
+sessions working in one directory without a session ID, or price tokens. A
+failed command that runs two harness scripts counts a failure for both.
 """
 
 import argparse
@@ -44,6 +48,10 @@ import sys
 
 CLASSES = ("input", "cache_read", "cache_write", "output")
 IDLE_CAP = 300
+# A harness script named in a shell command. The meter tools themselves are not checks.
+SCRIPT_RE = re.compile(r"(?:^|[\s/;&|(\"'])(?:tools|skills/[\w-]+)/([\w.-]+\.(?:py|sh))\b")
+NOT_CHECKS = {"task-meter.py", "retro.py"}
+EXIT_RE = re.compile(r'"exit_code":\s*(-?\d+)')
 BUDGET_RE = re.compile(r"^~?\s*(\d+(?:\.\d+)?)\s*([kKmM]?)\s*(?:tokens?)?$")
 
 
@@ -143,6 +151,87 @@ def codex_usage(root, start, stop, cwd):
     return found
 
 
+def scripts(command):
+    return sorted({m for m in SCRIPT_RE.findall(command) if m not in NOT_CHECKS})
+
+
+def tally(calls):
+    """{tool: [calls, errors]} and {script: [runs, failures]} from (name, scripts, failed)."""
+    tools, checks = {}, {}
+    for name, names, failed in calls:
+        t = tools.setdefault(name, [0, 0])
+        t[0] += 1
+        t[1] += bool(failed)
+        for s in names:
+            c = checks.setdefault(s, [0, 0])
+            c[0] += 1
+            c[1] += bool(failed)
+    return tools, checks
+
+
+def claude_tools(root, start, stop, session, cwd):
+    """[(tool, harness scripts, failed)] from Claude Code transcripts."""
+    uses, failed = {}, set()
+    files = recent_files(root, "*/*.jsonl", start) + recent_files(root, "*/*/subagents/*.jsonl", start)
+    for path in files:
+        for line in path.open(encoding="utf-8", errors="replace"):
+            if '"tool_use"' not in line and '"tool_result"' not in line:
+                continue
+            try:
+                rec = json.loads(line)
+                at, content = parse_time(rec["timestamp"]), rec["message"]["content"]
+            except (ValueError, KeyError, TypeError):
+                continue
+            if not start <= at <= stop or not isinstance(content, list):
+                continue
+            if session and rec.get("sessionId") != session:
+                continue
+            if not session and not str(rec.get("cwd", "")).startswith(cwd):
+                continue
+            for b in content:
+                if not isinstance(b, dict):
+                    continue
+                if b.get("type") == "tool_use":
+                    command = str((b.get("input") or {}).get("command", ""))
+                    uses[b.get("id")] = (b.get("name", "unknown"), scripts(command))
+                elif b.get("type") == "tool_result" and b.get("is_error"):
+                    failed.add(b.get("tool_use_id"))
+    return [(name, names, key in failed) for key, (name, names) in uses.items()]
+
+
+def codex_tools(root, start, stop, cwd):
+    """Same shape from Codex rollouts; a call fails when an exit code is not 0."""
+    uses, failed = {}, set()
+    for path in recent_files(root, "**/*.jsonl", start):
+        session_cwd = None
+        for line in path.open(encoding="utf-8", errors="replace"):
+            if '"session_meta"' in line or '"turn_context"' in line:
+                try:
+                    session_cwd = json.loads(line)["payload"].get("cwd", session_cwd)
+                except (ValueError, KeyError, AttributeError):
+                    pass
+            if '_call' not in line or not str(session_cwd or "").startswith(cwd):
+                continue
+            try:
+                rec = json.loads(line)
+                p, at = rec["payload"], parse_time(rec["timestamp"])
+            except (ValueError, KeyError, TypeError):
+                continue
+            if not start <= at <= stop or not isinstance(p, dict):
+                continue
+            key = (path, p.get("call_id"))
+            if p.get("type") in ("function_call", "custom_tool_call"):
+                text = str(p.get("input") or p.get("arguments") or "")
+                uses[key] = (p.get("name", "unknown"), scripts(text))
+            elif p.get("type") in ("function_call_output", "custom_tool_call_output"):
+                out = p.get("output")
+                text = " ".join(str(part.get("text", "")) for part in out if isinstance(part, dict)) \
+                    if isinstance(out, list) else str(out)
+                if any(int(c) != 0 for c in EXIT_RE.findall(text)):
+                    failed.add(key)
+    return [(name, names, key in failed) for key, (name, names) in uses.items()]
+
+
 def measure(args, start_event, stop_at):
     start = parse_time(start_event["at"])
     stop = parse_time(stop_at)
@@ -155,7 +244,11 @@ def measure(args, start_event, stop_at):
         for c in CLASSES:
             totals[c] += usage[c]
     active = sum(min((b - a).total_seconds(), IDLE_CAP) for a, b in zip(times, times[1:]))
-    return {"usage": by_model, "requests": len(found),
+    calls = claude_tools(Path(args.claude_dir), start, stop, start_event.get("session"), start_event["cwd"])
+    if not start_event.get("session"):
+        calls += codex_tools(Path(args.codex_dir), start, stop, start_event["cwd"])
+    tools, checks = tally(calls)
+    return {"usage": by_model, "requests": len(found), "tools": tools, "checks": checks,
             "wall_s": int((stop - start).total_seconds()), "active_s": int(active)}
 
 
@@ -169,7 +262,7 @@ def tasks_summary(events):
     for e in events:
         t = tasks.setdefault(e["task"], {"tier": None, "budget": None, "usage": {}, "requests": 0,
                                          "wall_s": 0, "active_s": 0, "first": e["at"], "retro": None,
-                                         "spans": 0})
+                                         "spans": 0, "tools": {}, "checks": {}})
         if e["event"] == "start":
             t["tier"] = e.get("tier") or t["tier"]
             t["budget"] = e.get("budget") or t["budget"]
@@ -177,6 +270,11 @@ def tasks_summary(events):
             t["spans"] += 1
             for k in ("requests", "wall_s", "active_s"):
                 t[k] += e[k]
+            for k in ("tools", "checks"):
+                for name, (n, bad) in e.get(k, {}).items():
+                    acc = t[k].setdefault(name, [0, 0])
+                    acc[0] += n
+                    acc[1] += bad
             for model, usage in e["usage"].items():
                 totals = t["usage"].setdefault(model, dict.fromkeys(CLASSES, 0))
                 for c in CLASSES:
@@ -220,6 +318,13 @@ def report(args):
                 f"(in {human(c['input'])}, cache read {human(c['cache_read'])}, "
                 f"cache write {human(c['cache_write'])}, out {human(c['output'])}); "
                 f"active {t['active_s'] // 60} min, wall {t['wall_s'] // 60} min")
+        if t["tools"]:
+            calls = sum(n for n, _ in t["tools"].values())
+            errors = sum(bad for _, bad in t["tools"].values())
+            line += f"; {calls} tool calls, {errors} errors"
+        if t["checks"]:
+            line += "; harness " + ", ".join(f"{name} {bad}/{n} failed"
+                                             for name, (n, bad) in sorted(t["checks"].items()))
         if t["budget"]:
             line += f"; budget {human(t['budget'])} ({t['total'] / t['budget']:.1f}x)"
         if task in q:
