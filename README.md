@@ -133,7 +133,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.20.0** — telemetry on tool calls and harness checks, and a harness retrospective at each milestone. The methodology is still evolving, but every deterministic
+**v0.21.0** — code an engineer can read file by file: cohesive modules, self-explaining comments, unit tests per contract, and gardening before each change. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

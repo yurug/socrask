@@ -15,9 +15,10 @@ Software development in the age of AI agents requires four disciplines:
 Design, architecture, execution, validation, code quality, continuous delivery, formal
 methods. This hasn't changed — agents still need to produce software that meets engineering
 standards. Structure pays twice because it shapes both maintenance and the next agent's
-input. Use explanation length as a cohesion signal: a component whose purpose needs several
-independent clauses probably contains several concepts and should be split unless one
-invariant genuinely binds them.
+input. Cohesion decides module boundaries, not size: a component whose purpose needs several
+independent clauses holds several concepts, and two files a reader must open together hold
+one. Each source file explains itself to an engineer who has not read the KB. Before changing
+a file in poor shape, the agent gardens it: a behavior-preserving cleanup, in its own commit.
 
 ### 2. Harness Engineering
 An agent is a stochastic process. The harness constrains it:
@@ -65,7 +66,8 @@ The knowledge base is the foundation that every implementation step builds on. I
 navigation — precise context, few tokens, few hops:
 - **Self-sufficient files** — understand each in isolation
 - **Routing tables** (INDEX.md, by-task.md) — "given my task, what do I load?"
-- **Many small files** — agents can selectively load; can't selectively ignore
+- **Many small files** — agents can selectively load; can't selectively ignore. This holds
+  for the KB, not for code: source files follow cohesion
 - **Cross-references** (Agent notes, Related files) — guide toward files you didn't know you needed
 - **One register per file; define once** — procedure files give steps, decision files give
   rationale, never blended; terms are defined in the glossary and nowhere else

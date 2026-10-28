@@ -108,6 +108,26 @@ observed user outcome described in `docs/outcome-quality.md`.
   is what gets implemented and validated FIRST, even if it is harder or less fun than
   the surrounding scaffolding. Do not warm up on easy code while the scary part waits.
 
+**Garden before you change.** Make the change easy, then make the easy change. Before
+editing a file, read it against the code rules below: cohesion, local comprehension, the
+literate level, and the unit tests. If the file fails them in the part you are about to
+change, improve it first:
+1. If the module's contract has no unit tests, write characterization tests: they pin
+   what the code does today, so the refactoring can be checked.
+2. Refactor or rewrite without changing behavior: merge or split along the cohesion
+   tests, rewrite the header and comments so the file reads cold, rename, remove dead
+   code. All tests stay green and the ratchet holds.
+3. Commit this as its own commit (`garden: <file>: <what improved>`), before the
+   commit that changes behavior. A reviewer then reads a pure refactoring, then a
+   small change.
+
+Scope and budget: garden only the files the step touches, and only as much as the change
+needs to be clear and safe. Spend at most about as much effort as the change itself. If
+the file needs more (a redesign, a new interface, a change other modules see), do not
+start it here. Record it as a roadmap item with the finding, and tell the engineer.
+A kernel declared in `critical-core.md` is gardened only on the judgment tier, with
+human review, like any other change to it.
+
 **Implement with literate and test-driven-development style:**
 - Attack the riskiest piece identified above FIRST. The first red/green test pair must
   pin down that uncertainty (e.g. "the SDK actually paginates the way we assumed",
@@ -116,25 +136,58 @@ observed user outcome described in `docs/outcome-quality.md`.
   exactly the discovery this ordering exists to force early.
 - Start with failing tests that surface the gap and the properties to enforce, comment them with WHY,
   and commit them as a red baseline — the next (green) commit then shows exactly what made them pass.
-- File header: module purpose, spec references, key design decisions
-- Every public function: JSDoc with @param (meaning), @returns, @throws, @invariant P<N>
-- Every conditional whose why is not obvious from the surrounding code: WHY comment
-- Every algorithm step: WHAT comment
-- Every magic value: explained
-- DI everywhere, no `any`. Size is a review trigger, not a limit: a file over ~400 lines or a
-  function over ~50 lines states in review why it is still one concept (a parser, a state
-  machine, a test table can be). The cohesion test below decides
 - Follow [component design](component-design.md): general and composable, DRY, information
   hiding, de Bruijn kernels, minimal state, precise types, least authority, determinism,
-  versioned data, structured logs
-- **Use explanation length as a cohesion signal.** Explain each changed module's purpose in
-  one sentence without joining independent responsibilities with “and”. If that requires
-  multiple unrelated clauses, split the module or record the invariant that makes those
-  responsibilities one concept. Treat a failed explanation test as design feedback, not as
-  a request for a longer comment.
+  versioned data, structured logs. DI where a dependency must be replaced in a test, no `any`.
+
+**Code rules.** The reader is an engineer who opens one source file. They have not read the
+KB, the spec, the plan or this session. Write for them.
+
+1. **Cohesion decides the boundaries, not size.** Apply the split and merge tests of
+   [component design](component-design.md#the-principles). Do not create a file for a
+   type, a constant, or a helper with one user: put it beside its user. Size is a review
+   trigger in both directions. A file over ~400 lines or a function over ~50 lines states
+   why it is one concept (a parser, a state machine or a test table can be). A new file
+   under ~50 lines with one caller states which decision it hides from that caller.
+   If a module's purpose is hard to say in one sentence, change the design; do not
+   write a longer comment.
+2. **Local comprehension.** The file alone is enough to understand why it exists and how
+   it works.
+   - A KB reference is a pointer for more detail, never a replacement for the
+     explanation. Write the claim in words, then the reference:
+     `// The cursor never decreases, so a retry never emits an event twice (P4).`
+     A comment that only says `// enforces P4` or `// per ADR-007` is a defect.
+   - Use plain words, or define a project term on its first use in the file. No
+     session, plan or review labels (step numbers, slice names, finding IDs).
+   - Describe the code as it is now, not its history ("new approach", "fixed",
+     "now handles"). History goes in the commit message.
+   - At a call whose correctness depends on a property of the callee, state that
+     property at the call site. Do not write "see foo.ts".
+3. **Literate at the right level.** Explain the idea before the details, as a textbook
+   section does.
+   - The file header gives the problem the module solves, the approach (the key idea,
+     the data representation, and why it was chosen over the obvious alternative), the
+     invariants it keeps, and what it does not do. For a tricky module, add a short
+     worked example.
+   - Each public function documents its contract in the ecosystem's format: the
+     meaning of each parameter, the result, the errors, the preconditions. Write
+     invariants in words, with the property ID after them.
+   - Inside a non-trivial algorithm, comments name its phases and say why each one is
+     needed. Do not comment each line, and never write a comment that restates the
+     next line.
+   - Every non-obvious conditional gets a WHY comment. Every magic value is explained.
+   - Order the file for a reader, where the language allows it: the central type and
+     the entry point first, the helpers after.
+4. **Unit tests for each module's contract.** Each module has unit tests that call its
+   interface directly, without the rest of the system. An acceptance test or an
+   end-to-end test does not replace them. Each case of the contract has a test: each
+   kind of result, each error, each boundary value. Read together, the test file is an
+   executable description of the module. When an integration test finds a defect,
+   add a unit test in the module where the defect is.
 
 **Write comprehensive tests:**
-- Unit tests (mocked deps), integration tests, edge-case tests (T-entries), error-path tests
+- Unit tests for each changed module's contract (rule 4 above), then integration tests,
+  edge-case tests (T-entries), error-path tests
 - Property-based and fuzzing-based tests for critical invariants (randomized inputs)
 - Test names start with property reference: `"P4: roundtrip preserves fields"`
 - Each invariant the step's proof sketch cites gets a property-based test named by its ID:
@@ -161,9 +214,10 @@ production code that names a declared case; the review covers the forms it canno
   exists to prevent. Never write a comment that restates the code. Explain the WHY, and the
   WHAT that is not obvious from the source. Be pedagogical, imagine you are writing a textbook
   or a blogpost about the code you are explaining.
-- Every public function has complete doc in the ecosystem standard format
-- Every type definition has complete doc in the ecosystem standard format
+- Every public function and type has complete doc in the ecosystem standard format
 - Every non-obvious conditional has a WHY comment
+- Reread each changed file as a stranger: remove every comment that needs the KB to make
+  sense, or complete it in words
 
 **Iterate** until green, then commit and move to next step.
 
@@ -181,10 +235,15 @@ reviews when authorized and useful; seven parallel agents are not a quality crit
 4. **UX**: error messages, help text, progress indicators, exit codes
 5. **Spec compliance**: for each spec item, does the code match?
 6. **Simplicity and cohesion**: could we get to the same result with a more compact and
-   direct approach, and can each changed component's purpose be explained without joining
-   independent responsibilities with “and”?
+   direct approach? Does each changed component pass the split and merge tests of
+   [component design](component-design.md#the-principles)?
 7. **Provability**: is there a property from `kb/properties/` that explains why this change is correct?
 8. **Component design**: the review questions in [component design](component-design.md#review-questions).
+9. **Cold read**: give a fresh reviewer each changed file alone, without the KB, the task
+   or the author's explanation. Ask what problem the file solves, how it works, why this
+   approach, and what breaks if its main invariant fails. Each wrong or missing answer is
+   a finding, located where the reader got lost. This is the check for code rules 2 and 3;
+   the author cannot run it, because the author cannot forget the KB.
 
 **Auditors have a stopping rule.** Flag what affects correctness or a stated
 requirement; stay quiet about the rest. An auditor that comments on everything

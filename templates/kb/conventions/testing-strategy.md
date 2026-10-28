@@ -45,9 +45,14 @@ Does NOT cover: specific test implementations (those live in `tests/`).
 Every test name starts with the property or spec reference it verifies:
 `"P4: frontmatter->remote->frontmatter roundtrip preserves all fields"`
 
+## Unit tests
+Each module has unit tests that call its interface directly, without the rest of the
+system. Each case of its contract has a test: each kind of result, each error, each
+boundary value. Acceptance and end-to-end tests do not replace them. When an integration
+test finds a defect, add a unit test in the module where the defect is.
+
 ## Coverage targets
 - Line coverage >= 80%
-- At least 3 tests per source file on average
 - Every property in `properties/` covered by at least 2 tests (one happy path, one edge case)
 
 ## Agent notes

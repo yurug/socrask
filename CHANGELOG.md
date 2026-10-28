@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.21.0 — 2026-10-28
+
+Agents wrote code that an engineer could not read alone. They cut modules into too
+many small files. Their comments named KB IDs but did not explain the code. Their
+comments paraphrased each line and did not give the idea. Many modules had no unit
+tests. The kit rules caused part of this, and `conventions/code-style.md` had no
+template.
+
+- Cohesion decides module boundaries, not size. `component-design.md` adds a merge
+  test to the split test: two files that a reader must open together, or that always
+  change together, are one concept.
+- Four code rules in Phase 4, for an engineer who opens only the file. Cohesion
+  decides the boundaries. The file explains itself: write the claim in words, then the
+  KB ID. Literate at the right level: the header gives the problem, the approach and
+  the invariants. The comments name the phases of an algorithm, not each line. Each
+  module has unit tests, one per case of its contract.
+- Garden before you change. Before an agent changes a file in poor state, it adds
+  characterization tests if needed, refactors without a change of behavior, and
+  commits this alone. The budget is about the effort of the change. A larger rework
+  goes to the roadmap.
+- A new Phase 5 audit, the cold read: a fresh reviewer gets the changed file only and
+  must explain what it does, how and why. Each gap is a finding.
+- New template `templates/kb/conventions/code-style.md`. The audit checklist and the
+  testing strategy replace the per-file test quotas with unit tests per contract case.
+
+No script checks these rules. The review and the cold-read audit check them.
+
+Compatibility: no tool changed. Existing projects can copy the new template into
+`kb/conventions/`.
+
 ## 0.20.0 — 2026-10-27
 
 The harness improves only if someone looks at how it behaved. The meter measured

@@ -18,19 +18,23 @@ Does NOT cover: how to fix findings (see conventions/ files for guidance).
 
 ## 1. Code Quality
 
-- [ ] Every source file has a module header comment
-- [ ] Every public function has complete documentation (params, returns, throws, invariant)
-- [ ] Files under ~30% comment ratio checked for missing WHYs (ratio is a smoke alarm, never a target -- no comment that restates the code)
+- [ ] Every source file header gives the problem, the approach and why, the invariants, and what it does not do
+- [ ] Every public function documents its contract (params, result, errors, invariants in words)
+- [ ] A cold reader with only the file explains what it does, how, and why (see `conventions/code-style.md`)
+- [ ] No comment relies on the KB: each property or ADR ID follows a claim written in words
+- [ ] No comment restates the next line or tells the code's history
+- [ ] Files under ~30% comment ratio checked for missing WHYs (ratio is a smoke alarm, never a target)
 - [ ] Each function over ~50 lines and file over ~400 lines states why it is one concept
 - [ ] Each changed component's purpose fits one sentence without "and"
+- [ ] No two files that a reader must open together, or that always change together; no file with one small helper for one user
+- [ ] Gardening refactorings are in their own commits, before the behavior change
 - [ ] No `any` types (use `unknown` and narrow)
-- [ ] Dependency injection everywhere (interfaces, not implementations)
 - [ ] No circular imports
 
 ## 2. Test Coverage
 
-- [ ] Every source file has a corresponding test file
-- [ ] At least 3 tests per source file
+- [ ] Every module has unit tests that call its interface directly
+- [ ] Every case of each public contract (each result kind, each error, each boundary) has a unit test
 - [ ] Every property in `properties/` has at least 2 tests
 - [ ] Every edge case in `properties/edge-cases.md` has a dedicated test
 - [ ] Every error type has an error-path test

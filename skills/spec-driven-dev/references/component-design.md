@@ -24,6 +24,17 @@ component is also the easiest one to state a model for.
    likely to change, behind its interface. Other components use only that
    interface, never its internal modules or its data representation.
    A change that exposes an internal needs an ADR.
+   **Cohesion decides the boundaries, not size.** A module holds one concept and
+   everything that changes with it. Each file boundary costs the reader a jump, so
+   it must buy a hidden decision. Apply two tests, in both directions:
+   - *Split*: if the module's purpose needs two independent clauses joined by "and",
+     it holds two concepts. Split it, or state the invariant that binds them.
+   - *Merge*: if a reader must open B to understand A, or A and B always change in
+     the same commit, they are one concept cut in two. Merge them. A file that only
+     forwards or re-exports, or that holds one type, constant or helper with a single
+     user, hides nothing: put its content beside its user.
+   "Keep components small" is not a rule here. A 600-line parser that is one concept
+   is better than six 100-line files that a reader must open together.
 4. **De Bruijn kernel.** Find the outputs whose error costs a lot: money, data,
    safety, an irreversible action. Put a small checker between the producer of
    each such output and its effect. The producer can be large and heuristic.
@@ -88,6 +99,8 @@ The Phase 5 review asks, for each changed component:
 - Is there a general component this should use or become?
 - Does any knowledge now live in two places?
 - Does any other component reach past this interface?
+- Does this file boundary hide a decision, or must a reader open both sides
+  together? Do these files always change together?
 - Does this change touch a critical output without passing through its kernel?
 - Does this change add a special case to a general rule so that an acceptance case
   passes? Fix the general rule, or ask the engineer to change the case.
