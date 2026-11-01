@@ -140,6 +140,35 @@ class PlanCheckTests(unittest.TestCase):
         self.assertIn("E-kernel: execution step 1 touches kernel file `src/sync.ml`", out)
         self.run_check(READY.replace("Tier: execution", "Tier: judgment"))
 
+    def write_risks(self, *rows):
+        (Path(self.temp.name) / "kb" / "risks.md").write_text(
+            "# Risks\n\n| ID | Risk | Impact | Experiment | Status | Evidence |\n"
+            "|---|---|---|---|---|---|\n" + "".join(f"| {r} |\n" for r in rows))
+
+    def test_derisked_register_passes(self):
+        self.write_risks(
+            "R1 | API pages by offset | high | call it | retired | `kb/external/api.md`",
+            "R2 | cost too high | high | none fits | accepted | forebrief:C12",
+            "R3 | slow on big repos | low | later | open | ")
+        self.assertIn("0 errors", self.run_check(READY))
+
+    def test_open_high_risk_blocks_the_plan(self):
+        self.write_risks("R1 | API pages by offset | high | call it | open | ")
+        out = self.run_check(READY, code=1)
+        self.assertIn("E-risk: R1 is a high risk still open", out)
+
+    def test_closed_risk_needs_its_evidence(self):
+        self.write_risks("R1 | a | high | b | retired | ", "R2 | c | medium | d | accepted | ")
+        out = self.run_check(READY, code=1)
+        self.assertIn("E-risk: R1 is retired, but its Evidence cites no test", out)
+        self.assertIn("E-risk: R2 is accepted, but its Evidence cites no decision", out)
+
+    def test_unknown_status_and_impact_fail(self):
+        self.write_risks("R1 | a | severe | b | done | x")
+        out = self.run_check(READY, code=1)
+        self.assertIn("E-risk: R1 has status `done`", out)
+        self.assertIn("E-risk: R1 has impact `severe`", out)
+
     def test_more_than_four_steps_warns(self):
         steps = "".join(JUDGMENT.replace("Step 2", f"Step {n}") for n in range(1, 6))
         self.assertIn("W-steps: 5 steps", self.run_check(steps))

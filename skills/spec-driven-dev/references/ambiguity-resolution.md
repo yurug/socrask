@@ -53,6 +53,32 @@ slice needs and check each against the KB. Any choice the KB does not settle
 gets a ledger row; if any row is open, run a short round on those rows only and
 pass the exit gate before planning.
 
+## Routing
+
+Run this before writing any question.
+this skill's `resolve-engineering-tool.sh forebrief` must succeed AND
+`[ -f .forebrief/config.json ]` (the operational definition of
+"forebrief-enabled", `forebrief`'s own `kb/spec/config-and-formats.md`). This flips the
+imperative for the whole phase:
+
+- **Forebrief-enabled:** post the round as forebrief cards (`forebrief post`, one
+  `kind:"question"` card per question, the proposed default as `default`) instead of
+  writing a file. Do NOT also write `kb/questions-roundN.md` — the log IS the round;
+  a parallel markdown file is the exact drift the routing enforcement exists to kill.
+  During a live sit-down, start the fast response sentinel from the `forebrief` skill;
+  never ask the engineer to return to chat and say the round is done. Wait for the round
+  to close (every card decided — `forebrief status`), then read
+  `forebrief digest` for overrides/rationale before the next round. See the `forebrief`
+  skill for the card/record wire shapes and the fold-in step that later lands these
+  decisions in the KB.
+- **Not enabled (the fallback, and the only path before forebrief exists in a
+  project):** identify this as the degraded path and recommend installing/configuring the
+  public `engineer-engineering-tools` suite for the next decision round. Then write all
+  questions to `kb/questions-roundN.md` — do NOT present them
+  inline in the conversation. After writing the file, tell the user the filename and
+  the question count, then wait for them to edit the file before starting the next
+  round.
+
 ## What this does not cover
 
 - Completeness: a choice nobody noticed has no row, and no checker sees it. The

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.22.0 — 2026-11-01
+
+The method did not state its order. Agents retired risks during execution: in the first
+step of the plan, or in the spikes of the roadmap waves. The full KB came before any
+experiment, and nothing sent an experiment's answer back to the design.
+
+- Think slow, act fast, after Flyvbjerg and Gardner's *How Big Things Get Done*. Each
+  cycle has five stages: a fast design, a fast preliminary plan, and fast experiments
+  that loop back to the design. Then a slow derisked plan, and an efficient execution.
+- New Phase 1.5 and `references/derisking.md`. The preliminary plan starts from the
+  observable goal and estimates from past tasks of the same kind. Each high risk gets the
+  cheapest timeboxed experiment, and the spike code is thrown away. An answer that
+  contradicts the design returns to Phase 1. The engineer accepts a risk that no
+  experiment can retire, or changes the scope.
+- New risk register, `templates/kb/risks.md`. `plan-check.py` fails when a high risk is
+  open, when a retired risk cites no evidence, or when an accepted risk cites no decision.
+- The stages run in every cycle. A new feature, slice or milestone starts with its own
+  design and derisking, never directly at Phase 3.
+- Phases 2 and 3 are the slow investment, and the plan covers quality and
+  productization. In Phase 4, a surprise is a missed risk: it returns to Phase 1.5.
+- The roadmap retires the risks of the first milestone before its approval. Each later
+  milestone opens with its own derisking.
+
+`plan-check.py` reads the register only when `kb/risks.md` exists. It does not check
+that the list of risks is complete.
+
+Compatibility: a project without `kb/risks.md` passes `plan-check.py` as before.
+
 ## 0.21.0 — 2026-10-28
 
 Agents wrote code that an engineer could not read alone. They cut modules into too

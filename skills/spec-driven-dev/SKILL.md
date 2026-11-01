@@ -104,18 +104,23 @@ The work lives in the **meaning-to-specification gap**: turn what the team means
 properties a machine can check without pretending that passing checks proves the meaning was
 right. Humans own meaning; the harness owns repeatable correctness against the stated spec.
 
+**Think slow, act fast.** Design fast (Phases 0–1), write a preliminary plan fast and
+retire its risks with fast experiments that loop back to the design (Phase 1.5), then
+write the derisked plan slowly and rigorously (Phases 2–3), and execute efficiently
+(Phases 4–7). Stages: [references/derisking.md](references/derisking.md).
+
 Run this process iteratively, one feature (or small set) at a time, producing a working
 product at the end of each iteration cycle. Iteration is not optional — the more we can
 decompose work into tasks with a clear definition of done, the better. On re-invocation,
-Phase 0 detects existing artifacts and skips phases that already passed.
+Phase 0 skips what already passed for this cycle; each cycle runs its own stages 1–5.
 
 ## Phase 0: Orient
 
 Determine the current state before doing anything:
 
-1. Check if `kb/INDEX.md` exists. If yes, read it — the project has a KB already. Skip to the phase that matches the current state (Phase 3 if KB exists but no plan, Phase 4 if plan exists but code is incomplete).
+1. Check if `kb/INDEX.md` exists. If yes, read it — the project has a KB already. Resume the current cycle where it stopped (Phase 4 if its plan exists but code is incomplete). A new feature, slice or milestone is a new cycle: it starts with its own design and derisking (Phases 1–1.5) on top of the KB, never directly at Phase 3.
 2. Check if there's a `CLAUDE.md` with project-specific instructions. If yes, follow those — they override this skill's defaults.
-3. If starting from zero, confirm with the user: "I'll follow the spec-driven process: resolve ambiguities, build a knowledge base, plan, then implement. Ready?"
+3. If starting from zero, confirm with the user: "I'll follow the spec-driven process: a quick design, a preliminary plan, experiments that retire the main risks, then a rigorous plan and the implementation. Ready?"
 
 ### Size the demand before running any of it
 
@@ -131,6 +136,7 @@ Decide the tier first, out loud, in one line:
   KB already covers. Phases 3–6, skipping KB creation — but first check that
   the KB settles every choice the slice needs: unsettled ones go in the
   assumption ledger, and any open row gets a short Phase 1 round on it alone.
+  A high risk in the slice gets a Phase 1.5 experiment before the plan.
 - **Full** — new project, new subsystem, or a change whose meaning is not settled.
   Everything from Phase 0.5.
 
@@ -159,33 +165,20 @@ that reproduces nothing produces a change nothing can validate.
 
 ## Phase 0.5: Premortem the Idea
 
-Before sinking time into ambiguity resolution and the KB, pressure-test the idea itself.
-The premortem flips Claude out of agreeable mode: instead of asking "is this a good idea?",
-we assume it already failed 6 months from now and work backward to find why. This produces
-honest, specific blind spots in minutes — cheap to surface now, expensive to discover at
-Phase 4.
+Before ambiguity resolution and the KB, invoke the `premortem` skill on the idea as stated,
+with the pitch, attached files and `CLAUDE.md`. It assumes the idea failed six months from
+now and works back to why: blind spots are cheap here and expensive at Phase 4. If the idea
+is too vague, run one quick Phase 1 round first. Save the report and the transcript as
+`kb/reports/premortem-idea-<timestamp>.{html,md}`.
 
-**How to run it:**
+Use the output: hidden assumptions become Phase 1 questions; the most dangerous failure
+becomes a property in `kb/properties/` or an out-of-scope item in `kb/domain/prd.md`; a
+failure an experiment can test becomes a row in `kb/risks.md`; the checklist seeds the
+Phase 3 acceptance criteria. Surface a fatal failure mode to the user: killing or
+pivoting the idea is a successful outcome.
 
-1. Invoke the `premortem` skill on the user's idea as stated. Pass whatever context exists
-   (the user's pitch, any attached files, the project `CLAUDE.md`).
-2. The premortem skill handles its own minimum-context gate (what / who / success criteria).
-   If the idea is too vague to premortem, run one quick Phase 1 round first for just enough
-   concreteness, then return here.
-3. Save the report and transcript inside `kb/reports/` (e.g. `kb/reports/premortem-idea-<timestamp>.html`
-   and `.md`) so they live alongside other quality artifacts and are reachable from KB indexes later.
-
-**What to do with the output:**
-
-- **Hidden assumptions** become forced questions in the next Phase 1 round.
-- **The most dangerous failure** becomes a property in `kb/properties/` (the system must prevent it)
-  or an explicit out-of-scope item in `kb/domain/prd.md`.
-- **The revised plan / pre-launch checklist** seeds the acceptance criteria for Phase 3 steps.
-- If a failure mode is fatal (no realistic mitigation), surface it to the user before continuing.
-  The premortem can kill or pivot an idea — that is a successful outcome, not a failed phase.
-
-**Exit criterion:** the user has seen the premortem findings and either (a) confirmed proceed,
-(b) revised the idea, or (c) abandoned it. Do not slide into Phase 1 if (c).
+**Exit criterion:** the user has seen the findings and confirmed, revised or abandoned the
+idea. Do not continue to Phase 1 if it was abandoned.
 
 ## Phase 0.75: Inbrief when understanding affects the decision
 
@@ -210,7 +203,8 @@ reference's install instructions when requested rather than blocking on setup.
 
 ## Phase 1: Ambiguity Resolution
 
-Before writing ANY code, eliminate all blind spots.
+Before writing ANY production code, eliminate all blind spots, fast. A question only an
+experiment can answer is a Phase 1.5 risk, not a default to guess.
 
 **Generate questions grouped by topic:**
 - Features and scope (what does it do, what does it NOT do)
@@ -233,29 +227,10 @@ Phrase questions using the context established in Phase 0.75; gloss unfamiliar
 load-bearing terms. Clarification is welcome and never automatically changes a
 personal knowledge rating. Defaults still need the applicable human decision.
 
-**Routing check — run this before writing anything:**
-this skill's `resolve-engineering-tool.sh forebrief` must succeed AND
-`[ -f .forebrief/config.json ]` (the operational definition of
-"forebrief-enabled", `forebrief`'s own `kb/spec/config-and-formats.md`). This flips the
-imperative for the whole phase:
-
-- **Forebrief-enabled:** post the round as forebrief cards (`forebrief post`, one
-  `kind:"question"` card per question, the proposed default as `default`) instead of
-  writing a file. Do NOT also write `kb/questions-roundN.md` — the log IS the round;
-  a parallel markdown file is the exact drift the routing enforcement exists to kill.
-  During a live sit-down, start the fast response sentinel from the `forebrief` skill;
-  never ask the engineer to return to chat and say the round is done. Wait for the round
-  to close (every card decided — `forebrief status`), then read
-  `forebrief digest` for overrides/rationale before the next round. See the `forebrief`
-  skill for the card/record wire shapes and the fold-in step that later lands these
-  decisions in the KB.
-- **Not enabled (the fallback, and the only path before forebrief exists in a
-  project):** identify this as the degraded path and recommend installing/configuring the
-  public `engineer-engineering-tools` suite for the next decision round. Then write all
-  questions to `kb/questions-roundN.md` — do NOT present them
-  inline in the conversation. After writing the file, tell the user the filename and
-  the question count, then wait for them to edit the file before starting the next
-  round.
+**Routing check — before writing anything:** forebrief is enabled when this skill's
+`resolve-engineering-tool.sh forebrief` succeeds and `.forebrief/config.json` exists. Then
+post the round as forebrief cards and never also write `kb/questions-roundN.md`. Otherwise
+write that file, as the degraded path. Both paths: [references/ambiguity-resolution.md](references/ambiguity-resolution.md#routing).
 
 **Coverage — the failure here is too few questions.** Read
 [references/ambiguity-resolution.md](references/ambiguity-resolution.md). In short:
@@ -269,8 +244,23 @@ imperative for the whole phase:
 **Exit criterion:** `python3 tools/assumption-check.py kb/assumptions.md --exit` passes (no
 open row), and the last round closed with no override and nothing new from the
 independent pass. Not "the user confirms": that asks them to spot unasked questions.
+Each return from the Phase 1.5 loop reopens the rows that its experiments changed.
+
+## Phase 1.5: Preliminary plan and derisking
+
+**Read [references/derisking.md](references/derisking.md) in full before this phase.**
+Write a preliminary plan in minutes and the risks that could invalidate it in
+`kb/risks.md`. Retire each high risk with the cheapest timeboxed experiment, most
+dangerous first, and throw the spike code away. An answer that contradicts the design
+returns to Phase 1. The engineer accepts, with a record, a risk no experiment can retire.
+
+**Exit criterion:** no high risk open (`plan-check.py` fails otherwise), the last
+iteration did not change the design, and the Phase 1 exit criterion holds.
 
 ## Phase 2: Knowledge Base Creation
+
+The KB records the design that survived the derisking loop. Building it is slow on
+purpose: from here on, the documents bind the execution.
 
 **Before executing Phase 2, read [references/knowledge-base.md](references/knowledge-base.md)
 in full.** It defines the directory shape, ordered file construction, enforcement-channel
@@ -291,6 +281,10 @@ overdue and unverified work each session.
 **Roadmap first for Full work or more than one slice:** read [references/roadmap.md](references/roadmap.md).
 The engineer approves milestones, schedule and execution risks; `tools/roadmap-check.py` gates it.
 
+This is the slow, rigorous plan: every choice settled here is one the execution does not
+pay for in retries. Plan quality and productization too: observability, errors, packaging,
+data migration, documentation, and the check for each property.
+
 Create `kb/plan.md` — incremental implementation plan:
 - 3-4 implementation steps maximum (not counting quality audit). If you need more, the slice
   is too large — close this invocation after one slice and re-run the skill for the next.
@@ -299,7 +293,8 @@ Create `kb/plan.md` — incremental implementation plan:
   be checked independently is a step that was never sized.
 - **VERTICAL SLICE FIRST, THROUGH THE RISKIEST PATH**: Step 1 MUST produce a minimal but
   RUNNING program, AND that slice must traverse the riskiest/most-uncertain part of the
-  system — not the easiest happy path. If the project's hardest question is "can we
+  system — not the easiest happy path. Phase 1.5 answered the risk with a throwaway
+  experiment; step 1 confirms that answer in production code. If the project's hardest question is "can we
   actually sync against this flaky external API?", step 1's running skeleton calls that
   API. Do not pick a comfortable slice that postpones the scary part.
   For a CLI: entry point, commands registered, basic happy path works end-to-end.
@@ -325,7 +320,8 @@ Create `kb/plan.md` — incremental implementation plan:
   argument and the refinement map. Read [references/proof-ready-design.md](references/proof-ready-design.md).
 - Each step must produce observable progress (new command, new behavior)
 - For each step, name the **single biggest unknown** ("what if X doesn't work?") in the
-  step's acceptance criteria. Phase 4 will prove that piece works first.
+  step's acceptance criteria. Phase 4 will prove that piece works first. A high unknown
+  that no `kb/risks.md` row covers means the derisking loop missed it: return to Phase 1.5.
 
 **Plan-simulation gate:** before showing the plan to the user, spawn a fresh subagent with the
 plan and the KB. Ask it to walk each step end-to-end, list ambiguities and uncertainties, and
@@ -354,6 +350,9 @@ infer ignorance or automatically record a knowledge rating from a question.
 [references/implementation-and-audits.md](references/implementation-and-audits.md) in full.**
 It defines the bounded Ralph Loop, ratchet, repair-versus-resample decision, implementation
 standards, auditor fan-out, adversarial verification, and stopping rules.
+
+A surprise in execution is a risk the derisking loop missed: stop the step, write it in
+`kb/risks.md`, and return to Phase 1.5. Do not improvise a new design inside a step.
 
 ## Phase 6: KB Sync
 
@@ -455,6 +454,8 @@ would an unknown-unknown enter, and which auditor would catch it?
 
 ## Principles to maintain throughout
 
+- **Think slow, act fast** — a risk found in planning costs a draft; found in execution,
+  it costs a rebuild (Flyvbjerg and Gardner, *How Big Things Get Done*)
 - **Tackle uncertainty and blockers first** — within any plan, step,
   or single coding session, the hardest, most uncertain, or blocking
   work goes FIRST. Don't take arbitrary choices that may have

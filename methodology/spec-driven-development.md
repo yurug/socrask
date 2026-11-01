@@ -82,9 +82,35 @@ Use one coordinator for the human checkpoints across concurrent workers.
 
 ## The Methodology
 
+### The arc: think slow, act fast
+
+Large projects fail in delivery, but the cause is usually a risk that nobody tested
+during planning. Flyvbjerg and Gardner (*How Big Things Get Done*, 2023) found that
+successful projects plan slowly and deliver quickly: they test their ideas while these
+are still drafts, where an experiment is cheap, and keep delivery short, so that fewer
+unexpected events can reach it. The phases below follow five stages:
+
+1. **Design, fast** (Phases 0 to 1): the goal, the main choices, the assumptions.
+2. **Preliminary plan, fast** (Phase 1.5): rough steps, and the risks that could
+   invalidate them.
+3. **Derisking, in fast iterations** (Phase 1.5): the cheapest experiment for each risk,
+   most dangerous first. An answer that contradicts the design sends the work back to
+   stage 1.
+4. **Derisked plan, slow** (Phases 2 and 3): the KB and a rigorous plan, with quality and
+   productization planned, for a design that survived its experiments.
+5. **Execution, efficient** (Phases 4 to 7): the plan leaves no choice open, so a cheaper
+   model can execute it in few iterations. A surprise here is a missed risk, and goes back
+   to stage 3.
+
+These stages run in every cycle, not once per project: each feature, slice or milestone
+gets its own design, preliminary plan and derisking, at its own scale, on top of the KB
+that earlier cycles built.
+
 ### Phase 0: Orient, and size the demand
 Detect existing artifacts (`kb/INDEX.md`, `CLAUDE.md`, prior plan) and skip phases that
-already passed. Re-invocation is the common case; starting from zero is the rare one.
+already passed for the current cycle. Re-invocation is the common case; starting from zero
+is the rare one. A new feature, slice or milestone is a new cycle, which runs its own
+design and derisking before its plan.
 Then pick the tier out loud: **direct** (one-sentence diff the checks already cover — run
 the agent and the harness, nothing else), **slice** (one bounded change on covered ground),
 or **full**. A demand that is not one bounded change gets cut into ones that are, each
@@ -120,11 +146,22 @@ too few: record every unsettled choice in an assumption ledger, have an independ
 agent write its own questions each round, and run another round after any overridden
 default. Exit when the ledger has no open row, checked by a script, not by asking the
 human whether anything is left. The cost of one extra question round is negligible; the cost of a wrong assumption
-is architectural rework.
+is architectural rework. A question that only an experiment can answer becomes a risk for
+Phase 1.5.
+
+### Phase 1.5: Preliminary plan and derisking
+Write a preliminary plan in minutes, from the observable goal back to the steps, with
+estimates from past tasks of the same kind. List in `kb/risks.md` what could invalidate
+it. Retire each high risk with the cheapest experiment that answers it: a timeboxed
+spike, a call to the real API, a benchmark, a simulation, a mock shown to a user. Throw
+the spike code away. When an answer contradicts the design, return to Phase 1. A risk
+that no experiment can retire goes to the engineer, who accepts it or changes the scope.
+`plan-check.py` refuses a plan while a high risk is still open.
 
 ### Phase 2: Knowledge Base Creation
-Build the KB following the agent-optimized structure. This is the longest phase and the
-most important one — everything downstream depends on it.
+Build the KB following the agent-optimized structure, for the design that survived the
+derisking loop. This phase and the next are slow on purpose: everything downstream depends
+on them, and an investment here is what makes the execution cheap.
 
 ### Phase 3: Planning
 Maintain an accountable project/plan/task ledger alongside the narrative plan, following
@@ -136,6 +173,9 @@ A project with more than one slice first gets a roadmap: milestones that are acc
 outcomes, a schedule of parallel waves around the critical path, and execution risks,
 each retired by an early spike. The engineer approves it before work starts, and again
 whenever it changes.
+
+The plan covers quality and productization, not only features: observability, error
+handling, packaging, data migration, documentation, and the check for each property.
 
 Incremental steps, each traceable to properties and acceptance criteria. 3-4 steps max,
 ordered by risk: the first step is a vertical slice through the riskiest path, not the
@@ -172,6 +212,8 @@ unverified KB fact, a question for a human, or noise. A discussion never changes
 spec on its own.
 
 ### Phase 4: Implementation (Ralph Loops)
+Execution should hold no surprise: a surprise is a risk that the derisking loop
+missed, and it returns to Phase 1.5 rather than being improvised inside the step.
 For each step: identify the riskiest sub-task and attack it first, implement with literate
 style, write comprehensive tests, validate, fix, repeat. The loop converges because each
 iteration gets verbatim error feedback and because it ratchets — `ratchet.py` refuses an
@@ -206,7 +248,9 @@ stays valid, run final validation, and present results.
 1. **Spec before code** — you can't validate what you haven't specified
 2. **Premortem before you build** — challenge the idea (Phase 0.5) and the plan (Phase 3)
    by assuming they already failed; blind spots are cheaper to find here than in code
-3. **Tackle uncertainty and blockers first** — within any plan, step, or coding session,
+3. **Think slow, act fast** — design and plan quickly, retire the risks with cheap
+   experiments that loop back to the design, then invest in a rigorous plan and execute
+   it quickly. **Tackle uncertainty and blockers first** — within any plan, step, or coding session,
    the hardest and most uncertain work goes first. Deferring risk feels productive but is
    how projects discover at the last minute that a core assumption was wrong
 4. **Fix the harness, not the output** — when the agent fails, improve the constraints

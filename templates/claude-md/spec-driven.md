@@ -1,6 +1,6 @@
 # Spec-Driven Agentic Development
 
-This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`) is the source of truth. If kb/ is empty, you must build it first through ambiguity resolution.
+This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`) is the source of truth. If kb/ is empty, build it first: ambiguity resolution, then experiments that retire the main risks (Phase 1.5).
 
 ## KB routing protocol (every task, every session — not just skill runs)
 

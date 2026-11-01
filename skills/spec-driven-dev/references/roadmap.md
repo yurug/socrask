@@ -20,7 +20,10 @@ The data lives in the ledger, on the project, as `roadmap` (schema in
 3. **Execution risks.** For each risk, give probability, impact, the task that
    retires it, and the tasks it blocks. Retire uncertainty first: a spike or a
    prototype comes before any work that depends on the answer. A high risk's
-   spike starts in the first wave, with no dependency.
+   spike starts in the first wave, with no dependency. The risks of the first
+   milestone are retired before the roadmap is approved, in the derisking loop
+   ([derisking](derisking.md)). A later milestone opens with its own derisking:
+   its spikes come first, and its slices are planned from their answers.
 4. **Narrative.** In `kb/roadmap.md`, explain why this order, and how each
    uncertainty is retired. Then generate the tables:
 

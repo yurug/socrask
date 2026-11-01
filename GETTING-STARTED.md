@@ -89,8 +89,8 @@ The methodology fails silently without this step — future sessions would
 grep the code and never open the KB.
 ```
 
-The first paragraph is the input to Phase 0.5–1 (premortem, onboarding brief, then
-ambiguity rounds).
+The first paragraph is the input to Phase 0.5–1.5 (premortem, onboarding brief,
+ambiguity rounds, then the preliminary plan and the experiments that retire its risks).
 The second paragraph is deliberately redundant with the skill: harness installation is
 the one step whose omission is invisible until weeks later, so it is the one step the
 prompt re-states. If everything works you paid a few redundant lines; if the skill

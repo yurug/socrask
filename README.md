@@ -102,7 +102,10 @@ then optimize total cost per accepted task with controlled comparisons.
 
 This kit implements the loop argued for in
 [Why a loop at all](https://yann.regis-gianas.org/en/posts/harness-not-output/),
-whose phases lean on four disciplines:
+in five stages: a fast design, a fast preliminary plan, fast experiments that retire the
+main risks and loop back to the design, a slow and rigorous plan, and an efficient
+execution — think slow, act fast, after Flyvbjerg and Gardner's *How Big Things Get Done*.
+Its phases lean on four disciplines:
 
 1. **Software engineering**, because the agent reads your code as input; structure now pays
    twice.
@@ -133,7 +136,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.21.0** — code an engineer can read file by file: cohesive modules, self-explaining comments, unit tests per contract, and gardening before each change. The methodology is still evolving, but every deterministic
+**v0.22.0** — think slow, act fast: each cycle retires its risks with fast experiments before a rigorous plan and an efficient execution. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

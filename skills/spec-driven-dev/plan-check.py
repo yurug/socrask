@@ -38,9 +38,16 @@ Checks (E = error, W = warning):
     E-budget      an optional Budget field that is not a token count
                   (`Budget: ~200k tokens`, `1.5M`); task-meter.py compares it
                   with the measured total
+    E-risk        kb/risks.md exists and a high-impact risk is still open, a
+                  retired risk cites no evidence, an accepted risk cites no
+                  decision, or a row has an unknown status or impact
     W-steps       more than 4 steps: the slice is probably too large
 
-What this does NOT check: that the proof argument holds, that the settled
+The risk register is the output of the derisking loop (references/derisking.md):
+the plan is written for a design whose high risks are already retired, so an open
+one means the plan was written too early.
+
+What this does NOT check: that the risk list is complete, that the proof argument holds, that the settled
 choices are right, that a command actually tests its criterion, or that the
 execution model can do this class of task. The execution-tier simulation pass
 is what finds the questions a well-formed step still leaves open.
@@ -122,6 +129,56 @@ def kernel_files(roots):
     core = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(core)
     return core.kernel_files(decl)
+
+
+RISK_STATUSES = {"open", "retired", "accepted"}
+RISK_IMPACTS = {"high", "medium", "low"}
+
+
+def risk_rows(path):
+    """Rows of the first table in the register whose header has ID and Status,
+    as {lower-cased column: cell}. Columns are found by name, so their order is free."""
+    header, rows = None, []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip().startswith("|"):
+            if header and rows:
+                break
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if header is None:
+            names = [c.lower() for c in cells]
+            if "id" in names and "status" in names:
+                header = names
+            continue
+        if all(set(c) <= set("-: ") for c in cells):
+            continue  # the separator row
+        rows.append(dict(zip(header, cells)))
+    return rows
+
+
+def check_risks(roots):
+    """The derisking exit, seen from the plan: no high risk open, and every
+    closed risk says how it was closed."""
+    path = next((r / "kb/risks.md" for r in roots if (r / "kb/risks.md").is_file()), None)
+    if path is None:
+        return []
+    errors = []
+    for row in risk_rows(path):
+        rid = row.get("id", "?")
+        status = row.get("status", "").strip("`* ").lower()
+        impact = row.get("impact", "").strip("`* ").lower()
+        evidence = row.get("evidence", "").strip()
+        if status not in RISK_STATUSES:
+            errors.append(f"E-risk: {rid} has status `{status}`, expected open, retired or accepted")
+        if impact not in RISK_IMPACTS:
+            errors.append(f"E-risk: {rid} has impact `{impact}`, expected high, medium or low")
+        if status == "open" and impact == "high":
+            errors.append(f"E-risk: {rid} is a high risk still open; retire it with an "
+                          "experiment, or have the engineer accept it, before planning")
+        elif status in ("retired", "accepted") and not evidence:
+            what = "test, measurement or report" if status == "retired" else "decision of the engineer"
+            errors.append(f"E-risk: {rid} is {status}, but its Evidence cites no {what}")
+    return errors
 
 
 def tier_of(fields):
@@ -217,6 +274,7 @@ def main():
     errors, warnings = [], []
     for sid, fields in steps:
         errors.extend(check_step(sid, fields, roots, kernel))
+    errors.extend(check_risks(roots))
     if len(steps) > 4:
         warnings.append(f"W-steps: {len(steps)} steps; more than 4 means the slice is "
                         "probably too large")
