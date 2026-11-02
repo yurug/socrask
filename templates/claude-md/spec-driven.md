@@ -108,7 +108,7 @@ mailbox acknowledgement plus an executed adoption receipt (`docs/agent-adoption.
 
 ## Project-specific rules
 
-Maintain operational status in `kb/work/ledger.json` and explanation in linked plans.
+Change `kb/work/ledger.json` only with `tools/ledger.py`; plans hold the explanation.
 Every feedback/commitment has a task, owner, next action and review date. Repeated
 failure reopens that task. Run `tools/project-check.py --root . --ledger kb/work/ledger.json`
 in CI/handoff with a fixed `--history-base` for Git-backed work; follow the kit's

@@ -51,6 +51,44 @@ def date(value):
     return dt.date.fromisoformat(value)
 
 
+def read_json(path):
+    """Strict JSON: duplicate keys and NaN-like constants are refused, not guessed."""
+    return json.loads(Path(path).read_bytes().decode('utf-8'), object_pairs_hook=object_pairs,
+                      parse_constant=lambda value: require(False, f'invalid JSON constant: {value}'))
+
+
+def archive_path(ledger):
+    """Finished entries move beside the ledger, so the live file stays small to read and edit."""
+    ledger = Path(ledger)
+    return ledger.with_name(ledger.stem + '-archive.json')
+
+
+def with_archive(data, archive):
+    """The ledger plus its archive, as one version-1 ledger. The archive holds only
+    finished entries, so validation, dependencies and history see one record."""
+    if archive is None:
+        return data
+    require(isinstance(archive, dict) and archive.get('version') == 1, 'archive: expected version-1 object')
+    merged = dict(data)
+    for group in ('projects', 'plans', 'tasks', 'feedback'):
+        rows = archive.get(group, [])
+        require(isinstance(rows, list), f'archive.{group}: expected array')
+        for row in rows:
+            require(isinstance(row, dict) and row.get('status') in TERMINAL,
+                    f'archive.{group}: {row.get("id") if isinstance(row, dict) else row} is not finished')
+        require(isinstance(data.get(group), list), f'{group}: expected array')
+        merged[group] = data[group] + rows
+    return merged
+
+
+def load(ledger_path):
+    """The live ledger, its raw bytes for the history digest, and the merged view."""
+    raw = Path(ledger_path).read_bytes()
+    data = read_json(ledger_path)
+    archive = archive_path(ledger_path)
+    return raw, data, with_archive(data, read_json(archive) if archive.is_file() else None)
+
+
 class Ledger:
     """Own validation context: one filesystem root, review date and source inventory."""
 
@@ -267,19 +305,19 @@ def main():
     parser.add_argument('--root', required=True)
     parser.add_argument('--as-of', default=dt.datetime.now(dt.timezone.utc).date().isoformat())
     parser.add_argument('--history-base', help='trusted full Git commit; preserve all subsequent feedback observations')
-    parser.add_argument('--summary', action='store_true', help='omit per-entity next actions')
+    parser.add_argument('--pending', action='store_true', help='list every unfinished entity '
+                        '(prefer `ledger.py list`, which filters)')
+    parser.add_argument('--summary', action='store_true', help='the default; kept for old launchers')
     args = parser.parse_args()
     ledger = None
     history = {'checked': False}
     try:
-        raw = Path(args.ledger).read_bytes()
-        data = json.loads(raw.decode('utf-8'), object_pairs_hook=object_pairs,
-                          parse_constant=lambda value: require(False, f'invalid JSON constant: {value}'))
+        raw, _, data = load(args.ledger)
         ledger = Ledger(args.root, args.as_of)
         result = ledger.check(data)
         if args.history_base is not None:
             history = check_history(args.root, args.ledger, args.history_base, data, raw)
-        if not args.summary:
+        if args.pending:
             result['pending'] = [{k: row[k] for k in ('id', 'status', 'owner', 'next_action', 'review_on')}
                                  for rows in ledger.groups.values() for row in rows.values() if row['status'] not in TERMINAL]
         code = 0

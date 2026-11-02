@@ -282,6 +282,23 @@ class ProjectCheck(unittest.TestCase):
                 data['tasks'][0]['closure']['acceptance']['cases'][0][field] = value
                 self.run_gate(data, 2)
 
+    def test_PM_archive_holds_only_finished_entries(self):
+        data = closed_fixture()
+        archive = dict(version=1, tasks=data['tasks'], feedback=data['feedback'])
+        live = dict(data, tasks=[], feedback=[])
+        (self.root / 'ledger-archive.json').write_text(json.dumps(archive))
+        self.assertEqual(self.run_gate(live)['counts']['tasks'], 1)
+        archive['tasks'][0]['status'] = 'active'
+        (self.root / 'ledger-archive.json').write_text(json.dumps(archive))
+        self.run_gate(live, 2, 'archive.tasks: T is not finished')
+
+    def test_PM_pending_list_only_on_request(self):
+        self.assertNotIn('pending', self.run_gate(fixture()))
+        path = self.root / 'ledger.json'
+        run = subprocess.run([sys.executable, str(TOOL), '--ledger', str(path), '--root', str(self.root),
+                              '--as-of', '2026-10-04', '--pending'], text=True, capture_output=True)
+        self.assertEqual([p['id'] for p in json.loads(run.stdout)['pending']], ['P', 'PL', 'T', 'S32'])
+
 
 if __name__ == '__main__':
     unittest.main()

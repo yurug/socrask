@@ -67,4 +67,23 @@ for dir in fixtures/kb-lint/fail-*; do
   fi
 done
 
+# Each run lands in an agent's context: many warnings of one code print as one
+# line, and --all restores the full list.
+tmp=$(mktemp -d)
+mkdir -p "$tmp/kb"
+printf -- '---\nid: index\ntype: index\nsummary: s\ndomain: d\nlast-updated: 2026-01-01\n---\n# I\n' > "$tmp/kb/INDEX.md"
+for n in 1 2 3 4 5; do
+  printf -- '---\nid: n%s\ntype: concept\nsummary: s\ndomain: d\nlast-updated: 2026-01-01\n---\n# N\n' "$n" > "$tmp/kb/n$n.md"
+done
+out=$(python3 kb-lint.py "$tmp/kb" --no-git 2>&1) || status=1
+if [ "$(echo "$out" | grep -c W-orphan)" = 1 ] && echo "$out" | grep -q "W-orphan: 5 warnings, first in n1.md, n2.md, n3.md" \
+   && [ "$(python3 kb-lint.py "$tmp/kb" --no-git --all | grep -c W-orphan)" = 5 ]; then
+  echo "ok   grouped warnings (one line per crowded code, --all lists them)"
+else
+  echo "FAIL grouped warnings:"
+  echo "$out" | sed 's/^/       /'
+  status=1
+fi
+rm -rf "$tmp"
+
 exit "$status"

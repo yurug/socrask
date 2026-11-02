@@ -90,6 +90,27 @@ accepted feedback then cites that executed completion and a newer acceptance eve
 Do not relabel a product change to evade delivery evidence. Detailed product
 evidence remains governed by [outcome acceptance](outcome-quality.md).
 
+## Read and change it with `ledger.py`
+
+Do not load the ledger into context, and do not write a script to edit it. A
+large ledger costs tens of thousands of tokens to read, and a script per change
+costs about 1,500 generated characters and can reformat the file. Use the tool:
+
+```sh
+python3 tools/ledger.py list tasks --status active --owner me   # one line per entry
+python3 tools/ledger.py get T-S32                                # one entry, one line
+python3 tools/ledger.py set T-S32 status=blocked next_action="Wait for the owner"
+python3 tools/ledger.py add tasks @new-task.json
+python3 tools/ledger.py event S32 --result failed --ref kb/reports/s32.md
+python3 tools/ledger.py archive
+```
+
+Each write validates the ledger with the rules below, and refuses a write that
+makes a coherent ledger incoherent. It keeps the file's format, so the diff shows
+only the changed lines. `archive` moves closed tasks with finished feedback, and
+closed plans and projects with no live child, to `kb/work/ledger-archive.json`.
+`project-check.py` reads the archive as part of the ledger.
+
 ## Make omission and false closure fail
 
 Run the read-only checker from the kit checkout, or vendor the exact file with its
@@ -104,6 +125,9 @@ launcher with a valid registry and a deliberately orphaned request; a documented
 command that the runner skips is not adoption. The kit runs its validator tests
 through `tools/ci-local.sh`. The consuming project owns its source adapters and
 checks that all input channels are represented, including newly received feedback.
+
+The output is a short JSON receipt. `--pending` adds every unfinished entity;
+prefer `ledger.py list`, which filters.
 
 Exit 0 means the supplied work record is coherent, not that the product works.
 Exit 2 rejects malformed or inconsistent input: uncovered IDs, missing ownership,

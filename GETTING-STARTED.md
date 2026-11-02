@@ -158,6 +158,7 @@ The [ratchet migration guide](docs/ratchet.md) replaces raw log scraping with ex
 
 Adopt [project control](docs/project-management.md): capture the existing feedback/backlog
 inventory, assign owners and review dates, and wire `tools/project-check.py` into CI.
+Vendor `tools/ledger.py` with it: agents read and change the ledger through it, not by script.
 Prove that deleting a request's task makes the real launcher fail. Import historical
 status as unverified until reconciled; do not manufacture acceptance to make the board green.
 

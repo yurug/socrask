@@ -67,8 +67,10 @@ tool also follows this contract:
    own staleness gate.
 4. **Errors that an agent can act on.** Each error gives a stable code, the location
    and the fix: `E-stale: kb/roadmap.md: run roadmap-check.py --write`.
-5. **Quiet, stable output.** On success, one summary line. Output that a script reads
-   has a stable format.
+5. **Quiet, stable output.** Each run lands in an agent's context, so output is a
+   cost. On success, print one summary line. Group repeated findings by code, with a
+   flag (`--all`) that lists them. A read command prints one line per entry and
+   filters before it prints. Output that a script reads has a stable format.
 6. **A header that stands alone.** The file header states the purpose, the usage and
    the exit codes. It lists the cases that the tool checks or changes, and what it does not do.
 7. **Unit tests.** One test per case of the contract, with the idempotence case, in
@@ -86,6 +88,9 @@ tool also follows this contract:
   its Acceptance runs the tool's `--check` mode and the tests.
 - **In the loop.** When a check fails the same way on many sites, fix it with a
   transform, not with one repair per site.
+- **Through its interface, not its data.** When a tool owns a data file, such as the
+  work ledger and `ledger.py`, read and change the file through the tool. Do not load
+  the file into context, and do not write a script against it.
 
 ## The catalog
 

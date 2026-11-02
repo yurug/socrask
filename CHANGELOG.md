@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.24.0 — 2026-11-02
+
+The kit's own tools cost agents tokens that a better interface saves. We measured
+200 agent sessions on two projects. The kit had no command to change the work ledger,
+so agents wrote 408 Python scripts to change it. Each script had about 1,500
+characters, and each one rewrote the whole file. Those ledgers hold 250 to 780 KB,
+which is 60,000 to 200,000 tokens if an agent reads one. `kb-lint.py` printed the
+same warnings at each run, and agents learned to cut its output with `tail`.
+
+- New `tools/ledger.py`. Agents read and change the ledger one entry at a time with
+  `get`, `list`, `set`, `add` and `event`. A read prints one line per entry. Each
+  write validates the ledger with the rules of `project-check.py`. It refuses a
+  write that makes a coherent ledger incoherent, and it keeps the file format.
+- New `ledger.py archive`. It moves closed tasks with finished feedback to
+  `kb/work/ledger-archive.json`, with the closed plans and projects that have no live
+  child. `project-check.py` reads the archive as part of the ledger.
+- `project-check.py` prints a short receipt by default. `--pending` lists the
+  unfinished entities.
+- `kb-lint.py` prints one line for a warning code with more than three hits: the
+  count and the first files. `--all` lists every warning.
+- The tool contract adds an output rule: each run lands in an agent's context, so
+  output is a cost. A tool that owns a data file is the interface to that file.
+- The persistent context says to change the ledger only with `ledger.py`.
+
+On the two ledgers that we measured, the archive moves only 3% of the entries. Most
+of their entries are still open or imported. The gain comes from `ledger.py`, which
+removes the need to load or rewrite the file.
+
+Compatibility: `project-check.py` no longer prints the `pending` list by default; pass
+`--pending` to get it. `--summary` still works, and it is now the default. A project
+that adopted the project ledger vendors `ledger.py`; `kit-adopt.py check` fails until
+it does.
+
 ## 0.23.0 — 2026-11-02
 
 The kit made a check of each rule, but it did not make a tool of each procedure.

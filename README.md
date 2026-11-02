@@ -136,7 +136,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.23.0** — tools, not toil: rule-following work runs as a cataloged, tested deterministic tool, not by hand. The methodology is still evolving, but every deterministic
+**v0.24.0** — fewer tokens per tool call: a ledger CLI replaces per-change scripts, and checks print one line per finding code. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

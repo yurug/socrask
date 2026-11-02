@@ -19,7 +19,7 @@
       "summary": "rule-following work runs as a cataloged, tested tool in kb/conventions/tools.md, not by hand"},
     "outcome-acceptance": {"level": "triggered", "since": "v0.2.0", "tools": ["outcome-check.py"],
       "trigger": "the product has users whose observed outcome decides acceptance"},
-    "project-ledger": {"level": "triggered", "since": "v0.3.0", "tools": ["project-check.py"],
+    "project-ledger": {"level": "triggered", "since": "v0.3.0", "tools": ["project-check.py", "ledger.py"],
       "trigger": "more than one task or feedback source is tracked at a time"},
     "concurrent-agents": {"level": "triggered", "since": "v0.1.0", "tools": ["agent-work.py"],
       "trigger": "several agents write in parallel on one machine"},

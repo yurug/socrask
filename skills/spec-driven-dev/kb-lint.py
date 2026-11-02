@@ -7,11 +7,14 @@ indexes route. This linter turns "the KB is maintained" from a hope into
 an exit code. Wire it into pre-commit and CI; errors fail the build.
 
 Usage:
-    kb-lint.py [KB_DIR] [--strict] [--no-git] [--required-keys k1,k2,...]
+    kb-lint.py [KB_DIR] [--strict] [--no-git] [--all] [--required-keys k1,k2,...]
 
     KB_DIR            defaults to ./kb
     --strict          treat warnings as errors
     --no-git          skip git-based staleness checks
+    --all             print every warning; by default, a warning code with more
+                      than 3 hits prints one line with its count and first files,
+                      because each run lands in an agent's context
     --required-keys   override the required frontmatter keys
                       (use "id,domain,last-updated" for pre-2026 KBs
                       that lack type/summary)
@@ -398,12 +401,16 @@ def check_enforcement(rel, body, fm, kb, errors, warnings):
                               "where you can, else `none: <reason>`"))
 
 
+GROUP_AFTER = 3  # warnings of one code past this count print as one line
+
+
 def main():
     ap = argparse.ArgumentParser(
         description="Mechanical validation for agent-optimized knowledge bases.")
     ap.add_argument("kb_dir", nargs="?", default="kb")
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--no-git", action="store_true")
+    ap.add_argument("--all", action="store_true", help="print every warning, ungrouped")
     ap.add_argument("--required-keys", default=",".join(DEFAULT_REQUIRED))
     args = ap.parse_args()
     required = [k.strip() for k in args.required_keys.split(",") if k.strip()]
@@ -552,8 +559,16 @@ def main():
 
     for rel, msg in errors:
         print(f"ERROR {rel}: {msg}")
+    by_code = {}
     for rel, msg in warnings:
-        print(f"WARN  {rel}: {msg}")
+        by_code.setdefault(msg.split(":", 1)[0], []).append((rel, msg))
+    for code, hits in by_code.items():
+        if args.all or len(hits) <= GROUP_AFTER:
+            for rel, msg in hits:
+                print(f"WARN  {rel}: {msg}")
+        else:
+            first = ", ".join(rel for rel, _ in hits[:GROUP_AFTER])
+            print(f"WARN  {code}: {len(hits)} warnings, first in {first}; --all lists them")
     print(f"kb-lint: {len(files)} files, {len(errors)} errors, "
           f"{len(warnings)} warnings")
     return 1 if errors or (args.strict and warnings) else 0
