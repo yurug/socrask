@@ -214,7 +214,8 @@ Milestone: {ref}
 ## Findings
 
 One row per signal worth acting on. Disposition: `change: <commit, task or KB file>`,
-`reject: <reason>` or `kit: <proposal>`.
+`reject: <reason>` or `kit: <proposal>`. Ask also which operation the agents did by hand
+more than once: each one is a finding, and its change is a tool in `kb/conventions/tools.md`.
 
 | ID | Signal | Cause | Disposition |
 |---|---|---|---|

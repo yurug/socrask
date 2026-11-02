@@ -244,6 +244,9 @@ reviews when authorized and useful; seven parallel agents are not a quality crit
    approach, and what breaks if its main invariant fails. Each wrong or missing answer is
    a finding, located where the reader got lost. This is the check for code rules 2 and 3;
    the author cannot run it, because the author cannot forget the KB.
+10. **Tools**: did an agent do rule-following work by hand that a tool does, or should do?
+   Each such change is a finding: the transform, generator or query to write, and its row
+   in `kb/conventions/tools.md` ([deterministic tools](deterministic-tools.md)).
 
 **Auditors have a stopping rule.** Flag what affects correctness or a stated
 requirement; stay quiet about the rest. An auditor that comments on everything

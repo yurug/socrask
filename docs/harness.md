@@ -19,6 +19,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `skills/spec-driven-dev/core-check.py` | a declared de Bruijn kernel whose checker files or specification are missing, or whose checker exceeds its line budget; an A1 or A2 claim whose proof is missing, admits a goal, uses an untrusted axiom, or predates a change to the kernel |
 | `skills/spec-driven-dev/case-leak-check.py` | production code that names a declared acceptance case (case ID, fixture stem): a special case added so the case passes |
 | `skills/spec-driven-dev/memory-route.py` | nothing (a hook): after a feedback or project memory is saved in a KB project, asks the agent to move the rule to `kb/conventions/method.md` |
+| `skills/spec-driven-dev/tool-check.py` | a project script missing from `kb/conventions/tools.md`, a catalog row whose path, kind or test is missing |
 | `skills/spec-driven-dev/log-check.py` | a log call that names a secret-like value (password, secret, API key, access token, credential) |
 | `skills/spec-driven-dev/ste-check.py` | a human-facing sentence over the length limit, or a word the glossary rejects; warns on hedges and the passive voice |
 | `skills/spec-driven-dev/ratchet-adapt.py` | an adapter result marked complete when the JUnit, TAP or CI-step source says the run did not finish |

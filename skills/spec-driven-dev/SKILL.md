@@ -77,7 +77,8 @@ Cost is measured per accepted task, including repair and review, not per token a
 | Tier | Model | Use for |
 |------|-------|---------|
 | **Judgment** | strongest available; inherit the session model | premortems, question generation, spec/properties/ADR authoring, planning, plan simulation, adversarial verification of findings, escalation target for stuck loops |
-| **Execution** | a model already validated for this bounded task class | routine implementation, mechanical transformations, KB navigation checks |
+| **Execution** | a model already validated for this bounded task class | routine implementation, writing tools, KB navigation checks |
+| **Tool** | no model: a script in `kb/conventions/tools.md` | mechanical changes, derived files, repeated queries ([deterministic tools](references/deterministic-tools.md)) |
 
 Apply the tiers by [references/model-routing.md](references/model-routing.md): Phases 0–3
 on the judgment tier, a capable reference before cost optimization, two failed execution
@@ -353,6 +354,7 @@ standards, auditor fan-out, adversarial verification, and stopping rules.
 
 A surprise in execution is a risk the derisking loop missed: stop the step, write it in
 `kb/risks.md`, and return to Phase 1.5. Do not improvise a new design inside a step.
+Use a tool for rule-following work; build it the second time ([deterministic tools](references/deterministic-tools.md)).
 
 ## Phase 6: KB Sync
 
@@ -423,7 +425,7 @@ becomes its own engineering problem: the next failure looks exactly like one of
 its own bugs, and the team starts debugging the harness instead of the agent.
 
 Keep an inventory — one line per check, saying what it refuses — and hold it to a
-line budget (this kit keeps `docs/harness.md` under 60 lines, enforced by
+line budget (this kit keeps `docs/harness.md` under 70 lines, enforced by
 `tools/harness-inventory.sh`). When the inventory stops fitting, retire checks
 rather than raising the budget. Two kinds of simplicity are in play and only one
 of them is about size: what must be auditable is the **theorem and the
@@ -456,27 +458,25 @@ would an unknown-unknown enter, and which auditor would catch it?
 
 - **Think slow, act fast** — a risk found in planning costs a draft; found in execution,
   it costs a rebuild (Flyvbjerg and Gardner, *How Big Things Get Done*)
-- **Tackle uncertainty and blockers first** — within any plan, step,
-  or single coding session, the hardest, most uncertain, or blocking
-  work goes FIRST. Don't take arbitrary choices that may have
-  observable changes, ask the user. Easy and peripheral work
-  waits. Deferring risk feels productive (visible progress on safe
-  code) but it is how projects discover at the last minute that a core
-  assumption was wrong, after everything around it has already been
-  built. If you notice yourself reaching for the comfortable task
-  while a scary one waits, stop and switch. The scary one is the task.
+- **Tackle uncertainty and blockers first** — within any plan, step, or single coding session,
+  the hardest, most uncertain, or blocking work goes FIRST. Don't take arbitrary choices that
+  may have observable changes, ask the user. Easy and peripheral work waits. Deferring risk
+  feels productive (visible progress on safe code) but it is how projects discover at the last
+  minute that a core assumption was wrong, after everything around it has already been built.
+  If you notice yourself reaching for the comfortable task while a scary one waits, stop and
+  switch. The scary one is the task.
 - **Premortem before you build** — challenge the idea (Phase 0.5) and the plan (Phase 3) by assuming they already failed; blind spots are cheaper to find here than in code
 - **Route models by demonstrated quality** — use capable judgment for uncertain integration,
   acceptance and consequential repairs. Optimize cost only after task-class validation;
   investigate model, specification, context and tool limitations as competing causes.
 - **Fix the harness, not the output** — when something is wrong, improve the spec/KB/tests, not just patch the code.
   Never make a general rule specific so that an acceptance case passes (`case-leak-check.py`)
-- **Enforce, don't request** — anything that has to hold gets a deterministic check, written
-  when the rule is written: a test, a lint rule, a CI script, a hook. Build the tool on the
-  fly — it is usually smaller than the discussion about whether to build it — and prefer a
-  crude, inspectable one over none. Prose in a CLAUDE.md raises a probability; an exit code
-  decides. Where no check is possible, the rule says so and says why, because an audit can
-  weigh a stated reason and cannot weigh a silence.
+- **Enforce, don't request; use a tool, not toil** — anything that has to hold gets a
+  deterministic check, written with the rule: a test, a lint rule, a CI script, a hook. Any
+  operation that follows a rule runs as a tool (`kb/conventions/tools.md`), not by hand. Build
+  the tool on the fly — it is usually smaller than the discussion about it — and prefer a crude,
+  inspectable one over none. Prose in a CLAUDE.md raises a probability; an exit code decides.
+  Where no check is possible, the rule says so and why: an audit can weigh a reason, not a silence.
 - **Invest in the KB** — specifications, properties, and SDK research pay off across every implementation step.
   The engineer's rules about the project go to `kb/conventions/method.md`, never only to agent memory
 - **Keep the human aligned** — explain load-bearing concepts before decisions and

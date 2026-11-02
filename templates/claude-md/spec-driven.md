@@ -41,7 +41,7 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
 7. **The engineer's rules about this project go to the KB, not to agent memory.** Write each
    one as `M<n>` in `kb/conventions/method.md`, with its origin and its check, in the same
    commit. Agent memory is per machine; it keeps only preferences about the person.
-7. **Kit gates.** Before changing behavior, know which `kb/models/` invariant it preserves
+8. **Kit gates.** Before changing behavior, know which `kb/models/` invariant it preserves
    (the step's `Proof:`). Follow the kit's component rules; route critical outputs through
    their kernel. Meter each task (`tools/task-meter.py`). A complex project needs an
    engineer-approved roadmap first (`tools/roadmap-check.py`), and a harness
@@ -91,8 +91,9 @@ Host tools and model names differ: do not pass an unsupported Claude name to ano
   the KB, not just in code.
 - **KB quizzes stay on the execution tier:** the KB must be navigable by the agents that
   will actually consume it; a stronger model masks navigability defects.
-- Machine checks (kb-lint, type checker, linter, tests) cost zero model tokens — run them
-  before every model-based pass.
+- Machine checks cost zero model tokens: run them before every model-based pass.
+  Rule-following work (a change on many files, a derived file, a repeated query) runs as a
+  tool from `kb/conventions/tools.md`; the second time you do it by hand, build the tool.
 
 ## User outcome acceptance
 
@@ -113,8 +114,7 @@ failure reopens that task. Run `tools/project-check.py --root . --ledger kb/work
 in CI/handoff with a fixed `--history-base` for Git-backed work; follow the kit's
 `docs/project-management.md` for adoption and limits.
 
-Keep this file limited to non-negotiable rules and repeated procedures that must be
-present in every session. Put specifications, properties, decisions, external-system
-research, implementation plans, and detailed conventions in the routed KB instead of
-repeating them here. The `spec-driven-dev` skill owns the methodology; this file owns
-only the project's persistent routing and policy.
+Keep this file to non-negotiable rules and procedures needed in every session. Put
+specifications, properties, decisions, external-system research, implementation plans,
+and detailed conventions in the routed KB. The `spec-driven-dev` skill owns the
+methodology; this file owns only the project's persistent routing and policy.

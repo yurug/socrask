@@ -123,7 +123,8 @@ mkdir -p kb/indexes kb/domain kb/spec kb/models kb/properties \
      the choice nobody made.
 8. **`kb/conventions/`** — code-style.md, error-handling.md, testing-strategy.md,
    observability.md (event format, boundary events, metrics; from the template),
-   method.md (the project's own method rules, from the template)
+   method.md (the project's own method rules, from the template), tools.md (the
+   project's deterministic tools, from the template; [deterministic tools](deterministic-tools.md))
 9. **`kb/runbooks/audit-checklist.md`** — structured quality checklist
 10. **`kb/indexes/by-task.md`** — for each task type (implement, audit, debug, test): ordered file list + "key questions this answers"
 11. **`kb/INDEX.md`** — LAST (needs to reference everything):

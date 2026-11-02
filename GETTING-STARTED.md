@@ -78,7 +78,7 @@ Step 2d of the skill specifies —
    future session;
 3. the essential kit tools vendored with provenance (docs/adoption-levels.md):
    `python3 "$KIT/tools/kit-adopt.py" vendor kb-lint.py assumption-check.py plan-check.py
-   ste-check.py ratchet.py ratchet-adapt.py alignment-check.py kit-adopt.py kit-features.json`,
+   ste-check.py ratchet.py ratchet-adapt.py alignment-check.py tool-check.py kit-adopt.py kit-features.json`,
    then triggered tools as their triggers hold, all into tools/ and wired into pre-commit and CI, errors
    failing the build (assumption-check without `--exit` there: open rows are
    normal mid-Phase 1; plan-check once kb/plan.md exists);

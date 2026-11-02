@@ -93,6 +93,7 @@ class RetroTests(unittest.TestCase):
     def test_findings_need_a_disposition(self):
         self.write_ledger()
         path = Path(self.run_retro("draft", "P1/M2", "--write").split("wrote ", 1)[1].strip())
+        self.assertIn("did by hand\nmore than once", path.read_text())
         rel = str(path.relative_to(self.root))
         self.write_ledger(retrospective=rel)
         self.assertIn("has no finding", self.run_retro("check", code=1))

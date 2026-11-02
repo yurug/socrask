@@ -57,6 +57,8 @@ An agent is a stochastic process. The harness constrains it:
   verification; execution-tier models handle task classes with demonstrated acceptance quality. Use a
   capable reference for unfamiliar integration and consequential repairs, retain bounded
   escalation, and measure total cost per accepted task including review and retries.
+  Below both tiers, a tool: rule-following work goes to a script, which costs no tokens
+  and does not vary from one site to the next.
 
 The harness is what makes the agent's output converge on correctness instead of
 plausibility.
@@ -259,7 +261,11 @@ stays valid, run final validation, and present results.
    CI script, a hook. Build the tool on the fly; it is usually smaller than the discussion
    about whether to build it. A rule with no check is a rule you are hoping about, and the
    hoping is invisible — which is why the declaration is mandatory and "nothing checks this,
-   because <reason>" is the only honest alternative
+   because <reason>" is the only honest alternative. The same holds for the work itself:
+   an operation that follows a rule (a change on many files, a derived file, a repeated
+   query) runs as a tool, not by hand. The model writes the tool once; the reviewer reads
+   its rule instead of each site, and the next run costs nothing. The second time an agent
+   does it by hand, it builds the tool, and `kb/conventions/tools.md` lists it with its test
 6. **Invest in the KB** — specifications, properties, and SDK research pay off across every implementation step
 7. **External deps are dangerous** — always research actual runtime behavior (lazy-loading,
    rate limits, request costs) before building on an SDK

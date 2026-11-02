@@ -16,3 +16,8 @@ The tier table lives in SKILL.md. These rules apply it.
    of every decision-making helper, not just the model selected in the chat UI.
 5. Machine checks (kb-lint, type checker, linter, tests) cost zero model tokens — run
    them before every model-based pass, at any tier.
+6. **An operation that follows a rule goes to a tool, not to a model.** A mechanical
+   change, a derived file or a repeated query is a script: the model writes it once,
+   and the reviewer reads its rule instead of each site
+   ([deterministic tools](deterministic-tools.md)). The execution tier writes the tool;
+   the judgment tier writes it when it touches a kernel.

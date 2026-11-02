@@ -20,6 +20,7 @@ related: [by-task, glossary]
 - `assumptions.md` -- choices not yet settled; an open row means ask before relying on it
 - `risks.md` -- what could invalidate the plan, and the experiment that retired each risk
 - `conventions/method.md` -- the project's own method rules (`M<n>`), stated by the engineer
+- `conventions/tools.md` -- the project's tools; use one before you do rule-following work by hand
 
 **Then navigate by task** -- see `indexes/by-task.md`
 

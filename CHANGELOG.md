@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.23.0 — 2026-11-02
+
+The kit made a check of each rule, but it did not make a tool of each procedure.
+Agents applied mechanical changes file by file, edited derived files by hand, and
+explored the code again for the same answer. The routing table even sent mechanical
+transformations to a model. No KB file listed the project's own tools, so agents did
+not know them.
+
+- Rule-following work runs as a tool, not by hand. The model writes the tool once,
+  and the reviewer reads its rule instead of each site. The second time an agent does
+  an operation by hand, it builds the tool.
+- New `references/deterministic-tools.md`. It gives five kinds of tool: check,
+  transform, generate, query and run. It says when to build one, and it sets the tool
+  contract. A tool is deterministic and idempotent, it has a `--check` mode, and its
+  errors name the fix. Each tool has unit tests and a header that stands alone.
+- New tool tier in the routing table, below the execution tier. The execution tier
+  writes the tools, and the tools do the mechanical work.
+- New catalog, `templates/kb/conventions/tools.md`. The new `tool-check.py` fails when a
+  project script has no row, or when a row names a missing path, an unknown kind, or no
+  test. It skips the kit files that `tools/socrask.json` lists.
+- The Phase 5 review asks whether an agent did by hand what a tool does. The milestone
+  retrospective asks which operation the agents repeated by hand.
+- The persistent context and the audit checklist state the rule.
+
+`tool-check.py` cannot see that an agent edited many files by hand. It cannot tell
+whether a tool is deterministic. The review and the retrospective cover those.
+
+Compatibility: the feature is essential. A project that adopts it vendors
+`tool-check.py` and starts `kb/conventions/tools.md`. A project with no script of its
+own passes without a catalog.
+
 ## 0.22.0 — 2026-11-01
 
 The method did not state its order. Agents retired risks during execution: in the first

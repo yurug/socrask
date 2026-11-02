@@ -80,8 +80,9 @@ repairs without new evidence. It runs at each completed milestone.
 3. With the engineer, write one finding per signal worth acting on, with its
    cause. Give each finding a disposition: `change:` and the commit, task or KB
    file that acts on it; `reject:` and the reason; or `kit:` when the change
-   holds beyond the project. If nothing is worth acting on, write
-   `No findings: <reason>`.
+   holds beyond the project. Ask also which operation the agents did by hand
+   more than once: its change is a tool ([deterministic tools](../skills/spec-driven-dev/references/deterministic-tools.md)).
+   If nothing is worth acting on, write `No findings: <reason>`.
 4. Set `retrospective` on the milestone in the ledger. `retro.py check` runs in
    CI. It fails on a completed milestone without a retrospective, and on a
    finding without a disposition.
