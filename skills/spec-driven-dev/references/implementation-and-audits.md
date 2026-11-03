@@ -160,11 +160,15 @@ KB, the spec, the plan or this session. Write for them.
    - Use plain words, or define a project term on its first use in the file. No
      session, plan or review labels (step numbers, slice names, finding IDs).
    - Describe the code as it is now, not its history ("new approach", "fixed",
-     "now handles"). History goes in the commit message.
+     "now handles"). History goes in the commit message. One exception: when a past
+     decision still constrains the code, explain it with its date.
    - At a call whose correctness depends on a property of the callee, state that
      property at the call site. Do not write "see foo.ts".
 3. **Literate at the right level.** Explain the idea before the details, as a textbook
-   section does.
+   section does. A comment is an argument written for a colleague: it defines its
+   terms, states a claim, says why it holds, and says what the code does with it.
+   [Explaining code](explaining-code.md) gives the moves, with examples; use the ones
+   the code needs.
    - The file header gives the problem the module solves, the approach (the key idea,
      the data representation, and why it was chosen over the obvious alternative), the
      invariants it keeps, and what it does not do. For a tricky module, add a short
@@ -176,6 +180,9 @@ KB, the spec, the plan or this session. Write for them.
      needed. Do not comment each line, and never write a comment that restates the
      next line.
    - Every non-obvious conditional gets a WHY comment. Every magic value is explained.
+   - Where the code relies on an invariant, give its argument there, and name the
+     module that guarantees each precondition. When you do not know why something is
+     so, write that; never write a reason you did not check.
    - Order the file for a reader, where the language allows it: the central type and
      the entry point first, the helpers after.
 4. **Unit tests for each module's contract.** Each module has unit tests that call its
@@ -184,6 +191,12 @@ KB, the spec, the plan or this session. Write for them.
    kind of result, each error, each boundary value. Read together, the test file is an
    executable description of the module. When an integration test finds a defect,
    add a unit test in the module where the defect is.
+
+**Explanation pass.** When the step's tests pass, run the explanation pass of
+[explaining code](explaining-code.md) on the judgment tier, for each non-trivial changed
+file: a kernel, an algorithm, a data representation, concurrent code or a protocol.
+Commit it alone (`explain: <file>: …`). `comment-check.py` warns on hollow words and on
+comments that hold only KB IDs.
 
 **Write comprehensive tests:**
 - Unit tests for each changed module's contract (rule 4 above), then integration tests,
@@ -240,8 +253,10 @@ reviews when authorized and useful; seven parallel agents are not a quality crit
 7. **Provability**: is there a property from `kb/properties/` that explains why this change is correct?
 8. **Component design**: the review questions in [component design](component-design.md#review-questions).
 9. **Cold read**: give a fresh reviewer each changed file alone, without the KB, the task
-   or the author's explanation. Ask what problem the file solves, how it works, why this
-   approach, and what breaks if its main invariant fails. Each wrong or missing answer is
+   or the author's explanation. Ask the six questions of
+   [the cold read](explaining-code.md#the-cold-read): the problem, the idea and the
+   rejected alternative, the invariants and why they hold, the preconditions and who
+   guarantees them, what breaks first, and the trap for the next maintainer. Each wrong or missing answer is
    a finding, located where the reader got lost. This is the check for code rules 2 and 3;
    the author cannot run it, because the author cannot forget the KB.
 10. **Tools**: did an agent do rule-following work by hand that a tool does, or should do?

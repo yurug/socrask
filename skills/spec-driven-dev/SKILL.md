@@ -76,7 +76,7 @@ Cost is measured per accepted task, including repair and review, not per token a
 
 | Tier | Model | Use for |
 |------|-------|---------|
-| **Judgment** | strongest available; inherit the session model | premortems, question generation, spec/properties/ADR authoring, planning, plan simulation, adversarial verification of findings, escalation target for stuck loops |
+| **Judgment** | strongest available; inherit the session model | premortems, question generation, spec/properties/ADR authoring, planning, plan simulation, the [explanation pass](references/explaining-code.md), adversarial verification of findings, escalation target for stuck loops |
 | **Execution** | a model already validated for this bounded task class | routine implementation, writing tools, KB navigation checks |
 | **Tool** | no model: a script in `kb/conventions/tools.md` | mechanical changes, derived files, repeated queries ([deterministic tools](references/deterministic-tools.md)) |
 

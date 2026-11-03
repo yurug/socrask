@@ -39,7 +39,8 @@ the agent's session. Every rule below serves this reader.
   Bad: `// enforces P4`.
 - Plain words, or a project term defined on first use in the file. No step, slice or
   finding labels.
-- Comments describe the code as it is. History goes in commit messages.
+- Comments describe the code as it is. History goes in commit messages, except a past
+  decision that still constrains the code: explain it with its date.
 - At a call that relies on a property of the callee, state that property there.
 
 ### Literate at the right level
@@ -49,6 +50,14 @@ the agent's session. Every rule below serves this reader.
   format of [the ecosystem's doc tool].
 - Inside an algorithm: comments name its phases and say why each is needed. No comment
   restates the next line.
+- A comment is an argument: define the terms, state the claim, say why it holds, say what
+  the code does with it. Where the code relies on an invariant, give its argument and
+  name who guarantees each precondition. Justify a local choice where it is made.
+- Say what is not known. Never write a reason that nobody checked.
+- Document data: each field's meaning, unit and lifecycle; draw a byte or bit layout.
+- Warn the next maintainer of traps, and list every exception to a rule.
+- No hollow words ("robust", "properly", "handles edge cases"): name the case.
+- The moves, with examples: `references/explaining-code.md` in the spec-driven-dev skill.
 - Central type and entry point first, helpers after, where the language allows it.
 
 ### Unit tests per module
@@ -66,9 +75,11 @@ change itself. A larger rework becomes a roadmap item.
 information hiding, forbidden constructs (e.g. `any`), formatter and linter.]
 
 ## Agent notes
-> Read this file before writing or changing code. In review, the cold-read audit checks
-> the first three rules: a fresh reader gets the changed file alone and must explain what
-> it does, how, and why.
+> Read this file before writing or changing code. When the tests pass, the judgment tier
+> runs the explanation pass on each non-trivial changed file. In review, the cold-read
+> audit checks the first three rules: a fresh reader gets the changed file alone and
+> answers six questions about it. `comment-check.py` warns on hollow words and on
+> comments that hold only KB IDs.
 
 ## Related files
 - `conventions/testing-strategy.md` -- unit test expectations

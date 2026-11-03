@@ -22,7 +22,11 @@ Does NOT cover: how to fix findings (see conventions/ files for guidance).
 - [ ] Every public function documents its contract (params, result, errors, invariants in words)
 - [ ] A cold reader with only the file explains what it does, how, and why (see `conventions/code-style.md`)
 - [ ] No comment relies on the KB: each property or ADR ID follows a claim written in words
-- [ ] No comment restates the next line or tells the code's history
+- [ ] No comment restates the next line or tells the code's history (a dated note on a decision that still constrains the code is allowed)
+- [ ] Each invariant the code relies on has its argument at the site, and each precondition names who guarantees it
+- [ ] No comment gives a reason nobody checked; an unknown reason is written as unknown
+- [ ] Non-trivial changed files had an explanation pass on the judgment tier (`explain:` commit)
+- [ ] `comment-check.py` reports no hollow word and no ID-only comment in changed files
 - [ ] Files under ~30% comment ratio checked for missing WHYs (ratio is a smoke alarm, never a target)
 - [ ] Each function over ~50 lines and file over ~400 lines states why it is one concept
 - [ ] Each changed component's purpose fits one sentence without "and"

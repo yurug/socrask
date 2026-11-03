@@ -227,6 +227,15 @@ candidates small, and the acceptance criterion is the same either way. An execut
 verbatim, hypotheses ruled out, suspected root cause, suspected spec gaps) and a judgment-tier
 agent continues from that report — up to 7 iterations total, then the step gets split.
 
+When the tests pass, a judgment-tier agent runs an explanation pass on each non-trivial
+changed file. The standard is code that engineers read to learn from, such as Menhir or the
+GNU C library: a comment is an argument for a colleague. It defines its terms, states a
+claim, says why it holds, and says what the code does with it. It gives the argument of an
+invariant where the code relies on it, justifies a choice where it is made, and says what
+is not known instead of inventing a reason. The Phase 5 cold read checks the result: a fresh
+reader answers six questions about each file alone, and the scores are compared at each
+milestone.
+
 ### Phase 5: Quality Audits
 Multi-axis: test gaps, security, performance, UX, spec compliance, simplicity, provability.
 Select audit dimensions by the changed risks. Use independent capable judgment for

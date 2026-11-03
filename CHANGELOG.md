@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.25.0 — 2026-11-03
+
+The code rules said what a comment must contain, but not how to explain. They did not
+ask for definitions, for reasons, or for the argument of an invariant where the code
+relies on it. Nothing stopped an agent from writing a reason that nobody checked. The
+rule against history in comments was too strict: a past decision that still shapes the
+code needs its explanation.
+
+- New `references/explaining-code.md`. Its standard is code that engineers read to
+  learn from, such as Menhir and the GNU C library. It gives thirteen explanation
+  moves, each with an example that we wrote. Four moves define before use, argue,
+  prove the invariant at the site, and justify a choice where it is made. Three moves
+  state the scope of a claim, say what is not known, and give a reading path. Others
+  warn of traps, document data, and state the properties of a function. The last ones
+  label arguments, cite the source, and keep a dated note on a past decision.
+- The reference links to four source files as a reading list. It quotes none of them.
+- New explanation pass. When the tests pass, the judgment tier rewrites the explanation
+  of each non-trivial changed file, in its own `explain:` commit.
+- The Phase 5 cold read asks six questions. A new procedure scores the answers at each
+  milestone, so that the retrospective sees the trend.
+- New `comment-check.py`. It warns on hollow words ("robust", "properly", "handles edge
+  cases") and on comments that hold only KB IDs. `--strict` makes it fail. On one agent
+  codebase of 1,657 files, it found 35 comments made only of IDs and 13 hollow words.
+- The code rules allow a dated note on a past decision that still constrains the code.
+  A comment never gives a reason that nobody checked.
+- `code-style.md`, the audit checklist and the methodology state the new rules.
+
+`comment-check.py` cannot find a missing or a wrong explanation. The cold read finds
+those.
+
+Compatibility: the feature is essential. A project that adopts it vendors
+`comment-check.py`. The check only warns unless the project passes `--strict`.
+
 ## 0.24.0 — 2026-11-02
 
 The kit's own tools cost agents tokens that a better interface saves. We measured
