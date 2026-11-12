@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.26.0 — 2026-11-12
+
+We compared Socrask with roster, another kit for agent teams. We took four ideas. Nothing
+checked that a step changed only the files of the approved plan. The audit-and-fix loop
+of Phase 5 had no bound. The kit said nothing about the context window. Research
+questions could name the answer that the agent wanted.
+
+- New `scope-check.py`. Before a step closes, it compares the files changed since the
+  step's base commit with the step's Files. It refuses the others, except `kb/` and
+  `.ratchet.json`. The agent reverts the change, or adds the file to the plan with a
+  reason, so that the engineer sees it.
+- New findings ledger, `templates/kb/reports/findings.md`, and `findings-check.py`. From
+  round 2 on, a round that finds a new high finding or reopens one is a strike. Two
+  strikes in a row stop the loop: the engineer decides where to route the failure, and
+  the ledger records the decision. Past the round cap, an open high finding also goes to
+  the engineer. A closed finding needs its evidence.
+- Context is a budget. Each phase writes its results to files as it goes, so that the
+  next phase or a fresh session can start from the files alone. A subagent does the
+  surveys that fill the context, and returns only its conclusion.
+- Neutral research. Before research, the agent writes questions that do not name the
+  intended change. A research subagent gets only these questions, and answers each one
+  with its source.
+
+We did not take roster's hidden wrong answer in the human quiz. It deceives the engineer
+whom the kit must align. The check inventory is now at its budget of 70 lines. The
+next check must retire or merge another one.
+
+`scope-check.py` cannot tell whether a change inside a declared file stays within the
+step's intent. `findings-check.py` cannot tell whether a severity is honest.
+
+Compatibility: the two features are essential. A project that adopts them vendors
+`scope-check.py` and `findings-check.py`. `scope-check.py` imports `plan-check.py`.
+
 ## 0.25.0 — 2026-11-03
 
 The code rules said what a comment must contain, but not how to explain. They did not

@@ -16,7 +16,14 @@ The tier table lives in SKILL.md. These rules apply it.
    of every decision-making helper, not just the model selected in the chat UI.
 5. Machine checks (kb-lint, type checker, linter, tests) cost zero model tokens — run
    them before every model-based pass, at any tier.
-6. **An operation that follows a rule goes to a tool, not to a model.** A mechanical
+6. **Context is a budget.** A model reasons worse as its context fills, well before
+   the window is full. It also gives less weight to what came early. Write each
+   phase's results to files as you go (`kb/`, `kb/reports/`, `SESSION_STATE.md`), so
+   that the next phase, or a fresh session, can start from the files alone. When a
+   long phase has filled much of the context, save to a file, then compact or start
+   fresh before the next gate. Give a context-heavy survey to a subagent, which
+   returns only its conclusion.
+7. **An operation that follows a rule goes to a tool, not to a model.** A mechanical
    change, a derived file or a repeated query is a script: the model writes it once,
    and the reviewer reads its rule instead of each site
    ([deterministic tools](deterministic-tools.md)). The execution tier writes the tool;

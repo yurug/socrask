@@ -19,6 +19,18 @@ Ratchet input is complete version-1 structured test results, not log text; see
 
 For each step in the plan:
 
+**Stay in the step's scope.** The engineer approved the plan with each step's Files.
+Before the step closes, run:
+
+```sh
+python3 tools/scope-check.py kb/plan.md --step <ID> --base <the step's base commit>
+```
+
+It refuses a changed file that the step does not declare. Revert it, or add it to the
+step's Files with a reason, so that the change to the plan is visible. Gardening stays
+in scope: it touches only the files of the step. A useful change outside the scope
+becomes a note for a later step, not an edit.
+
 ### Ralph Loop (max 7 iterations per step across both tiers; if not converging, stop and split the step)
 
 Ralph Loop is the iteration shell. Delegate when independent work and host authorization
@@ -271,7 +283,21 @@ attention than it returns. Taste, naming preferences, and "I would have done it
 differently" are not findings. If a dimension produces no finding that clears
 that bar, it reports none; an empty audit is a valid result.
 
-Write findings to `kb/reports/`.
+Write findings to a ledger, `kb/reports/findings-<slice>.md`, from
+`templates/kb/reports/findings.md`: one row per finding, with its round, severity,
+status and evidence. A fix updates the row; it never deletes it.
+
+**The audit-and-fix loop converges, or it stops.** Each round should find less. From
+round 2 on, a round that finds a new high finding, or reopens a fixed one, is a strike.
+Two strikes in a row mean that more rounds will not converge: the fixes create defects,
+or the specification lets them through. Stop fixing, and route the failure with the
+engineer ([route every failure](../SKILL.md#route-every-failure-to-the-layer-that-owns-it)).
+Record the decision as `Escalated: round N, <decision>`. Past the round cap (3 by
+default), an open high finding also goes to the engineer.
+
+```sh
+python3 tools/findings-check.py kb/reports/findings-<slice>.md
+```
 
 **Adversarial verification before fixing:** try to refute consequential findings against
 the code, contract and a reproduction. Use a fresh capable reviewer when authorized and

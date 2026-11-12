@@ -21,6 +21,8 @@ listed here, so the page cannot silently fall behind the machinery.
 | `skills/spec-driven-dev/memory-route.py` | nothing (a hook): after a feedback or project memory is saved in a KB project, asks the agent to move the rule to `kb/conventions/method.md` |
 | `skills/spec-driven-dev/tool-check.py` | a project script missing from `kb/conventions/tools.md`, a catalog row whose path, kind or test is missing |
 | `skills/spec-driven-dev/comment-check.py` | nothing by default: warns on a comment with a hollow word or only KB IDs; `--strict` refuses them |
+| `skills/spec-driven-dev/scope-check.py` | a file changed since the step's base commit that the step's Files do not declare (`kb/` excepted) |
+| `skills/spec-driven-dev/findings-check.py` | a Phase 5 audit loop that keeps finding new or reopened high findings two rounds in a row, an open high finding past the round cap, a closed finding without evidence |
 | `skills/spec-driven-dev/log-check.py` | a log call that names a secret-like value (password, secret, API key, access token, credential) |
 | `skills/spec-driven-dev/ste-check.py` | a human-facing sentence over the length limit, or a word the glossary rejects; warns on hedges and the passive voice |
 | `skills/spec-driven-dev/ratchet-adapt.py` | an adapter result marked complete when the JUnit, TAP or CI-step source says the run did not finish |
@@ -44,8 +46,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `tools/source-check.py` | an external source without owner, tool or cadence, an internal source feeding a public KB, a sync without its digest, a digest item whose disposition does not resolve; warns when a source is overdue |
 | `tools/task-meter.py` | an outlier task (over twice its tier median in tokens) without a retrospective (`report --check`); never fails on cost alone. Records tool calls and harness script failures per task |
 | `tools/retro.py` | a completed milestone without a retrospective, a retrospective finding without a disposition; `record` journals each local gate result |
-| `tools/update-check.py` | lifecycle helper: tells the agent at session start that a newer kit release exists; never updates |
-| `tools/inject-profile.sh` | lifecycle helper: injects only the explicitly enrolled personal profile |
+| `tools/update-check.py`, `tools/inject-profile.sh` | lifecycle helpers: tell the agent at session start that a newer kit release exists (never updates); inject only the explicitly enrolled personal profile |
 | `tools/outcome-check.py` | incomplete/stale user outcomes, missing cases, erased first-attempt failures, mismatched release/contract and measured regressions |
 | `tools/ledger.py` | a ledger write that makes a coherent ledger incoherent, an unknown ID, a duplicate ID |
 | `tools/project-check.py`, `tools/project_history.py` | orphaned commitments, unsupported closure and, with a fixed Git base, removed or rewritten committed feedback history |

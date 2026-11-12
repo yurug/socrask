@@ -143,7 +143,9 @@ the exact commit, and each engineer decides for their own area
 ([team collaboration](../docs/team-collaboration.md)).
 
 ### Phase 1: Ambiguity Resolution
-Generate questions, propose defaults, iterate with the human. The failure mode is asking
+Generate questions, propose defaults, iterate with the human. Research with neutral
+questions that do not name the intended change: an agent that knows the answer it wants
+finds evidence for it. The failure mode is asking
 too few: record every unsettled choice in an assumption ledger, have an independent
 agent write its own questions each round, and run another round after any overridden
 default. Exit when the ledger has no open row, checked by a script, not by asking the
@@ -227,6 +229,10 @@ candidates small, and the acceptance criterion is the same either way. An execut
 verbatim, hypotheses ruled out, suspected root cause, suspected spec gaps) and a judgment-tier
 agent continues from that report — up to 7 iterations total, then the step gets split.
 
+A step changes only the files that the approved plan declares; a check compares the diff
+with the step's Files. Each phase writes its results to files as it goes: a model reasons
+worse as its context fills, and the next phase must be able to start from the files alone.
+
 When the tests pass, a judgment-tier agent runs an explanation pass on each non-trivial
 changed file. The standard is code that engineers read to learn from, such as Menhir or the
 GNU C library: a comment is an argument for a colleague. It defines its terms, states a
@@ -241,7 +247,10 @@ Multi-axis: test gaps, security, performance, UX, spec compliance, simplicity, p
 Select audit dimensions by the changed risks. Use independent capable judgment for
 consequential acceptance and trust boundaries; delegation depends on authorization and
 independent work, not a fixed auditor count. Verify consequential findings before repair. Ralph Loop the audits
-themselves — audit -> fix -> re-audit until 0 criticals.
+themselves — audit -> fix -> re-audit until 0 criticals — and stop the loop when it diverges.
+A findings ledger keeps every finding with its round. When two rounds in a row find new or
+reopened high findings, more rounds will not converge: the fixes create defects, or the
+specification lets them through, and the engineer decides where to route the failure.
 
 ### Phase 6: KB Sync
 After implementation, verify the KB still matches reality. Update stale files. The KB is

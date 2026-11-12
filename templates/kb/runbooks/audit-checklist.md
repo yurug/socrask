@@ -32,6 +32,7 @@ Does NOT cover: how to fix findings (see conventions/ files for guidance).
 - [ ] Each changed component's purpose fits one sentence without "and"
 - [ ] No two files that a reader must open together, or that always change together; no file with one small helper for one user
 - [ ] Gardening refactorings are in their own commits, before the behavior change
+- [ ] Each step changed only its declared Files (`scope-check.py`)
 - [ ] Mechanical changes and derived files come from a tool in `conventions/tools.md`, in a `transform:` commit
 - [ ] Every project script is in `conventions/tools.md`, with its test (`tool-check.py`)
 - [ ] No `any` types (use `unknown` and narrow)

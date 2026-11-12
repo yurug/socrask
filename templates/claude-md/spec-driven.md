@@ -7,10 +7,10 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
 1. **Before ANY task — even one that looks trivial** — read `kb/INDEX.md` and load the
    quick-load bundle matching your task type (`kb/indexes/by-task.md`). A "simple fix"
    done without the KB is how properties get silently violated.
-2. **Same-commit rule:** if your change alters behavior described in a KB file, update
-   that KB file (and its `last-updated`) in the SAME commit as the code change. A KB
-   updated "later" is a KB that drifts; a KB that drifts loses the agents' trust; a KB
-   nobody trusts stops being maintained.
+2. **Same-commit rule:** if your change alters behavior described in a KB file, update that
+   KB file (and its `last-updated`) in the SAME commit as the code change. A KB updated
+   "later" is a KB that drifts; a KB that drifts loses the agents' trust; a KB nobody trusts
+   stops being maintained.
 3. **If the code contradicts the KB**, stop and reconcile before building on either:
    either the KB is stale (fix it, same commit) or the code is wrong (the KB wins —
    it is the spec).
@@ -26,26 +26,25 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
    Prose is not a channel: instructions raise a probability, exit codes decide. If nothing
    can check the rule, say so where the rule is written, with the reason — an audit can
    weigh a stated reason and cannot weigh a silence.
-6. **Keep communication concise and alignment explicit.** Lead with the outcome or
-   decision, explain only what is needed to act, and state important uncertainty.
-   Plans, reports and briefs follow the kit's writing standard (STE rules, glossary
-   terms); `tools/ste-check.py` checks them.
-   Use Inbrief when unfamiliar concepts affect a decision; use Backbrief on the
-   final aggregate diff for every non-Direct change. The coordinator owns human
-   checkpoints; child agents return evidence without prompting independently.
+6. **Keep communication concise and alignment explicit.** Lead with the outcome or decision,
+   explain only what is needed to act, and state important uncertainty. Plans, reports and
+   briefs follow the kit's writing standard (STE rules, glossary terms);
+   `tools/ste-check.py` checks them. Use Inbrief when unfamiliar concepts affect a decision;
+   use Backbrief on the final aggregate diff for every non-Direct change. The coordinator
+   owns human checkpoints; child agents return evidence without prompting independently.
    Record checkpoint status and evidence in the work's alignment record and run
-   `tools/alignment-check.py` at start and finish (see `docs/alignment.md`).
-   A launched session is pending, not complete. Only actual human evidence or
-   explicit degraded authorization settles a required checkpoint. Questions never
-   automatically demote knowledge; persistent personal models require owner opt-in.
+   `tools/alignment-check.py` at start and finish (see `docs/alignment.md`). A launched
+   session is pending, not complete. Only actual human evidence or explicit degraded
+   authorization settles a required checkpoint. Questions never automatically demote
+   knowledge; persistent personal models require owner opt-in.
 7. **The engineer's rules about this project go to the KB, not to agent memory.** Write each
    one as `M<n>` in `kb/conventions/method.md`, with its origin and its check, in the same
    commit. Agent memory is per machine; it keeps only preferences about the person.
 8. **Kit gates.** Before changing behavior, know which `kb/models/` invariant it preserves
-   (the step's `Proof:`). Follow the kit's component rules; route critical outputs through
-   their kernel. Meter each task (`tools/task-meter.py`). A complex project needs an
-   engineer-approved roadmap first (`tools/roadmap-check.py`), and a harness
-   retrospective at each milestone (`tools/retro.py`).
+   (the step's `Proof:`). Change only the step's Files (`tools/scope-check.py`). Follow the
+   component rules; route critical outputs through their kernel. Meter each task
+   (`tools/task-meter.py`). A complex project needs an engineer-approved roadmap
+   (`tools/roadmap-check.py`) and a retrospective per milestone (`tools/retro.py`).
 
 ## Before you start: size it, and after it fails: route it
 
@@ -86,9 +85,10 @@ Host tools and model names differ: do not pass an unsupported Claude name to ano
   capability for unfamiliar integration, acceptance design and consequential repairs.
 - **Escalation:** execution subagents run at most 2 Ralph iterations, then stop and return a
   failure report (failing tests verbatim, hypotheses ruled out, commits so far, suspected
-  root cause, suspected spec gaps). A judgment-tier subagent continues from that report —
-  7 iterations total per step, then split the step. A spec gap found this way is fixed in
-  the KB, not just in code.
+  root cause, suspected spec gaps). A judgment-tier subagent continues from that report — 7
+  iterations total per step, then split the step. A spec gap found this way is fixed in the
+  KB, not just in code.
+- **Context is a budget:** save each phase's results to files as you go, and resume from them.
 - **KB quizzes stay on the execution tier:** the KB must be navigable by the agents that
   will actually consume it; a stronger model masks navigability defects.
 - Machine checks cost zero model tokens: run them before every model-based pass.

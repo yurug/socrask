@@ -80,9 +80,10 @@ Cost is measured per accepted task, including repair and review, not per token a
 | **Execution** | a model already validated for this bounded task class | routine implementation, writing tools, KB navigation checks |
 | **Tool** | no model: a script in `kb/conventions/tools.md` | mechanical changes, derived files, repeated queries ([deterministic tools](references/deterministic-tools.md)) |
 
-Apply the tiers by [references/model-routing.md](references/model-routing.md): Phases 0–3
-on the judgment tier, a capable reference before cost optimization, two failed execution
-attempts before handoff, machine checks before every model pass.
+Apply the tiers by [references/model-routing.md](references/model-routing.md): Phases 0–3 on
+the judgment tier, a capable reference before cost optimization, two failed execution
+attempts before handoff, machine checks before every model pass. Context is a budget: save
+each phase's results to files, so that a fresh session can resume from them alone.
 
 ## User outcome quality
 
@@ -205,7 +206,8 @@ reference's install instructions when requested rather than blocking on setup.
 ## Phase 1: Ambiguity Resolution
 
 Before writing ANY production code, eliminate all blind spots, fast. A question only an
-experiment can answer is a Phase 1.5 risk, not a default to guess.
+experiment can answer is a Phase 1.5 risk, not a default to guess. Research with neutral
+questions that do not name the intended change ([neutral research](references/ambiguity-resolution.md#neutral-research)).
 
 **Generate questions grouped by topic:**
 - Features and scope (what does it do, what does it NOT do)
@@ -355,6 +357,7 @@ standards, auditor fan-out, adversarial verification, and stopping rules.
 A surprise in execution is a risk the derisking loop missed: stop the step, write it in
 `kb/risks.md`, and return to Phase 1.5. Do not improvise a new design inside a step.
 Use a tool for rule-following work; build it the second time ([deterministic tools](references/deterministic-tools.md)).
+`scope-check.py` keeps each step in its Files; `findings-check.py` stops an audit loop that diverges.
 
 ## Phase 6: KB Sync
 
@@ -412,47 +415,44 @@ layer broke**. Three answers, and picking one is mandatory before any repair:
 | the spec permitted it, or never said | **the specification** | close the KB gap first, then re-run — the fix is a KB commit, and the code follows |
 | the spec said it and nothing noticed | **the harness** | add the check that would have caught this class, then fix the instance |
 
-A loop with no routing degenerates into retry-until-green, and retry-until-green
-converges on plausible rather than on correct. The tell: the same class of defect
-reappearing in a later cycle means an earlier failure was routed to the agent
-when it belonged to the spec or the harness.
+A loop with no routing degenerates into retry-until-green, and retry-until-green converges
+on plausible rather than on correct. The tell: the same class of defect reappearing in a
+later cycle means an earlier failure was routed to the agent when it belonged to the spec or
+the harness.
 
 ## The harness must stay explainable
 
-**If you cannot explain to a new engineer what the harness checks, the harness is
-too complex.** A harness with hundreds of checks and layers of meta-checking
-becomes its own engineering problem: the next failure looks exactly like one of
-its own bugs, and the team starts debugging the harness instead of the agent.
+**If you cannot explain to a new engineer what the harness checks, the harness is too
+complex.** A harness with hundreds of checks and layers of meta-checking becomes its own
+engineering problem: the next failure looks exactly like one of its own bugs, and the team
+starts debugging the harness instead of the agent.
 
-Keep an inventory — one line per check, saying what it refuses — and hold it to a
-line budget (this kit keeps `docs/harness.md` under 70 lines, enforced by
-`tools/harness-inventory.sh`). When the inventory stops fitting, retire checks
-rather than raising the budget. Two kinds of simplicity are in play and only one
-of them is about size: what must be auditable is the **theorem and the
-specification** (what was proved, what the team wants), never the proof. A proof
-can be ten thousand lines of tactics; that is the verifier's problem. The
-specification being unreadable is yours.
+Keep an inventory — one line per check, saying what it refuses — and hold it to a line
+budget (this kit keeps `docs/harness.md` under 70 lines, enforced by
+`tools/harness-inventory.sh`). When the inventory stops fitting, retire checks rather than
+raising the budget. Two kinds of simplicity are in play and only one of them is about size:
+what must be auditable is the **theorem and the specification** (what was proved, what the
+team wants), never the proof. A proof can be ten thousand lines of tactics; that is the
+verifier's problem. The specification being unreadable is yours.
 
-Stupidly simple, not simplistic: some systems are intrinsically complex, and
-nothing here says every system should be small. The claim is narrower — within
-the scope where this process runs end to end, a human can read the specification,
-the harness, and the result, and say what each one claims, catches, and lets
-through.
+Stupidly simple, not simplistic: some systems are intrinsically complex, and nothing here
+says every system should be small. The claim is narrower — within the scope where this
+process runs end to end, a human can read the specification, the harness, and the result,
+and say what each one claims, catches, and lets through.
 
 ## What this process does not cover
 
-Shipping ends this loop, not the story. Telemetry, a rollback that works, and a
-deploy small enough to reason about are the operations practice this process
-**assumes and does not replace** — if they are absent, no amount of spec rigour
-upstream makes a release safe, and that gap is out of scope here rather than
-solved here. What the change does in production comes back as the next demand,
-through Phase 0's second door.
+Shipping ends this loop, not the story. Telemetry, a rollback that works, and a deploy small
+enough to reason about are the operations practice this process **assumes and does not
+replace** — if they are absent, no amount of spec rigour upstream makes a release safe, and
+that gap is out of scope here rather than solved here. What the change does in production
+comes back as the next demand, through Phase 0's second door.
 
-On a slower cadence, turn the process on itself, because a process nobody
-questions converges fast to the wrong place. Three questions, none of which any
-single check answers: is the harness still simple and auditable, or has it become
-its own engineering problem? Is the artifact still the right artifact? Where
-would an unknown-unknown enter, and which auditor would catch it?
+On a slower cadence, turn the process on itself, because a process nobody questions
+converges fast to the wrong place. Three questions, none of which any single check answers:
+is the harness still simple and auditable, or has it become its own engineering problem? Is
+the artifact still the right artifact? Where would an unknown-unknown enter, and which
+auditor would catch it?
 
 ## Principles to maintain throughout
 
@@ -484,17 +484,17 @@ would an unknown-unknown enter, and which auditor would catch it?
   degraded authorization; personal profiling is optional.
 - **Agent navigation** — every KB file must be self-sufficient and link to what's next
 - **External deps are dangerous** — always research actual runtime behavior before implementing
-- **Ralph Loops converge — if they ratchet** — implement -> validate -> fix -> repeat
-  climbs only when what passed stays passed, the checker names which obligation
-  broke, and no repair silently undoes another. Without those, the same loop wanders.
-- **Match the ceremony to the change** — a one-sentence diff the checks already
-  cover gets the agent and the harness, nothing else. A methodology with no cheap
-  path gets abandoned on the cheap changes, which are most of them.
-- **Prefer unrepresentable to caught** — a type, an opaque constructor, or a
-  capability that makes the wrong answer impossible to express beats a test that
-  catches it afterwards, and a proof beats both for a critical core — as long as
-  what the proof does not cover is written down beside it.
-- **Route the failure before fixing it** — agent, specification, or harness; a
-  repair applied without that decision is how a defect class comes back next cycle.
-- **Keep the harness explainable** — if a new engineer cannot be told what it
-  checks, it has become the thing you are debugging.
+- **Ralph Loops converge — if they ratchet** — implement -> validate -> fix -> repeat climbs only
+  when what passed stays passed, the checker names which obligation broke, and no repair
+  silently undoes another. Without those, the same loop wanders.
+- **Match the ceremony to the change** — a one-sentence diff the checks already cover gets the
+  agent and the harness, nothing else. A methodology with no cheap path gets abandoned on the
+  cheap changes, which are most of them.
+- **Prefer unrepresentable to caught** — a type, an opaque constructor, or a capability that
+  makes the wrong answer impossible to express beats a test that catches it afterwards, and a
+  proof beats both for a critical core — as long as what the proof does not cover is written
+  down beside it.
+- **Route the failure before fixing it** — agent, specification, or harness; a repair applied
+  without that decision is how a defect class comes back next cycle.
+- **Keep the harness explainable** — if a new engineer cannot be told what it checks, it has
+  become the thing you are debugging.

@@ -5,6 +5,16 @@ the questions also judges when none are left, its defaults read as settled, and
 "the user confirms" asks the human to notice questions nobody asked. Three
 mechanisms counter this; none of them proves the ledger is complete.
 
+## Contents
+
+- [The assumption ledger](#the-assumption-ledger)
+- [The independent question pass](#the-independent-question-pass)
+- [Neutral research](#neutral-research)
+- [The stopping rule](#the-stopping-rule)
+- [Slices](#slices)
+- [Routing](#routing)
+- [What this does not cover](#what-this-does-not-cover)
+
 ## The assumption ledger
 
 Keep `kb/assumptions.md` (start from `templates/kb/assumptions.md`). One row per
@@ -37,6 +47,19 @@ return each guess as a question with a proposed default.
 Merge its questions into yours, drop duplicates, and add a ledger row for each
 new guess. Report in the round how many questions came only from the independent
 pass: a steady non-zero count means the main pass is under-asking.
+
+## Neutral research
+
+An agent that knows the intended solution looks for evidence that confirms it. Before
+research on the codebase, an SDK or prior work, write the questions in a neutral form:
+what exists, how it behaves, where it is used. A neutral question does not name the
+change, the expected answer or the preferred option. Give a research subagent only
+these questions. It answers each one with its source (`file:line`, a document section,
+a run), and says what it did not find. Then compare the answers with the intended
+change, in the main session.
+
+Example: not "confirm that the cache can hold sessions", but "which data does the
+cache hold today, with which eviction rule, and who reads it?".
 
 ## The stopping rule
 
