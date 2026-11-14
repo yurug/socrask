@@ -22,11 +22,22 @@ errors, and the runs and failures of each harness script under `tools/` or
 names and error flags. From a shell command it keeps only the script name. It
 never reads other message content. Commit the file with the task.
 
-- **Claude Code**: the meter uses `$CLAUDE_CODE_SESSION_ID`. It counts that
-  session and its subagents, and each API request once.
-- **Codex**: it has no session ID in the environment. The meter counts the
-  messages whose working directory is the one where `start` ran. Give each
-  concurrent agent its own worktree (`tools/agent-work.py`).
+- **The task's root.** In Claude Code, the meter uses `$CLAUDE_CODE_SESSION_ID`.
+  Elsewhere, the root is the Claude Code session or the Codex thread that ran
+  `task-meter.py start <TASK>`. Run `start` from the agent session that does the
+  work, never from another terminal. The working directory decides nothing: a
+  Codex session rooted at the repository runs its commands in worktrees.
+- **The task's agents.** The meter counts the root and its subagents, each API
+  request once, by runtime, model and role. The role is the subagent type in
+  Claude Code (`reviewer`, `general-purpose`), and in Codex the agent's role or
+  path (`tree_review`), or `guardian` for its safety reviews. Codex runs other
+  providers too: the model reads `openrouter/google/gemini-3-pro`, for example.
+- **No silent zero.** A `stop` that finds no request records the task as
+  unmeasured and exits 1. `task-meter.py remeasure` measures the unmeasured stops
+  again while the transcripts still exist, and rewrites them in place.
+- **Shared roots.** Two tasks that run at once in one root share its requests.
+  The report says "window shared with"; give each concurrent task its own agent
+  session to separate them.
 - A task that spans several sessions gets one `start`/`stop` pair per session.
 - `--budget` copies the plan step's optional `Budget:` field. The report shows
   the ratio, so estimates improve over time.
@@ -62,11 +73,37 @@ median needs three or more earlier tasks in that tier.
    - a loop that repairs without new evidence;
    - a context that grew without need.
 
-## Retrospective at each milestone
+## The whole history
 
-A task retrospective explains one outlier. The milestone retrospective looks at
-the harness itself: which checks fail often, which tools error, where the agent
-repairs without new evidence. It runs at each completed milestone.
+`insights.py` reads the meter and the ledger, archive included, and answers
+"which agent, at what cost, for which result":
+
+```sh
+python3 tools/insights.py --check
+```
+
+- **Agents:** requests, tokens and cost by runtime, model and role.
+- **Outcomes:** per lead model and tier, first-attempt acceptance, repair loops,
+  median tokens, cost and active time.
+- **Periods:** per iteration (or ISO week), acceptance, tokens, cycle time from
+  first start to first acceptance, and the ratios of actual to budget and to
+  `estimate_hours`.
+- **Hints:** a tier where a cheaper lead model has enough judged tasks and a
+  first-attempt rate within 10 points of the best one. A hint is a trial to run
+  under [model routing](../skills/spec-driven-dev/references/model-routing.md),
+  not a decision.
+
+Costs need `kb/work/prices.json`, in dollars per million tokens by model
+substring. `--check` fails when more than 10% of the last 20 metered tasks are
+unmeasured: an analysis of missing data misleads.
+
+## Retrospective at each milestone and iteration
+
+A task retrospective explains one outlier. The milestone or iteration
+retrospective looks at the harness itself: which checks fail often, which tools
+error, which agents spend the tokens, where the agent repairs without new
+evidence. It runs at each completed milestone, and at the end of each iteration
+(`retro.py draft I-3 --write`).
 
 1. Record each local gate result. A local CI runner calls, per gate:
    `python3 tools/retro.py record <gate> --exit <code> --seconds <s>`.
@@ -79,7 +116,10 @@ repairs without new evidence. It runs at each completed milestone.
    and gate.
 3. With the engineer, write one finding per signal worth acting on, with its
    cause. Give each finding a disposition: `change:` and the commit, task or KB
-   file that acts on it; `reject:` and the reason; or `kit:` when the change
+   file that acts on it, with the metric it should move (`metric: first-attempt`,
+   `tokens:slice`, `active-time`, `repair-loops`, `tool-errors:<tool>`,
+   `script:<name>`). The next retrospective of the same kind shows that metric
+   then and now, so a change that did not help is seen; `reject:` and the reason; or `kit:` when the change
    holds beyond the project. Ask also which operation the agents did by hand
    more than once: its change is a tool ([deterministic tools](../skills/spec-driven-dev/references/deterministic-tools.md)).
    If nothing is worth acting on, write `No findings: <reason>`.

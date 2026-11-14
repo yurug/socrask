@@ -40,11 +40,11 @@ This project follows Spec-Driven Agentic Development. The knowledge base (`kb/`)
 7. **The engineer's rules about this project go to the KB, not to agent memory.** Write each
    one as `M<n>` in `kb/conventions/method.md`, with its origin and its check, in the same
    commit. Agent memory is per machine; it keeps only preferences about the person.
-8. **Kit gates.** Before changing behavior, know which `kb/models/` invariant it preserves
-   (the step's `Proof:`). Change only the step's Files (`tools/scope-check.py`). Follow the
-   component rules; route critical outputs through their kernel. Meter each task
+8. **Kit gates.** Before changing behavior, know which `kb/models/` invariant it preserves (the
+   step's `Proof:`). Change only the step's Files (`tools/scope-check.py`). Follow the component
+   rules; route critical outputs through their kernel. Meter each ledger task from its session
    (`tools/task-meter.py`). A complex project needs an engineer-approved roadmap
-   (`tools/roadmap-check.py`) and a retrospective per milestone (`tools/retro.py`).
+   (`tools/roadmap-check.py`); each milestone and iteration, a retrospective (`tools/retro.py`).
 
 ## Before you start: size it, and after it fails: route it
 

@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.27.0 — 2026-11-14
+
+Project management lacked the iterative cycle, and the process could not improve from
+its history. The measurement was also broken. In the one project that metered its tasks,
+69 of 71 tasks read zero tokens. Their agents ran Codex sessions rooted at the
+repository, while the tasks ran in worktrees, and the meter attributed by directory.
+30 metered tasks were absent from the ledger, and no metered task had a feedback event.
+So nothing could answer "which agent, at what cost, for which result".
+
+- The meter finds each task's root by the command. The root is the Claude Code session
+  given at start, or the session or Codex thread that ran `task-meter.py start TASK`. It
+  counts the root and its subagents, by runtime, model and role. In Codex, the model
+  includes the provider, so Gemini and OpenRouter models show as such.
+- A stop that finds no request records the task as unmeasured and exits 1. A new
+  `remeasure` command measures the old zero stops again. On the project above, it
+  measured 68 of 70.
+- `start` refuses a task that the ledger does not know, so that `insights.py` can join
+  each cost with its result. The report flags tasks that share a root at the same time.
+- New `insights.py`. It reads the whole history and gives tokens and cost by agent, and
+  outcomes by lead model and tier. It also gives cycle time and estimate ratios per
+  iteration, and hints where a cheaper model earned a trial. `--check` fails when the meter
+  did not measure recent tasks, or when the ledger lacks them. Costs need `kb/work/prices.json`.
+- New iterations in the ledger. Each iteration has a goal, dates, and tasks from the
+  prioritized backlog. A task of an open iteration needs a priority and a value. A
+  project runs one active iteration. A closed iteration needs the engineer's review, a
+  retrospective and its carried-over tasks. `ledger.py list --by-priority` shows the
+  backlog.
+- `retro.py` drafts iteration retrospectives. A `change:` finding names the metric that
+  it targets, and the next retrospective shows that metric then and now. A change
+  without a metric gets a warning.
+
+`insights.py` does not price tokens by itself, and it cannot tell whether two task
+classes are comparable. Its hints are trials, not decisions. A stop scans the
+transcripts, and on a large Codex history it takes a few seconds.
+
+Compatibility: `start` now fails for a task absent from an existing ledger. A stop that
+finds nothing now exits 1. The meter no longer attributes by working directory.
+
 ## 0.26.0 — 2026-11-12
 
 We compared Socrask with roster, another kit for agent teams. We took four ideas. Nothing

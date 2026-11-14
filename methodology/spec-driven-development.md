@@ -173,6 +173,18 @@ Maintain an accountable project/plan/task ledger alongside the narrative plan, f
 owners, next actions, review dates, dependencies, WIP and evidence-backed closure in CI.
 Repeated complaints reopen the same task; imported claims remain explicitly unverified.
 
+Work that lasts several weeks runs in iterations, each a timebox with a goal. The backlog
+is refined: each task gets a priority and the value it buys. The iteration takes the head
+of the backlog within the capacity that past iterations measured. At its end, the engineer
+reviews what was delivered against the goal, and a retrospective looks at the numbers.
+
+The process improves itself only from measured history. Each task is metered from the
+agent session that does it, by runtime, model and role, and joined with its result in the
+ledger. Across the whole history, an analysis answers which agent spent what for which
+result, how cost, cycle time and estimates move, and where a cheaper model has earned a
+trial. Each change that a retrospective decides names the metric it should move, and the
+next retrospective shows whether it moved.
+
 A project with more than one slice first gets a roadmap: milestones that are accepted
 outcomes, a schedule of parallel waves around the critical path, and execution risks,
 each retired by an early spike. The engineer approves it before work starts, and again

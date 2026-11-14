@@ -90,6 +90,33 @@ accepted feedback then cites that executed completion and a newer acceptance eve
 Do not relabel a product change to evade delivery evidence. Detailed product
 evidence remains governed by [outcome acceptance](outcome-quality.md).
 
+## Iterate
+
+Work runs in iterations: timeboxes of one to two weeks, each with a goal. Each
+iteration goes through the same five steps.
+
+1. **Refine the backlog.** Each candidate task has a `priority` (an integer, 1 is
+   the highest), a `value` (the outcome it buys, in one sentence), and an
+   `estimate_hours`. `ledger.py list tasks --status planned --by-priority` shows
+   the backlog in order.
+2. **Plan.** Choose the goal and the tasks, from the top of the backlog, within
+   the capacity that the history shows: the tasks and hours accepted in the last
+   iterations (`insights.py`, section Periods). Record the iteration with
+   `ledger.py add iterations @iteration.json`: `project`, `goal`, `start`, `end`,
+   `tasks`, and the usual owner, next action, review date and refs. Set it
+   `active`. A project runs one active iteration at a time.
+3. **Run.** The control loop above, with the daily review.
+4. **Review with the engineer.** At the end, show the engineer what was delivered
+   against the goal, with the evidence. Record the review as `review: {at, ref}`,
+   a forebrief card or the engineer's words.
+5. **Look back.** `retro.py draft <iteration> --write`, then the findings and
+   their dispositions. Set `retrospective` on the iteration, list the unfinished
+   tasks in `carried_over`, and close it.
+
+`project-check.py` checks the shape: a task of an open iteration has a priority
+and a value; a task is in one open iteration at most; a closed iteration has its
+review, its retrospective, and every unfinished task carried over.
+
 ## Read and change it with `ledger.py`
 
 Do not load the ledger into context, and do not write a script to edit it. A

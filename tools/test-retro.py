@@ -116,6 +116,43 @@ class RetroTests(unittest.TestCase):
         self.assertNotIn("OLD", text)
         self.assertIn("| F1 | x | y | reject: noise |", text)
 
+    def test_iteration_retro_follows_the_metric_of_each_change(self):
+        data = ledger()
+        data["iterations"] = [{"id": "I1", "project": "P1", "start": "2026-10-01", "tasks": ["T-1", "T-2"],
+                               "retrospective": "kb/work/retros/i1.md"},
+                              {"id": "I2", "project": "P1", "start": "2026-10-02", "tasks": ["T-3", "T-4"]}]
+        data["feedback"].append({"task": "T-1", "events": [{"at": "2026-10-01T00:00:00Z", "result": "failed"}]})
+        (self.root / "kb/work/ledger.json").write_text(json.dumps(data))
+        (self.root / "kb/work/retros").mkdir()
+        (self.root / "kb/work/retros/i1.md").write_text(
+            "Iteration: P1/I1\n\n| ID | Signal | Cause | Disposition |\n|---|---|---|---|\n"
+            "| F1 | first attempts fail | vague cases | change: kb/spec.md; metric: first-attempt |\n"
+            "| F2 | slow | big context | change: split tasks |\n")
+        out = self.run_retro("draft", "I2")
+        self.assertIn("Numbers for P1/I2: 2 tasks, 2 metered.", out)
+        self.assertIn("Median tokens per slice task: 500, previous iteration 200.", out)
+        self.assertIn("Changes decided at P1/I1, and their metric:", out)
+        self.assertIn("F1 (first-attempt): 0 then, 50 now.", out)
+        path = Path(self.run_retro("draft", "I2", "--write").split("wrote ", 1)[1].strip())
+        self.assertTrue(path.read_text().startswith("# Retrospective: P1/I2\n\nIteration: P1/I2"))
+        self.assertIn("W-metric: kb/work/retros/i1.md finding F2", self.run_retro("check", code=1))
+
+    def test_agents_and_unmeasured_tasks_are_shown(self):
+        events = [json.loads(l) for l in (self.root / "kb/work/meter.jsonl").read_text().splitlines()]
+        for e in events:
+            if e["event"] == "stop" and e["task"] == "T-3":
+                e["agents"] = [{"runtime": "codex", "model": "openai/gpt-x", "role": "main", "requests": 3,
+                                "input": 300, "cache_read": 0, "cache_write": 0, "output": 0},
+                               {"runtime": "codex", "model": "openai/gpt-y", "role": "tree_review", "requests": 1,
+                                "input": 100, "cache_read": 0, "cache_write": 0, "output": 0}]
+            if e["event"] == "stop" and e["task"] == "T-4":
+                e["requests"] = 0
+        (self.root / "kb/work/meter.jsonl").write_text("".join(json.dumps(e) + "\n" for e in events))
+        self.write_ledger()
+        out = self.run_retro("draft", "M2")
+        self.assertIn("Tokens by agent: openai/gpt-x (main, codex) 75%; openai/gpt-y (tree_review, codex) 25%.", out)
+        self.assertIn("Unmeasured tasks (no usage found): T-4.", out)
+
 
 if __name__ == "__main__":
     unittest.main()

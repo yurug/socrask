@@ -10,13 +10,13 @@ and the ledger is validated before it is written.
 
 Usage (from the project root):
     ledger.py get ID                          the entry, as one line of JSON
-    ledger.py list [GROUP] [--status S]... [--owner O] [--due DATE] [--archived]
+    ledger.py list [GROUP] [--status S]... [--owner O] [--due DATE] [--archived] [--by-priority]
                                               one line per entry: id, status, owner,
                                               review_on, next_action
     ledger.py set ID FIELD=VALUE...           change fields; a dotted FIELD
                                               (closure.at) sets a nested field
     ledger.py add GROUP JSON                  add an entry to projects, plans,
-                                              tasks or feedback
+                                              tasks, feedback or iterations
     ledger.py event ID --result failed|accepted --ref PATH [--at TIME]
                                               append an observation to feedback ID
     ledger.py archive                         move finished entries to the archive
@@ -55,7 +55,7 @@ from pathlib import Path
 import sys
 import tempfile
 
-GROUPS = ('projects', 'plans', 'tasks', 'feedback')
+GROUPS = ('projects', 'plans', 'tasks', 'feedback', 'iterations')
 
 
 def project_check():
@@ -143,10 +143,17 @@ def archive_entries(data, archive):
         if task.get('status') == 'closed' and all(r.get('status') in PC.TERMINAL for r in rows):
             moved['tasks'].append(task)
             moved['feedback'] += rows
+    live_tasks = {r['id'] for r in data['tasks'] if r not in moved['tasks']}
+    moved['iterations'] = [r for r in data.get('iterations', []) if r.get('status') == 'closed'
+                           and not live_tasks.intersection(r.get('tasks', []))]
     for parent, child, key in (('plans', 'tasks', 'plan'), ('projects', 'plans', 'project')):
         live = {r.get(key) for r in data[child] if r not in moved[child]}
+        if parent == 'projects':
+            live |= {r.get('project') for r in data.get('iterations', []) if r not in moved['iterations']}
         moved[parent] = [r for r in data[parent] if r.get('status') == 'closed' and r['id'] not in live]
     for group in GROUPS:
+        if not moved[group]:
+            continue
         ids = {id(r) for r in moved[group]}
         data[group] = [r for r in data[group] if id(r) not in ids]
         archive.setdefault(group, []).extend(moved[group])
@@ -166,6 +173,7 @@ def main():
     ls.add_argument('--owner')
     ls.add_argument('--due', help='review_on on or before this YYYY-MM-DD date')
     ls.add_argument('--archived', action='store_true', help='include archived entries')
+    ls.add_argument('--by-priority', action='store_true', help='highest priority first; unprioritized last')
     st = sub.add_parser('set')
     st.add_argument('id')
     st.add_argument('assignments', nargs='+', metavar='FIELD=VALUE')
@@ -198,6 +206,8 @@ def main():
             rows = [r for r in rows if (not args.status or r.get('status') in args.status)
                     and (not args.owner or r.get('owner') == args.owner)
                     and (not args.due or str(r.get('review_on', '9999')) <= args.due)]
+            if args.by_priority:
+                rows.sort(key=lambda r: r.get('priority') if type(r.get('priority')) is int else 10**9)
             for r in rows:
                 print(line(r))
             print(f'ledger: {len(rows)} entries')

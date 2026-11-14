@@ -299,6 +299,41 @@ class ProjectCheck(unittest.TestCase):
                               '--as-of', '2026-10-04', '--pending'], text=True, capture_output=True)
         self.assertEqual([p['id'] for p in json.loads(run.stdout)['pending']], ['P', 'PL', 'T', 'S32'])
 
+    def iteration(self, status='active', **extra):
+        data = fixture()
+        data['tasks'][0].update(priority=1, value='A user can drag a rectangle')
+        data['iterations'] = [dict(entity('I1', status), project='P', goal='Selection works', tasks=['T'],
+                                   start='2026-10-01', end='2026-10-14', **extra)]
+        return data
+
+    def test_PM_iteration_plans_from_a_prioritized_backlog(self):
+        self.assertEqual(self.run_gate(self.iteration())['counts']['iterations'], 1)
+        data = self.iteration()
+        del data['tasks'][0]['priority']
+        self.run_gate(data, 2, 'T: an iteration task needs an integer priority')
+        data = self.iteration()
+        data['tasks'][0]['value'] = ''
+        self.run_gate(data, 2, 'T: an iteration task needs its value')
+        data = self.iteration()
+        data['iterations'][0]['tasks'] = ['T9']
+        self.run_gate(data, 2, 'I1: unknown task: T9')
+
+    def test_PM_one_active_iteration_and_one_open_iteration_per_task(self):
+        data = self.iteration()
+        data['iterations'].append(dict(data['iterations'][0], id='I2'))
+        self.run_gate(data, 2, 'T: in two open iterations, I1 and I2')
+        data['iterations'][1]['tasks'] = []
+        self.run_gate(data, 2, 'P: 2 active iterations')
+
+    def test_PM_closed_iteration_needs_review_retrospective_and_carry_over(self):
+        (self.root / 'retro.md').write_text('# Retrospective')
+        review = dict(at='2026-10-03T10:00:00Z', ref='evidence.json')
+        self.run_gate(self.iteration('closed'), 2, 'I1: a closed iteration needs its review')
+        self.run_gate(self.iteration('closed', review=review), 2, 'I1.retrospective: missing reference')
+        self.run_gate(self.iteration('closed', review=review, retrospective='retro.md'), 2,
+                      'I1: T is not closed; list it in carried_over')
+        self.run_gate(self.iteration('closed', review=review, retrospective='retro.md', carried_over=['T']))
+
 
 if __name__ == '__main__':
     unittest.main()

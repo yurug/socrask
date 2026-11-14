@@ -111,6 +111,21 @@ class LedgerTool(unittest.TestCase):
         self.assertEqual(check.returncode, 0, check.stdout)
         self.assertEqual(json.loads(check.stdout)['counts']['tasks'], 1)
 
+    def test_backlog_by_priority_and_an_iteration(self):
+        data = fixtures.fixture()
+        for i, prio in ((2, 3), (3, 1)):
+            data['tasks'].append(dict(fixtures.entity(f'T{i}', 'planned'), plan='PL', kind='engineering',
+                                      depends_on=[], cases=[], priority=prio, value='v'))
+        self.save(data)
+        out = self.run_tool('list', 'tasks', '--by-priority')
+        self.assertEqual([l.split('\t')[0] for l in out.splitlines()[:3]], ['T3', 'T2', 'T'])
+        iteration = dict(fixtures.entity('I1', 'active'), project='P', goal='Backlog head', tasks=['T3'],
+                         start='2026-10-01', end='2026-10-14')
+        self.assertIn('added I1 to iterations', self.run_tool('add', 'iterations', json.dumps(iteration)))
+        bad = dict(iteration, id='I2', tasks=['T'])
+        out = self.run_tool('add', 'iterations', json.dumps(bad), code=1)
+        self.assertIn('T: an iteration task needs an integer priority', out)
+
     def test_unreadable_ledger(self):
         self.path.write_text('{"version": 1, "version": 1}')
         self.assertIn('duplicate JSON key', self.run_tool('list', code=2))

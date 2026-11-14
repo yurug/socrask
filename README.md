@@ -136,7 +136,7 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.26.0** — bounded loops: each step stays in its declared files, audits stop when they diverge, context is a budget, and research asks neutral questions. The methodology is still evolving, but every deterministic
+**v0.27.0** — iterations and measured self-improvement: a metering that works across Claude Code and Codex, by model and role, a history analysis, and retrospectives that check their own changes. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

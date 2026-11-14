@@ -19,6 +19,8 @@ from project_history import check_history
 WORK_STATUSES = {'planned', 'active', 'blocked', 'deferred', 'imported-unverified', 'closed'}
 FEEDBACK_STATUSES = {'open', 'deferred', 'imported-unverified', 'accepted', 'rejected', 'waived'}
 TERMINAL = {'closed', 'accepted', 'rejected', 'waived'}
+GROUPS = ('projects', 'plans', 'tasks', 'feedback', 'iterations')
+ITERATION_STATUSES = {'planned', 'active', 'closed'}
 RUNNING = {'active', 'reopened'}
 
 
@@ -70,14 +72,14 @@ def with_archive(data, archive):
         return data
     require(isinstance(archive, dict) and archive.get('version') == 1, 'archive: expected version-1 object')
     merged = dict(data)
-    for group in ('projects', 'plans', 'tasks', 'feedback'):
+    for group in GROUPS:
         rows = archive.get(group, [])
         require(isinstance(rows, list), f'archive.{group}: expected array')
         for row in rows:
             require(isinstance(row, dict) and row.get('status') in TERMINAL,
                     f'archive.{group}: {row.get("id") if isinstance(row, dict) else row} is not finished')
-        require(isinstance(data.get(group), list), f'{group}: expected array')
-        merged[group] = data[group] + rows
+        require(isinstance(data.get(group, []), list), f'{group}: expected array')
+        merged[group] = data.get(group, []) + rows
     return merged
 
 
@@ -137,7 +139,8 @@ class Ledger:
     def entities(self, group, rows):
         require(isinstance(rows, list), f'{group}: expected array')
         result = {}
-        allowed = FEEDBACK_STATUSES if group == 'feedback' else WORK_STATUSES | ({'reopened'} if group == 'tasks' else set())
+        allowed = (FEEDBACK_STATUSES if group == 'feedback' else ITERATION_STATUSES if group == 'iterations'
+                   else WORK_STATUSES | ({'reopened'} if group == 'tasks' else set()))
         for row in rows:
             require(isinstance(row, dict), f'{group}: expected objects')
             id = row.get('id')
@@ -275,6 +278,43 @@ class Ledger:
         if task['status'] == 'closed':
             require(row['status'] in ('accepted', 'waived', 'rejected'), f'{id}: closed task hides unresolved feedback')
 
+    def iterations(self):
+        """An iteration is a timebox with a goal: planned from the prioritized backlog,
+        reviewed with the engineer when it ends, then examined in a retrospective.
+        Each task is in at most one open iteration, and each project runs at most one
+        active iteration at a time."""
+        projects, tasks, iterations = (self.groups[g] for g in ('projects', 'tasks', 'iterations'))
+        active, holder = Counter(), {}
+        for id, it in iterations.items():
+            require(string(it.get('project')) and it['project'] in projects, f'{id}: unknown project')
+            require(string(it.get('goal')), f'{id}: goal required')
+            members = strings(it.get('tasks'), f'{id}.tasks')
+            for task in members:
+                require(task in tasks, f'{id}: unknown task: {task}')
+                if it['status'] != 'closed':
+                    require(task not in holder, f'{task}: in two open iterations, {holder.get(task)} and {id}')
+                    holder[task] = id
+                    row = tasks[task]
+                    require(type(row.get('priority')) is int and row['priority'] >= 1,
+                            f'{task}: an iteration task needs an integer priority >= 1 (1 is the highest)')
+                    require(string(row.get('value')), f'{task}: an iteration task needs its value: the outcome it buys')
+            if it['status'] in ('active', 'closed'):
+                require(date(it.get('start')) <= date(it.get('end')), f'{id}: start after end')
+            if it['status'] == 'active':
+                active[it['project']] += 1
+            if it['status'] == 'closed':
+                review = it.get('review')
+                require(isinstance(review, dict), f'{id}: a closed iteration needs its review with the engineer')
+                self.time(review.get('at'), f'{id}.review')
+                self.ref(review.get('ref'), f'{id}.review', observation=True)
+                self.ref(it.get('retrospective'), f'{id}.retrospective')
+                carried = strings(it.get('carried_over', []), f'{id}.carried_over')
+                for task in members:
+                    require(tasks[task]['status'] == 'closed' or task in carried,
+                            f'{id}: {task} is not closed; list it in carried_over')
+        for project, n in active.items():
+            require(n <= 1, f'{project}: {n} active iterations; finish one before starting another')
+
     def parent_closure(self):
         for parent, child, key in [('projects', 'plans', 'project'), ('plans', 'tasks', 'plan')]:
             for row in self.groups[parent].values():
@@ -286,11 +326,12 @@ class Ledger:
         require(isinstance(data, dict) and type(data.get('version')) is int and data['version'] == 1,
                 'expected version-1 ledger object')
         self.inventory(data.get('sources'))
-        for group in ('projects', 'plans', 'tasks', 'feedback'):
-            self.entities(group, data.get(group))
+        for group in GROUPS:
+            self.entities(group, data.get(group, [] if group == 'iterations' else None))
         active = self.tasks()
         self.dependencies()
         self.feedback()
+        self.iterations()
         self.parent_closure()
         return {'coherent': True, 'failures': [], 'product_acceptance_claimed': False,
                 'as_of': self.as_of.isoformat(), 'counts': {**{g: len(rows) for g, rows in self.groups.items()},

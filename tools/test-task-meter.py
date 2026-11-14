@@ -74,21 +74,81 @@ class TaskMeterTests(unittest.TestCase):
         self.assertEqual(stop["usage"]["claude-x"]["cache_read"], 2000)
         self.assertEqual(stop["usage"]["claude-small"]["output"], 50)
 
-    def test_without_session_attribution_uses_cwd_and_codex(self):
-        (self.claude / "proj" / "s9.jsonl").write_text(
-            claude_line(5, "s9", "r1", cwd="/repo/sub") + "\n" +
-            claude_line(5, "s9", "r2", cwd="/elsewhere") + "\n")
-        (self.codex / "rollout.jsonl").write_text("\n".join([
-            json.dumps({"timestamp": ts(6), "type": "session_meta", "payload": {"cwd": "/repo"}}),
-            json.dumps({"timestamp": ts(5), "type": "event_msg", "payload": {"type": "token_count",
-                        "info": {"last_token_usage": {"input_tokens": 500, "cached_input_tokens": 400,
-                                                      "output_tokens": 7}}}})]) + "\n")
+    def test_without_session_the_claude_session_that_ran_start_is_the_root(self):
+        start_cmd = json.dumps({"type": "assistant", "timestamp": ts(10), "sessionId": "s9", "cwd": "/repo",
+                                "message": {"content": [{"type": "tool_use", "id": "u", "name": "Bash", "input": {
+                                    "command": "python3 tools/task-meter.py start T-2 --tier slice"}}]}})
+        (self.claude / "proj" / "s9.jsonl").write_text("\n".join([
+            start_cmd, claude_line(5, "s9", "r1", cwd="/elsewhere"),
+            claude_line(5, "s8", "r2")]) + "\n")
+        (self.claude / "proj" / "s9" / "subagents").mkdir(parents=True)
+        (self.claude / "proj" / "s9" / "subagents" / "agent-b.jsonl").write_text(
+            claude_line(4, "s9", "r3", model="claude-small") + "\n")
+        (self.claude / "proj" / "s9" / "subagents" / "agent-b.meta.json").write_text('{"agentType": "reviewer"}')
         self.start_at("T-2", 10, session=None)
         self.run_meter("stop", "T-2")
         stop = json.loads(self.meter.read_text().splitlines()[-1])
-        self.assertEqual(stop["requests"], 2)
-        self.assertEqual(stop["usage"]["codex"], {"input": 100, "cache_read": 400,
-                                                  "cache_write": 0, "output": 7})
+        self.assertEqual((stop["requests"], stop["root"], stop["attribution"]), (2, "claude-code:s9", "command"))
+        self.assertEqual([(a["model"], a["role"], a["requests"]) for a in stop["agents"]],
+                         [("claude-small", "reviewer", 1), ("claude-x", "main", 1)])
+
+    def codex_rollout(self, name, meta, *records):
+        (self.codex / name).write_text("\n".join(json.dumps(r) for r in
+                                                [{"timestamp": ts(11), "type": "session_meta", "payload": meta}, *records]) + "\n")
+
+    def test_codex_root_thread_and_its_descendants(self):
+        def item(minutes_ago, typ, payload):
+            return {"timestamp": ts(minutes_ago), "type": typ, "payload": payload}
+        usage = {"input_tokens": 500, "cached_input_tokens": 400, "output_tokens": 7}
+        self.codex_rollout("main.jsonl", {"id": "t1", "session_id": "t1", "cwd": "/repo", "model_provider": "openrouter",
+                                          "thread_source": "user"},
+                           item(10, "turn_context", {"model": "google/gemini-3-pro"}),
+                           item(10, "response_item", {"type": "function_call", "call_id": "c", "name": "exec_command",
+                                                      "arguments": '{"cmd":"python3 tools/task-meter.py start T-2"}'}),
+                           item(5, "token_usage_record", {"response_id": "a", "usage": usage}),
+                           item(5, "event_msg", {"type": "token_count", "info": {"last_token_usage": usage}}))
+        self.codex_rollout("sub.jsonl", {"id": "t2", "session_id": "t1", "parent_thread_id": "t1",
+                                         "source": {"subagent": {"thread_spawn": {"parent_thread_id": "t1",
+                                                    "agent_path": "/root/tree_review", "agent_nickname": "Maxwell"}}}},
+                           item(9, "turn_context", {"model": "gpt-6.1-sol", "model_provider": "openai"}),
+                           item(4, "event_msg", {"type": "token_count", "info": {"last_token_usage": usage}}))
+        self.codex_rollout("other.jsonl", {"id": "t3", "session_id": "t3", "thread_source": "user"},
+                           item(4, "event_msg", {"type": "token_count", "info": {"last_token_usage": usage}}))
+        self.start_at("T-2", 10, session=None)
+        self.run_meter("stop", "T-2")
+        stop = json.loads(self.meter.read_text().splitlines()[-1])
+        self.assertEqual((stop["requests"], stop["root"]), (2, "codex:t1"))
+        self.assertEqual([(a["model"], a["role"]) for a in stop["agents"]],
+                         [("openai/gpt-6.1-sol", "tree_review"), ("openrouter/google/gemini-3-pro", "main")])
+        self.assertEqual(stop["usage"]["openrouter/google/gemini-3-pro"],
+                         {"input": 100, "cache_read": 400, "cache_write": 0, "output": 7})
+
+    def test_unmeasured_stop_fails_and_remeasure_fixes_it(self):
+        self.start_at("T-u", 10, session=None)
+        self.assertIn("E-unattributed: T-u stopped unmeasured", self.run_meter("stop", "T-u", code=1))
+        self.assertIn("UNMEASURED (1 of 1 spans)", self.run_meter("report"))
+        stop_at = json.loads(self.meter.read_text().splitlines()[-1])["at"]
+        (self.claude / "proj" / "s7.jsonl").write_text("\n".join([
+            json.dumps({"type": "assistant", "timestamp": ts(10), "sessionId": "s7", "message": {"content": [
+                {"type": "tool_use", "id": "u", "name": "Bash",
+                 "input": {"command": "python3 tools/task-meter.py start T-u"}}]}}),
+            claude_line(5, "s7", "r1")]) + "\n")
+        self.assertIn("1 stops measured", self.run_meter("remeasure"))
+        stop = json.loads(self.meter.read_text().splitlines()[-1])
+        self.assertEqual((stop["requests"], stop["at"]), (1, stop_at))
+        self.assertNotIn("UNMEASURED", self.run_meter("report"))
+
+    def test_shared_root_windows_are_reported(self):
+        with self.meter.open("a") as f:
+            for task, a, b in (("T-a", 9, 5), ("T-b", 7, 3), ("T-c", 2, 1)):
+                f.write(json.dumps({"event": "start", "task": task, "at": ts(a), "session": "s1", "cwd": "/"}) + "\n")
+                f.write(json.dumps({"event": "stop", "task": task, "at": ts(b), "requests": 1, "wall_s": 1,
+                                    "active_s": 1, "root": "claude-code:s1",
+                                    "usage": {"m": {"input": 1, "cache_read": 0, "cache_write": 0, "output": 0}}}) + "\n")
+        out = self.run_meter("report")
+        self.assertIn("T-a [untiered] 1 tokens", out)
+        self.assertIn("window shared with T-b", out)
+        self.assertNotIn("window shared with T-c", out)
 
     def test_tool_calls_and_harness_scripts(self):
         def turn(minutes_ago, role, block, session="s1"):
@@ -104,6 +164,7 @@ class TaskMeterTests(unittest.TestCase):
                  turn(3, "assistant", {"type": "tool_use", "id": "c", "name": "Read", "input": {}}),
                  turn(3, "assistant", {"type": "tool_use", "id": "d", "name": "Read", "input": {}},
                       session="s2")]
+        lines.append(claude_line(3, "s1", "r9"))
         (self.claude / "proj" / "s1.jsonl").write_text("\n".join(lines) + "\n")
         self.start_at("T-t", 10)
         self.run_meter("stop", "T-t")
@@ -117,7 +178,11 @@ class TaskMeterTests(unittest.TestCase):
         def item(minutes_ago, payload):
             return json.dumps({"timestamp": ts(minutes_ago), "type": "response_item", "payload": payload})
         (self.codex / "rollout.jsonl").write_text("\n".join([
-            json.dumps({"timestamp": ts(6), "type": "session_meta", "payload": {"cwd": "/repo"}}),
+            json.dumps({"timestamp": ts(11), "type": "session_meta", "payload": {"id": "t1", "cwd": "/repo"}}),
+            item(10, {"type": "function_call", "call_id": "s", "name": "start",
+                      "arguments": "python3 tools/task-meter.py start T-c"}),
+            json.dumps({"timestamp": ts(5), "type": "event_msg", "payload": {"type": "token_count", "info": {
+                "last_token_usage": {"input_tokens": 5, "output_tokens": 1}}}}),
             item(5, {"type": "custom_tool_call", "call_id": "x", "name": "exec",
                      "input": 'tools.exec_command({cmd:"python3 tools/plan-check.py kb/plan.md"})'}),
             item(5, {"type": "custom_tool_call_output", "call_id": "x",
@@ -125,17 +190,25 @@ class TaskMeterTests(unittest.TestCase):
         self.start_at("T-c", 10, session=None)
         self.run_meter("stop", "T-c")
         stop = json.loads(self.meter.read_text().splitlines()[-1])
-        self.assertEqual(stop["tools"], {"exec": [1, 1]})
+        self.assertEqual(stop["tools"], {"exec": [1, 1], "start": [1, 0]})
         self.assertEqual(stop["checks"], {"plan-check.py": [1, 1]})
 
     def test_start_stop_cli_round_trip(self):
         self.assertIn("T-3 started", self.run_meter("start", "T-3", "--tier", "direct",
                                                     "--budget", "1.5M", "--session", "zz"))
         self.assertIn("already started", self.run_meter("start", "T-3", code=1))
-        self.assertIn("T-3 stopped: 0 tokens", self.run_meter("stop", "T-3"))
+        self.assertIn("E-unattributed: T-3 stopped unmeasured: no request found in claude-code:zz",
+                      self.run_meter("stop", "T-3", code=1))
         self.assertIn("no open start", self.run_meter("stop", "T-3", code=1))
         start = json.loads(self.meter.read_text().splitlines()[0])
         self.assertEqual(start["budget"], 1500000)
+
+    def test_start_refuses_a_task_absent_from_the_ledger(self):
+        ledger = self.root / "ledger.json"
+        ledger.write_text(json.dumps({"tasks": [{"id": "T-1"}]}))
+        out = self.run_meter("start", "T-9", "--ledger", str(ledger), code=1)
+        self.assertIn("E-ledger: T-9 is not a task of", out)
+        self.assertIn("T-1 started", self.run_meter("start", "T-1", "--ledger", str(ledger)))
 
     def test_bad_budget_is_refused(self):
         self.assertIn("not a token count", self.run_meter("start", "T-4", "--budget", "lots", code=1))

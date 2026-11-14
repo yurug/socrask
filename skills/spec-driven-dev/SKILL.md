@@ -18,26 +18,24 @@ generate-check-decide loop manually; the plugin is an interface, not the mechani
 
 ## Human alignment and concise communication
 
-Forebrief captures decisions; Inbrief prepares a human for a meaningful decision;
-Backbrief explains the actual resulting change. None substitutes for another.
-The coordinator owns these checkpoints for the whole slice; child agents return
-findings and evidence without opening sessions or prompting the user independently.
+Forebrief captures decisions; Inbrief prepares a human for a meaningful decision; Backbrief
+explains the actual resulting change. None substitutes for another. The coordinator owns
+these checkpoints for the whole slice; child agents return findings and evidence without
+opening sessions or prompting the user independently.
 
-Apply laconic's communication discipline even when its plugin is unavailable:
-lead with the outcome or decision, give only the context needed to act, identify
-material uncertainty, and offer detail progressively. For a decision, state the
-options, recommendation, consequence, and what answer is needed. For a result,
-state what changed, why, validation, and remaining limits. Concise does not mean
-omitting an unresolved question or an important risk.
+Apply laconic's communication discipline even when its plugin is unavailable: lead with the
+outcome or decision, give only the context needed to act, identify material uncertainty, and
+offer detail progressively. For a decision, state the options, recommendation, consequence,
+and what answer is needed. For a result, state what changed, why, validation, and remaining
+limits. Concise does not mean omitting an unresolved question or an important risk.
 
-An engineer model is optional and private. Read or update persistent personal
-concept records only when the owner has opted in; otherwise use the current
-conversation to explain unfamiliar terms. Read
-[references/engineer-model.md](references/engineer-model.md) before using a model.
-A question may be a request for evidence, a challenge, or a scope clarification:
-**never demote knowledge merely because the user asks a question**, including
-one answered by the KB. Answer it with the relevant source and repair unclear
-explanations. Silence and agent-written quizzes are not human evidence.
+An engineer model is optional and private. Read or update persistent personal concept
+records only when the owner has opted in; otherwise use the current conversation to explain
+unfamiliar terms. Read [references/engineer-model.md](references/engineer-model.md) before
+using a model. A question may be a request for evidence, a challenge, or a scope
+clarification: **never demote knowledge merely because the user asks a question**, including
+one answered by the KB. Answer it with the relevant source and repair unclear explanations.
+Silence and agent-written quizzes are not human evidence.
 
 ## Recorded checkpoints (every task)
 
@@ -48,20 +46,21 @@ unfamiliar load-bearing concept, or decision whose meaning needs explanation.
 A Slice on familiar ground may mark it `not-required` with a concrete reason.
 Full work normally requires Inbrief. Backbrief is required for every non-Direct
 change. A Direct change records why both are unnecessary and still receives a
-short result summary. Reassess the tier if scope grows. Meter each task with
-`tools/task-meter.py start|stop` and report tokens beside quality. Close each milestone
-with a harness retrospective (`tools/retro.py`); see [delivery metrics](../../docs/delivery-metrics.md).
+short result summary. Reassess the tier if scope grows. Meter each ledger task with
+`tools/task-meter.py start|stop`, run from the agent session that does the work; `insights.py` says
+which agent spent what for which result. Close each milestone and iteration with a retrospective
+(`tools/retro.py`) whose changes name a metric; see [delivery metrics](../../docs/delivery-metrics.md).
 
 Across machines or engineers, claim through [team collaboration](../../docs/team-collaboration.md).
 
 Run the checker at start and finish. `required` and `pending` are unfinished;
-`human-complete` cites actual human event evidence for the checkpoint;
-`degraded-authorized` cites explicit human authorization to use a limited or
-skipped checkpoint and remains visibly degraded. Tool absence, a launched browser,
-a sent URL, a stopped server, green tests, or time passing never imply completion.
-Record session/event references only, never credentials or a personal profile.
-At finish pin the exact reviewed head; any later diff invalidates that Backbrief.
-The check verifies record consistency, not human understanding or evidence authenticity.
+`human-complete` cites actual human event evidence for the checkpoint; `degraded-authorized`
+cites explicit human authorization to use a limited or skipped checkpoint and remains
+visibly degraded. Tool absence, a launched browser, a sent URL, a stopped server, green
+tests, or time passing never imply completion. Record session/event references only, never
+credentials or a personal profile. At finish pin the exact reviewed head; any later diff
+invalidates that Backbrief. The check verifies record consistency, not human understanding
+or evidence authenticity.
 
 ## Visuals (companion skill: primitives)
 
@@ -271,15 +270,16 @@ vocabulary, KB audit loop, mandatory usage harness, and exit criterion.
 
 ## Phase 3: Planning
 
-Read [project control](../../docs/project-management.md) when maintaining plans or
-handling feedback. Keep one `kb/work/ledger.json`: project → plan → task → original
-request, with owner, next action, review date, dependencies and acceptance cases.
-Reopen repeated failures; preserve previous evidence. Reconcile every declared
-feedback/backlog source, limit active work, and run `tools/project-check.py` in the
-real CI/handoff path with a fixed trusted `--history-base` in Git projects. A
-snapshot-only receipt is not evidence of retained history. Imported uncertainty
-stays visible; code completion never closes product acceptance. Review blocked,
-overdue and unverified work each session.
+Read [project control](../../docs/project-management.md) when maintaining plans or handling
+feedback. Keep one `kb/work/ledger.json`: project → plan → task → original request, with
+owner, next action, review date, dependencies and acceptance cases. Reopen repeated
+failures; preserve previous evidence. Reconcile every declared feedback/backlog source,
+limit active work, and run `tools/project-check.py` in the real CI/handoff path with a fixed
+trusted `--history-base` in Git projects. A snapshot-only receipt is not evidence of
+retained history. Imported uncertainty stays visible; code completion never closes product
+acceptance. Review blocked, overdue and unverified work each session. Work over several
+weeks runs in iterations: prioritized backlog, plan within the measured capacity, run,
+review with the engineer, retrospective.
 
 **Roadmap first for Full work or more than one slice:** read [references/roadmap.md](references/roadmap.md).
 The engineer approves milestones, schedule and execution risks; `tools/roadmap-check.py` gates it.

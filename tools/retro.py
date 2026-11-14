@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""retro — a retrospective at each milestone, from the harness telemetry.
+"""retro — a retrospective at each milestone and iteration, from the harness telemetry.
 
 The harness only improves if someone looks at how it behaved. At each completed
 milestone, this tool puts the numbers of that milestone in one file: first-
 attempt acceptance, repair loops, tokens per task against the previous
 milestone, tool errors, and how often each harness check failed. The agent and
 the engineer write one finding per signal worth acting on, and give each
-finding a disposition.
+finding a disposition. A `change:` names the metric it should move
+(`metric: first-attempt`), and the next retrospective of the same kind shows
+that metric then and now, so a change that did not help is seen.
 
 Usage:
     retro.py record GATE --exit N [--seconds S]   append a gate result to the journal
-    retro.py draft MILESTONE [--write]            the numbers for one milestone
+    retro.py draft PERIOD [--write]               the numbers for one milestone or iteration
     retro.py check                                the gate, for CI
 
     --root     defaults to .
@@ -26,12 +28,18 @@ Sources:
     journal    every gate that a local CI run recorded, inside or outside an
                agent session. It is per clone and not versioned.
 
-MILESTONE is `<project>/<milestone>` or a milestone ID that is unique in the
-ledger. `draft --write` creates kb/work/retros/<YYYY-MM-DD>-<milestone>.md, or
+PERIOD is `<project>/<id>` or an ID that is unique in the ledger: a roadmap
+milestone, or an entry of the ledger's `iterations`. The previous period is the
+one before it in the same project and of the same kind.
+
+Metrics that a `metric:` can name: first-attempt (percent of tasks accepted on
+the first observation), repair-loops (tasks with two or more failures),
+tokens:<tier> (median per task), active-time (median minutes per task),
+tool-errors:<tool> and script:<harness script> (failure percent). `draft --write` creates kb/work/retros/<YYYY-MM-DD>-<milestone>.md, or
 refreshes the generated block of the existing file.
 
 A retrospective file holds these lines and table:
-    Milestone: <project>/<milestone>
+    Milestone: <project>/<id>        (or Iteration: <project>/<id>)
     | ID | Signal | Cause | Disposition |
 Each Disposition starts with `change:` (the commit, task or KB file that acts
 on it), `reject:` (the reason) or `kit:` (the kit proposal). A file without a
@@ -43,6 +51,7 @@ Checks (E = error, W = warning):
     E-retro   a retrospective without Milestone, without findings, or with a
               finding whose disposition is missing or unknown
     W-stale   a retrospective without the generated block
+    W-metric  a `change:` disposition that names no `metric:`
 
 What this does NOT do: judge a cause or a fix, or tell a check that failed
 because it caught a defect from one that failed for nothing. The discussion
@@ -101,15 +110,56 @@ def milestones(ledger):
             for m in p.get("roadmap", {}).get("milestones", [])]
 
 
+def iterations(ledger):
+    """[(project id, iteration)] in start order; an iteration has no roadmap entry."""
+    rows = sorted(ledger.get("iterations", []), key=lambda i: (str(i.get("start", "9999")), i.get("id", "")))
+    return [(i.get("project"), i) for i in rows]
+
+
+def periods(ledger):
+    return [(p, m, "Milestone") for p, m in milestones(ledger)] + \
+           [(p, i, "Iteration") for p, i in iterations(ledger)]
+
+
 def find(ledger, ref):
-    found = [(p, m) for p, m in milestones(ledger) if ref in (m.get("id"), f"{p}/{m.get('id')}")]
+    found = [(p, m, kind) for p, m, kind in periods(ledger) if ref in (m.get("id"), f"{p}/{m.get('id')}")]
     return found[0] if len(found) == 1 else None
 
 
-def previous(ledger, project, milestone):
-    same = [m for p, m in milestones(ledger) if p == project]
-    i = same.index(milestone)
+def previous(ledger, project, period, kind):
+    same = [m for p, m, k in periods(ledger) if p == project and k == kind]
+    i = same.index(period)
     return same[i - 1] if i else None
+
+
+def metrics(ids, summary, quality):
+    """The values that a finding's `metric:` can name, for one period's tasks."""
+    tasks = {k: t for k, t in summary.items() if k in ids and t["spans"]}
+    out = {}
+    judged = [quality[t] for t in ids if t in quality]
+    if judged:
+        out["first-attempt"] = 100 * sum(q[0] == "accepted" for q in judged) // len(judged)
+    out["repair-loops"] = sum(1 for t in ids if t in quality and quality[t][1] >= 2)
+    for tier, med in tier_medians(tasks).items():
+        out[f"tokens:{tier}"] = med
+    if tasks:
+        out["active-time"] = int(statistics.median(t["active_s"] for t in tasks.values()) // 60)
+    for key, prefix in (("tools", "tool-errors:"), ("checks", "script:")):
+        for name, (n, bad) in merge(tasks, key):
+            out[prefix + name] = 100 * bad // n if n else 0
+    return out
+
+
+def findings(path):
+    """[(id, disposition)] from a retrospective file's findings table."""
+    rows, lines = [], path.read_text(encoding="utf-8").splitlines()
+    for i, line in enumerate(lines):
+        if [c.lower() for c in cells(line)][:4] == ["id", "signal", "cause", "disposition"]:
+            rows = [cells(r) + [""] * 4 for r in lines[i + 2:] if r.lstrip().startswith("|")]
+    return [(r[0], r[3].strip("` ")) for r in rows]
+
+
+METRIC_RE = re.compile(r"metric:\s*([\w:.@/-]+)")
 
 
 def rate(bad, n):
@@ -133,7 +183,7 @@ def merge(tasks, key):
     return sorted(out.items(), key=lambda kv: (-kv[1][1], -kv[1][0], kv[0]))
 
 
-def draft(args, ledger, project, milestone):
+def draft(args, ledger, project, milestone, kind="Milestone"):
     ids = milestone.get("tasks", [])
     events = meter.read_events(Path(args.root) / args.meter)
     summary = meter.tasks_summary(events)
@@ -147,15 +197,40 @@ def draft(args, ledger, project, milestone):
     loops = [t for t in ids if t in quality and quality[t][1] >= 2]
     lines.append(f"- Repair loops (two or more failed observations): {', '.join(loops) or 'none'}.")
 
-    before = previous(ledger, project, milestone)
+    before = previous(ledger, project, milestone, kind)
     old = {k: t for k, t in summary.items() if before and k in before.get("tasks", []) and t["spans"]}
     now, then = tier_medians(tasks), tier_medians(old)
     for tier, med in sorted(now.items()):
-        trend = f", previous milestone {meter.human(then[tier])}" if tier in then else ""
+        trend = f", previous {kind.lower()} {meter.human(then[tier])}" if tier in then else ""
         lines.append(f"- Median tokens per {tier} task: {meter.human(med)}{trend}.")
+    agents = {}
+    for t in tasks.values():
+        for a in t["agents"]:
+            acc = agents.setdefault((a["runtime"], a["model"], a["role"]), [0, 0])
+            acc[0] += a["requests"]
+            acc[1] += sum(a[c] for c in meter.CLASSES)
+    if agents:
+        total = sum(v[1] for v in agents.values()) or 1
+        top = sorted(agents.items(), key=lambda kv: -kv[1][1])[:5]
+        lines.append("- Tokens by agent: " + "; ".join(
+            f"{m} ({role}, {r}) {100 * n // total}%" for (r, m, role), (_, n) in top) + ".")
     if tasks:
         active = statistics.median(t["active_s"] for t in tasks.values()) // 60
         lines.append(f"- Median active time per task: {int(active)} min.")
+    unmeasured = [k for k, t in tasks.items() if t["unmeasured"]]
+    if unmeasured:
+        lines.append(f"- Unmeasured tasks (no usage found): {', '.join(unmeasured)}.")
+    if before and before.get("retrospective") and (Path(args.root) / before["retrospective"]).is_file():
+        now_m = metrics(ids, summary, quality)
+        then_m = metrics(before.get("tasks", []), summary, quality)
+        follow = []
+        for fid, disposition in findings(Path(args.root) / before["retrospective"]):
+            m = METRIC_RE.search(disposition)
+            if disposition.startswith("change:") and m:
+                name = m.group(1)
+                follow.append(f"  - {fid} ({name}): {then_m.get(name, 'n/a')} then, {now_m.get(name, 'n/a')} now.")
+        if follow:
+            lines += [f"- Changes decided at {project}/{before.get('id')}, and their metric:"] + follow
     notes = [f"{k} ({t['retro']})" for k, t in tasks.items() if t["retro"]]
     if notes:
         lines.append(f"- Task retrospectives: {'; '.join(notes)}.")
@@ -188,7 +263,7 @@ def draft(args, ledger, project, milestone):
     return "\n".join(lines)
 
 
-def write(args, ref, block):
+def write(args, ref, block, kind="Milestone"):
     retros = Path(args.root) / "kb/work/retros"
     slug = ref.replace("/", "-")
     existing = sorted(retros.glob(f"*-{slug}.md"))
@@ -205,7 +280,7 @@ def write(args, ref, block):
         path = retros / f"{datetime.now(timezone.utc):%Y-%m-%d}-{slug}.md"
     path.write_text(f"""# Retrospective: {ref}
 
-Milestone: {ref}
+{kind}: {ref}
 
 {BEGIN}
 {block}
@@ -213,8 +288,8 @@ Milestone: {ref}
 
 ## Findings
 
-One row per signal worth acting on. Disposition: `change: <commit, task or KB file>`,
-`reject: <reason>` or `kit: <proposal>`. Ask also which operation the agents did by hand
+One row per signal worth acting on. Disposition: `change: <commit, task or KB file>;
+metric: <the metric it should move>`, `reject: <reason>` or `kit: <proposal>`. Ask also which operation the agents did by hand
 more than once: each one is a finding, and its change is a tool in `kb/conventions/tools.md`.
 
 | ID | Signal | Cause | Disposition |
@@ -227,7 +302,7 @@ def check(args, ledger):
     errors, warnings = [], []
     root = Path(args.root)
     status = {t["id"]: t.get("status") for t in ledger.get("tasks", [])}
-    for project, m in milestones(ledger):
+    for project, m in milestones(ledger):  # closed iterations: project-check.py checks theirs
         tasks = m.get("tasks", [])
         if tasks and all(status.get(t) == "closed" for t in tasks):
             ref = m.get("retrospective", "")
@@ -236,8 +311,8 @@ def check(args, ledger):
                               f"retrospective (`retro.py draft {project}/{m.get('id')} --write`)")
     for f in sorted((root / "kb/work/retros").glob("*.md")):
         text, rel = f.read_text(encoding="utf-8"), f.relative_to(root)
-        if not re.search(r"^Milestone:\s*\S+", text, re.MULTILINE):
-            errors.append(f"E-retro: {rel} has no Milestone: <project>/<milestone>")
+        if not re.search(r"^(Milestone|Iteration):\s*\S+", text, re.MULTILINE):
+            errors.append(f"E-retro: {rel} has no Milestone: or Iteration: <project>/<id>")
         if BEGIN not in text:
             warnings.append(f"W-stale: {rel} has no generated block; run `retro.py draft ... --write`")
         rows, lines = [], text.splitlines()
@@ -251,6 +326,9 @@ def check(args, ledger):
             if not (d.startswith(DISPOSITIONS) and d.split(":", 1)[1].strip()):
                 errors.append(f"E-retro: {rel} finding {fid or '?'} needs a disposition: "
                               "change: <ref>, reject: <reason> or kit: <proposal>")
+            elif d.startswith("change:") and not METRIC_RE.search(d):
+                warnings.append(f"W-metric: {rel} finding {fid or '?'} changes something but names no "
+                                "`metric:`; the next retrospective cannot tell whether it helped")
     for m in errors + warnings:
         print(m)
     print(f"retro: {len(errors)} errors, {len(warnings)} warnings")
@@ -258,9 +336,9 @@ def check(args, ledger):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Milestone retrospectives from the harness telemetry.")
+    ap = argparse.ArgumentParser(description="Milestone and iteration retrospectives from the harness telemetry.")
     ap.add_argument("command", choices=["record", "draft", "check"])
-    ap.add_argument("target", nargs="?", help="GATE for record, MILESTONE for draft")
+    ap.add_argument("target", nargs="?", help="GATE for record, MILESTONE or ITERATION for draft")
     ap.add_argument("--exit", type=int, dest="code")
     ap.add_argument("--seconds", type=float, default=0)
     ap.add_argument("--write", action="store_true")
@@ -284,15 +362,15 @@ def main():
     if args.command == "check":
         return check(args, ledger)
     if not args.target:
-        ap.error("draft needs a MILESTONE")
+        ap.error("draft needs a MILESTONE or an ITERATION")
     found = find(ledger, args.target)
     if not found:
-        print(f"retro: no single milestone {args.target} in {args.ledger}")
+        print(f"retro: no single milestone or iteration {args.target} in {args.ledger}")
         return 1
-    project, milestone = found
-    block = draft(args, ledger, project, milestone)
+    project, milestone, kind = found
+    block = draft(args, ledger, project, milestone, kind)
     if args.write:
-        print(f"wrote {write(args, project + '/' + milestone.get('id', ''), block)}")
+        print(f"wrote {write(args, project + '/' + milestone.get('id', ''), block, kind)}")
     else:
         print(block)
     return 0
