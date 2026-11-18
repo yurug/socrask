@@ -78,7 +78,12 @@ pass the exit gate before planning.
 
 ## Routing
 
-Run this before writing any question.
+This routing governs Phase 1 question rounds. A blocker found during ongoing
+work uses [the blocker protocol](blockers.md): ask promptly, with conversational
+fallback when Forebrief is unavailable. Do not delay it for a full question round
+or require the human to edit a questions file to unblock execution.
+
+For a Phase 1 round, run this before writing any question.
 this skill's `resolve-engineering-tool.sh forebrief` must succeed AND
 `[ -f .forebrief/config.json ]` (the operational definition of
 "forebrief-enabled", `forebrief`'s own `kb/spec/config-and-formats.md`). This flips the

@@ -29,6 +29,11 @@ offer detail progressively. For a decision, state the options, recommendation, c
 and what answer is needed. For a result, state what changed, why, validation, and remaining
 limits. Concise does not mean omitting an unresolved question or an important risk.
 
+**Blockers:** check prerequisites at intake and before dispatch. A choice outside the
+agent's mandate goes immediately to the coordinator, then to the responsible human
+with options and a recommendation. Continue independent work; silence is not consent.
+Read [the blocker protocol](references/blockers.md) before planning or handling a blocker.
+
 An engineer model is optional and private. Read or update persistent personal concept
 records only when the owner has opted in; otherwise use the current conversation to explain
 unfamiliar terms. Read [references/engineer-model.md](references/engineer-model.md) before
@@ -458,13 +463,8 @@ auditor would catch it?
 
 - **Think slow, act fast** — a risk found in planning costs a draft; found in execution,
   it costs a rebuild (Flyvbjerg and Gardner, *How Big Things Get Done*)
-- **Tackle uncertainty and blockers first** — within any plan, step, or single coding session,
-  the hardest, most uncertain, or blocking work goes FIRST. Don't take arbitrary choices that
-  may have observable changes, ask the user. Easy and peripheral work waits. Deferring risk
-  feels productive (visible progress on safe code) but it is how projects discover at the last
-  minute that a core assumption was wrong, after everything around it has already been built.
-  If you notice yourself reaching for the comfortable task while a scary one waits, stop and
-  switch. The scary one is the task.
+- **Tackle uncertainty and blockers first** — test the prerequisite that could invalidate
+  downstream work first. Escalate decisions promptly; keep independent work moving.
 - **Premortem before you build** — challenge the idea (Phase 0.5) and the plan (Phase 3) by assuming they already failed; blind spots are cheaper to find here than in code
 - **Route models by demonstrated quality** — use capable judgment for uncertain integration,
   acceptance and consequential repairs. Optimize cost only after task-class validation;

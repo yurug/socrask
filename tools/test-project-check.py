@@ -28,6 +28,20 @@ def fixture():
                 projects=[project], plans=[plan], tasks=[task], feedback=[feedback])
 
 
+def blocker(kind='decision'):
+    row = dict(id='B1', kind=kind, status='open', detected_at='2026-10-03T10:00:00Z',
+               summary='Live selection validation needs an account', ref='evidence.json',
+               owner='engineer', unblock_when='An authorized test account is available')
+    if kind == 'decision':
+        row.update(unblock_when='The engineer chooses how to handle live validation',
+                   question='Provision an account or defer live validation?',
+                   options=[dict(id='account', action='Provision a test account',
+                                 consequence='Live validation can proceed'),
+                            dict(id='defer', action='Defer live validation',
+                                 consequence='Delivery remains unaccepted')], recommended='account')
+    return row
+
+
 def closed_fixture():
     data = fixture()
     task, feedback = data['tasks'][0], data['feedback'][0]
@@ -219,6 +233,7 @@ class ProjectCheck(unittest.TestCase):
             task.update(status=state, migration_note='Retained legacy claim')
             self.run_gate(data, 2, 'latest failure')
         task['status'] = 'blocked'
+        task['blockers'] = [blocker()]
         self.assertEqual(self.run_gate(data)['counts']['active_tasks'], 0)
         feedback.update(status='imported-unverified', migration_note='Historical claim')
         self.run_gate(data, 2, 'latest failure')
@@ -227,7 +242,82 @@ class ProjectCheck(unittest.TestCase):
         self.run_gate(data, 2, 'latest failure')
         feedback['status'] = 'open'
         task['status'] = 'reopened'
+        task['blockers'][0].update(status='resolved', resolution=dict(
+            at='2026-10-03T12:00:00Z', ref='evidence.json', outcome='Test account provisioned'))
         self.run_gate(data)
+
+    def test_PM_blocked_work_needs_an_actionable_record(self):
+        data = fixture()
+        task = data['tasks'][0]
+        task['status'] = 'blocked'
+        self.run_gate(data, 2, 'blocked task needs an open blocker')
+        task['blockers'] = [blocker()]
+        result = self.run_gate(data)
+        self.assertEqual(result['counts']['active_tasks'], 0)
+        self.assertEqual(result['open_blockers'][0]['task'], 'T')
+        self.assertEqual(result['open_blockers'][0]['owner'], 'engineer')
+        for field in ('summary', 'owner', 'unblock_when', 'detected_at', 'ref'):
+            broken = copy.deepcopy(data)
+            del broken['tasks'][0]['blockers'][0][field]
+            self.run_gate(broken, 2)
+
+    def test_PM_decision_needs_options_consequences_and_recommendation(self):
+        mutations = [
+            lambda b: b.pop('question'), lambda b: b.update(options=[]),
+            lambda b: b.update(options=b['options'][:1]),
+            lambda b: b['options'][0].pop('consequence'),
+            lambda b: b['options'][1].update(id='account'),
+            lambda b: b.update(recommended='invented')]
+        for mutate in mutations:
+            data = fixture()
+            b = blocker()
+            data['tasks'][0].update(status='blocked', blockers=[b])
+            mutate(b)
+            self.run_gate(data, 2)
+
+    def test_PM_dependency_does_not_require_a_human_decision(self):
+        data = fixture()
+        data['tasks'][0].update(status='blocked', blockers=[blocker('dependency')])
+        data['tasks'].append(dict(entity('T2'), plan='PL', kind='engineering', depends_on=[], cases=[]))
+        self.assertEqual(self.run_gate(data)['counts']['active_tasks'], 1)
+        data['tasks'][1]['depends_on'] = ['T']
+        self.run_gate(data, 2, 'unmet dependency')
+
+    def test_PM_pending_decision_cannot_resume_or_close_dependent_work(self):
+        for status in ('active', 'planned', 'reopened', 'deferred', 'closed', 'imported-unverified'):
+            data = fixture()
+            data['tasks'][0].update(status=status, blockers=[blocker()], migration_note='Legacy')
+            self.run_gate(data, 2, 'open blockers require blocked status')
+
+    def test_PM_resume_needs_resolution_evidence_for_every_blocker(self):
+        data = fixture()
+        b = blocker()
+        task = data['tasks'][0]
+        task.update(status='blocked', blockers=[b, dict(blocker('dependency'), id='B2')])
+        self.run_gate(data)
+        b['status'] = 'resolved'
+        self.run_gate(data, 2, 'resolution outcome required')
+        b['resolution'] = dict(at='2026-10-02T12:00:00Z', ref='evidence.json', outcome='Account provided')
+        self.run_gate(data, 2, 'resolution predates detection')
+        b['resolution'].update(at='2026-10-03T12:00:00Z', ref='missing.md')
+        self.run_gate(data, 2, 'missing reference')
+        b['resolution']['ref'] = 'evidence.json'
+        self.run_gate(data)  # B2 still blocks the task.
+        task['status'] = 'active'
+        self.run_gate(data, 2, 'open blockers require blocked status')
+        task['blockers'][1].update(status='resolved', resolution=copy.deepcopy(b['resolution']))
+        self.assertEqual(self.run_gate(data)['open_blockers'], [])
+        task['status'] = 'blocked'
+        self.run_gate(data, 2, 'blocked task needs an open blocker')
+
+    def test_PM_blocker_malformed_inputs_return_diagnostics(self):
+        for rows in (None, {}, [None], [dict(blocker(), kind=[])], [dict(blocker(), status={})],
+                     [dict(blocker(), recommended=[])], [dict(blocker(), options=[None, None])],
+                     [blocker(), blocker()], [dict(blocker(), resolution={})],
+                     [dict(blocker(), detected_at='2026-10-06T10:00:00Z')]):
+            data = fixture()
+            data['tasks'][0].update(status='blocked', blockers=rows)
+            self.run_gate(data, 2)
 
     def test_PM_parent_closure_cannot_hide_pending_children(self):
         data = fixture()

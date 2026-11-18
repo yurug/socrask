@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.28.0 — 2026-11-18
+
+Blocked work now needs a route back to execution. Agents check prerequisites before
+dispatch and report blockers as soon as they find them. The coordinator asks the
+responsible human with options, consequences and a recommendation, then continues
+independent work. A known human decision bypasses retry budgets.
+
+- Essential: the skill, plan handoffs and team guides use one blocker protocol.
+- Triggered (projects using the work ledger): tasks record blockers, owners, unblock conditions and resolution evidence in the
+  work ledger. Decision blockers also record the question, options and recommendation.
+- `project-check.py` rejects blocked tasks without actionable records and resumption
+  with open blockers. Its receipt lists open blockers. `ledger.py` applies these rules
+  to edits; no separate registry is needed.
+
+Existing blocked tasks need blocker records before the new gate passes. Other tasks
+keep their format. The checks validate records; they cannot detect unreported blockers
+or prove that an agent asked the human promptly.
+
 ## 0.27.0 — 2026-11-14
 
 Project management lacked the iterative cycle, and the process could not improve from

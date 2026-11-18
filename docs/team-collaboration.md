@@ -64,6 +64,13 @@ those paths go to that person, through a forebrief card addressed to them. No ag
 answers for another engineer. The integration owner, a named engineer, approves
 the combined result through the pull request review.
 
+For blockers, follow [the blocker protocol](../skills/spec-driven-dev/references/blockers.md).
+The coordinator routes a decision to its named engineer immediately with options,
+consequences and a recommendation. It does not wait for CI handoff or lease expiry.
+The integration owner records affected tasks in the work ledger. Keep renewing
+claims while retaining ownership, or arrange an explicit handoff; pending human
+decisions do not extend the four-hour lease.
+
 ## What this does not do
 
 - It does not authenticate engineers beyond Git push access. Trust comes from the

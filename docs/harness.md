@@ -48,7 +48,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `tools/update-check.py`, `tools/inject-profile.sh` | lifecycle helpers: tell the agent at session start that a newer kit release exists (never updates); inject only the explicitly enrolled personal profile |
 | `tools/outcome-check.py` | incomplete/stale user outcomes, missing cases, erased first-attempt failures, mismatched release/contract and measured regressions |
 | `tools/ledger.py` | a ledger write that makes a coherent ledger incoherent, an unknown ID, a duplicate ID |
-| `tools/project-check.py`, `tools/project_history.py` | orphaned commitments, unsupported closure, an iteration task without priority or value, two active iterations, a closed iteration without review or retrospective and, with a fixed Git base, removed or rewritten committed feedback history |
+| `tools/project-check.py`, `tools/project_history.py` | orphaned commitments, incomplete blockers or resumption with open blockers, unsupported closure, invalid iterations and, with a fixed Git base, removed or rewritten committed feedback history |
 | `tools/sync-skills.py` | installation conflicts or missing/drifting selected Claude/Codex skill links (`--check`) |
 
 ## Budgets

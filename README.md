@@ -75,6 +75,9 @@ for integration and human communication. `tools/agent-work.py` atomically reserv
 paths and shared test resources, records command results, and requires a clean tested
 commit for handoff. Inbrief and Backbrief have explicit coordinator checkpoints;
 a worker finishing does not claim the human understood the combined change.
+The [blocker protocol](skills/spec-driven-dev/references/blockers.md) checks prerequisites
+before dispatch and routes decisions to the human with options and a recommendation.
+The team continues independent work while the affected tasks await resolution.
 
 Across machines or engineers, `tools/team-work.py` adds a shared claim registry in the
 Git remote, leases, and CI-backed handoffs; local coordination nests inside it. See
@@ -136,7 +139,8 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.27.0** — iterations and measured self-improvement: a metering that works across Claude Code and Codex, by model and role, a history analysis, and retrospectives that check their own changes. The methodology is still evolving, but every deterministic
+**v0.28.0** — early blocker detection and prompt human decisions: options, consequences,
+a recommendation, continued independent work, and checked blocker records. The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;
 the full workflow uses `inbrief`, `forebrief`, and `backbrief`; a persistent engineer

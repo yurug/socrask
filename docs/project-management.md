@@ -29,6 +29,9 @@ blocked task; blocked work keeps its owner and next action without consuming WIP
 The integration owner owns reconciliation across documents and branches. A worker
 reports its exact tested source and limits; it does not close the whole journey.
 The owner of a blocked task still owns getting its dependency or decision resolved.
+Detect prerequisites before dispatch and report blockers immediately through
+[the blocker protocol](../skills/spec-driven-dev/references/blockers.md).
+The daily review is a follow-up, never a reason to delay asking for a decision.
 
 ## One small ledger
 
@@ -90,6 +93,77 @@ accepted feedback then cites that executed completion and a newer acceptance eve
 Do not relabel a product change to evade delivery evidence. Detailed product
 evidence remains governed by [outcome acceptance](outcome-quality.md).
 
+## Blockers
+
+A task with status `blocked` needs at least one open entry in `blockers`.
+An open blocker requires that status; split independent work into another task.
+Other tasks can omit `blockers`. Project and plan statuses remain aggregates;
+record the actionable blockers on their affected tasks.
+
+Each blocker has an `id` unique within the task, `kind` (`decision` or
+`dependency`), `status` (`open` or `resolved`), and these fields:
+
+| Field | Meaning |
+|---|---|
+| `summary` | What prevents the requested outcome, with its impact. |
+| `detected_at`, `ref` | Timezone-aware timestamp and local evidence reference. |
+| `owner` | The human or team who can provide the decision or dependency. The task owner still owns follow-up. |
+| `unblock_when` | The observable condition that permits resumption. |
+| `question` | For a decision, the question sent to the responsible human. |
+| `options` | For a decision, at least two `{id, action, consequence}` objects with distinct IDs. Include deferral or stopping if only one technical solution exists. |
+| `recommended` | For a decision, the recommended option ID. Explain the reason in its consequence or the cited decision record. |
+| `resolution` | Required only when resolved: `{at, ref, outcome}`, with a timestamp at or after detection and evidence of the actual result. |
+
+Use the task's `next_action` and `review_on` for follow-up. Keep resolved entries
+when resuming work. Cite the human answer for decisions and the observed unblock
+condition for dependencies. Choosing to provision access does not prove access
+exists: resolve the decision and keep that dependency open until verified.
+If the human defers the work, record that decision under the existing feedback
+rules. An unresolved failed observation still requires a blocked task and open
+feedback; keep its acceptance dependency visible. Deferral is not acceptance.
+
+Example contents of `blockers.json`, passed to `ledger.py`:
+
+```json
+[
+  {
+    "id": "B1", "kind": "decision", "status": "open",
+    "detected_at": "2026-11-18T10:00:00Z",
+    "summary": "Live sync acceptance requires an unavailable test account",
+    "ref": "kb/reports/access-check.md", "owner": "project-engineer",
+    "unblock_when": "The engineer chooses how to handle live sync acceptance",
+    "question": "Provision a test account or defer live sync?",
+    "options": [
+      {"id": "account", "action": "Provision a scoped test account", "consequence": "Preserves live acceptance; requires owner action"},
+      {"id": "defer", "action": "Defer live sync", "consequence": "Reduces this delivery's scope; acceptance stays pending"}
+    ],
+    "recommended": "account"
+  }
+]
+```
+
+The cited file must exist. Change the task status and blocker records together:
+
+```sh
+python3 tools/ledger.py set T-sync status=blocked blockers=@blockers.json \
+  next_action="Ask project-engineer to choose account or defer" review_on=2026-11-19
+# After the answer and any remaining dependencies are resolved, retain their evidence:
+python3 tools/ledger.py set T-sync status=active blockers=@resolved-blockers.json \
+  next_action="Run live sync acceptance"
+```
+
+`project-check.py` reports `open_blockers` and rejects incomplete records or
+resumption with an open blocker. It cannot verify that the question reached the
+human, judge alternatives, or authenticate a decision. The snapshot check does
+not retain deleted blocker history; `--history-base` protects feedback events,
+not blocker records. These limits require transcript and change review.
+
+Compatibility: existing blocked tasks need these records before the new gate
+passes. Use `ledger.py list tasks --status blocked`, then update each with
+`ledger.py set`. Do not invent historical detection dates or decisions; record
+the current review and cite the available evidence. Old committed snapshots do
+not need rewriting. Tasks without blockers keep their existing format.
+
 ## Iterate
 
 Work runs in iterations: timeboxes of one to two weeks, each with a goal. Each
@@ -126,7 +200,7 @@ costs about 1,500 generated characters and can reformat the file. Use the tool:
 ```sh
 python3 tools/ledger.py list tasks --status active --owner me   # one line per entry
 python3 tools/ledger.py get T-S32                                # one entry, one line
-python3 tools/ledger.py set T-S32 status=blocked next_action="Wait for the owner"
+python3 tools/ledger.py set T-S32 status=blocked blockers=@blockers.json next_action="Ask engineer to choose an option"
 python3 tools/ledger.py add tasks @new-task.json
 python3 tools/ledger.py event S32 --result failed --ref kb/reports/s32.md
 python3 tools/ledger.py archive

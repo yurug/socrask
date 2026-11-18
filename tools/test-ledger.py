@@ -50,11 +50,29 @@ class LedgerTool(unittest.TestCase):
 
     def test_set_changes_fields_and_keeps_the_format(self):
         self.save(fixtures.fixture(), indent=1)
-        out = self.run_tool('set', 'T', 'status=blocked', 'next_action=Wait for the owner', 'cases=["select","grid"]')
-        self.assertEqual(out, 'ledger: set T status, next_action, cases\n')
+        out = self.run_tool('set', 'T', 'status=blocked', 'next_action=Ask engineer to provision account',
+                            'cases=["select","grid"]', 'blockers=' + json.dumps([fixtures.blocker()]))
+        self.assertEqual(out, 'ledger: set T status, next_action, cases, blockers\n')
         data = json.loads(self.path.read_text())
         self.assertEqual((data['tasks'][0]['status'], data['tasks'][0]['cases']), ('blocked', ['select', 'grid']))
         self.assertTrue(self.path.read_text().startswith('{\n "version"'))
+
+    def test_block_and_resume_are_atomic_with_their_evidence(self):
+        self.save(fixtures.fixture())
+        before = self.path.read_text()
+        self.assertIn('blocked task needs an open blocker',
+                      self.run_tool('set', 'T', 'status=blocked', code=1))
+        self.assertEqual(self.path.read_text(), before)
+        b = fixtures.blocker()
+        (self.root / 'blockers.json').write_text(json.dumps([b]))
+        self.run_tool('set', 'T', 'status=blocked', 'blockers=@blockers.json')
+        self.assertIn('open blockers require blocked status',
+                      self.run_tool('set', 'T', 'status=active', code=1))
+        b.update(status='resolved', resolution=dict(at='2026-10-03T12:00:00Z',
+                 ref='evidence.json', outcome='Account provided by engineer'))
+        (self.root / 'blockers.json').write_text(json.dumps([b]))
+        self.run_tool('set', 'T', 'status=active', 'blockers=@blockers.json')
+        self.assertEqual(json.loads(self.run_tool('get', 'T'))['blockers'][0]['status'], 'resolved')
 
     def test_write_that_breaks_a_coherent_ledger_is_refused(self):
         self.save(fixtures.fixture())

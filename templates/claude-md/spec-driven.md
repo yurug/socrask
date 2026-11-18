@@ -83,11 +83,11 @@ Host tools and model names differ: do not pass an unsupported Claude name to ano
   escalation target for stuck loops.
 - **Execution tier**: routine work with demonstrated acceptance quality. Use judgment
   capability for unfamiliar integration, acceptance design and consequential repairs.
-- **Escalation:** execution subagents run at most 2 Ralph iterations, then stop and return a
-  failure report (failing tests verbatim, hypotheses ruled out, commits so far, suspected
-  root cause, suspected spec gaps). A judgment-tier subagent continues from that report — 7
-  iterations total per step, then split the step. A spec gap found this way is fixed in the
-  KB, not just in code.
+- **Escalation:** after 2 failed execution attempts, hand tests, ruled-out hypotheses, commits,
+  root cause and spec gaps to judgment; 7 attempts total, then split. Fix spec gaps in the KB.
+  Check prerequisites before dispatch. Decisions outside the mandate bypass retries: notify
+  the coordinator immediately; it asks the human with options and a recommendation. Follow the skill's
+  `references/blockers.md`; record blockers and continue independent work.
 - **Context is a budget:** save each phase's results to files as you go, and resume from them.
 - **KB quizzes stay on the execution tier:** the KB must be navigable by the agents that
   will actually consume it; a stronger model masks navigability defects.

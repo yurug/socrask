@@ -201,6 +201,7 @@ class Ledger:
         for id, task in tasks.items():
             require(string(task.get('plan')) and task['plan'] in plans, f'{id}: unknown plan')
             require(string(task.get('kind')) and task['kind'] in ('product', 'engineering', 'process'), f'{id}: invalid kind')
+            self.blockers(task)
             strings(task.get('cases'), f'{id}.cases', task['kind'] == 'product' and task['status'] != 'imported-unverified')
             for dep in strings(task.get('depends_on'), f'{id}.depends_on'):
                 require(dep in tasks, f'{id}: unknown dependency: {dep}')
@@ -218,6 +219,56 @@ class Ledger:
         for id, project in projects.items():
             require(active[id] <= project['wip_limit'], f'{id}: WIP {active[id]} exceeds {project["wip_limit"]}')
         return active
+
+    def blockers(self, task):
+        """A blocked task needs a route to resumption; a decision needs real options.
+
+        This checks the record, not notification delivery or human authorship.
+        Resolved entries stay on the task when it resumes.
+        """
+        label = f'{task["id"]}.blockers'
+        rows = task.get('blockers', [])
+        require(isinstance(rows, list), f'{label}: expected array')
+        seen, open_ids = set(), []
+        for row in rows:
+            require(isinstance(row, dict) and string(row.get('id')), f'{label}: blocker id required')
+            id = row['id']
+            require(id not in seen, f'{label}: duplicate blocker: {id}')
+            seen.add(id)
+            name = f'{task["id"]}/{id}'
+            require(row.get('kind') in ('decision', 'dependency'), f'{name}: invalid blocker kind')
+            require(row.get('status') in ('open', 'resolved'), f'{name}: invalid blocker status')
+            for key in ('summary', 'owner', 'unblock_when'):
+                require(string(row.get(key)), f'{name}: {key} required')
+            detected = self.time(row.get('detected_at'), name)
+            self.ref(row.get('ref'), name)
+            if row['kind'] == 'decision':
+                require(string(row.get('question')), f'{name}: decision question required')
+                options = row.get('options')
+                require(isinstance(options, list) and len(options) >= 2,
+                        f'{name}: decision needs at least two options (including defer or stop if necessary)')
+                choices = set()
+                for option in options:
+                    require(isinstance(option, dict) and all(string(option.get(k)) for k in
+                            ('id', 'action', 'consequence')), f'{name}: option needs id, action and consequence')
+                    require(option['id'] not in choices, f'{name}: duplicate option')
+                    choices.add(option['id'])
+                require(string(row.get('recommended')) and row['recommended'] in choices,
+                        f'{name}: recommended must name an option')
+            if row['status'] == 'open':
+                require('resolution' not in row, f'{name}: open blocker cannot have a resolution')
+                open_ids.append(id)
+            else:
+                resolution = row.get('resolution')
+                require(isinstance(resolution, dict) and string(resolution.get('outcome')),
+                        f'{name}: resolution outcome required')
+                require(self.time(resolution.get('at'), name) >= detected,
+                        f'{name}: resolution predates detection')
+                self.ref(resolution.get('ref'), f'{name}.resolution')
+        require(not open_ids or task['status'] == 'blocked',
+                f'{task["id"]}: open blockers require blocked status; split independent work into another task')
+        require(task['status'] != 'blocked' or open_ids,
+                f'{task["id"]}: blocked task needs an open blocker with an unblock condition')
 
     def dependencies(self):
         """Kahn's traversal detects cycles without recursion limits on large imports."""
@@ -337,6 +388,10 @@ class Ledger:
                 'as_of': self.as_of.isoformat(), 'counts': {**{g: len(rows) for g, rows in self.groups.items()},
                 'source_ids': len(self.sources), 'active_tasks': sum(active.values())},
                 'project_wip': dict(active), 'migration_gaps': self.gaps,
+                'open_blockers': [dict(task=task['id'], **{key: blocker[key] for key in
+                                  ('id', 'kind', 'owner', 'summary', 'unblock_when')})
+                                  for task in self.groups['tasks'].values()
+                                  for blocker in task.get('blockers', []) if blocker['status'] == 'open'],
                 'status_counts': {g: dict(Counter(row['status'] for row in rows.values())) for g, rows in self.groups.items()}}
 
 

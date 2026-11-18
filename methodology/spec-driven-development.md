@@ -284,7 +284,10 @@ stays valid, run final validation, and present results.
    experiments that loop back to the design, then invest in a rigorous plan and execute
    it quickly. **Tackle uncertainty and blockers first** — within any plan, step, or coding session,
    the hardest and most uncertain work goes first. Deferring risk feels productive but is
-   how projects discover at the last minute that a core assumption was wrong
+   how projects discover at the last minute that a core assumption was wrong.
+   Apply [the blocker protocol](../skills/spec-driven-dev/references/blockers.md): check
+   prerequisites before dispatch, ask for human decisions immediately with options and
+   a recommendation, track resolution, and keep independent work moving.
 4. **Fix the harness, not the output** — when the agent fails, improve the constraints
 5. **Enforce, don't request** — a lesson, property, guideline, or convention that matters
    gets a deterministic check, written at the moment the rule is: a test, a linter rule, a

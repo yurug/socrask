@@ -32,7 +32,7 @@ Acceptance:
 - P3: `dune test -- -only P3` passes
 - P7: `dune test -- -only P7` passes
 Out of scope: retries (step 3), auth refresh
-Hand off: if pagination is not cursor-based, stop and return the failure report
+Hand off: if pagination is not cursor-based, pause this step and report the blocker immediately
 Proof: preserves `kb/models/sync.md#I2` (the cursor never moves backwards)
   Argument: induction on pulls; each pull sets the cursor to max(old, last item)
   Refinement: `Sync.t.cursor` is the model cursor; `Sync.pull` is `pull`
@@ -44,7 +44,7 @@ Proof: preserves `kb/models/sync.md#I2` (the cursor never moves backwards)
 | Interfaces | the signatures, types, CLI flags or wire shapes it exposes or consumes, spelled out |
 | Acceptance | one item per criterion, each with the exact command that checks it |
 | Out of scope | what it must not touch, so it does not "helpfully" widen the change |
-| Hand off | the condition under which it stops instead of deciding |
+| Hand off | the condition that pauses dependent work and triggers immediate escalation |
 | Proof | a cited model invariant, the argument and the refinement map; see [proof-ready design](proof-ready-design.md) |
 
 Any step can add `Budget: ~200k tokens`. It is optional; `task-meter.py` compares
@@ -62,8 +62,9 @@ exist to name choices.
    If it lists any question, the step is not ready: settle the question in the
    plan or KB, or change the step to `judgment`. Never answer it only in chat.
 3. During Phase 4, an execution agent that hits a Hand off condition, or needs a
-   choice the step does not settle, returns the failure report. The planner fixes
-   the step, and the executor does not guess.
+   choice the step does not settle, reports the blocker immediately with evidence
+   and options. The coordinator follows [the blocker protocol](blockers.md); the
+   planner fixes the step after resolution. The executor does not guess.
 
 ## What this does not guarantee
 

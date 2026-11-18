@@ -11,6 +11,8 @@
       "summary": "what passed stays passed; suite-level obligations are an acceptable start"},
     "human-checkpoints": {"level": "essential", "since": "v0.1.0", "tools": ["alignment-check.py"],
       "summary": "Inbrief and Backbrief checkpoints with human evidence"},
+    "blocker-escalation": {"level": "essential", "since": "v0.28.0", "tools": [],
+      "summary": "check prerequisites early, ask the responsible human with options and a recommendation, and continue independent work; project-ledger checks blocker records when adopted"},
     "writing-standard": {"level": "essential", "since": "v0.6.0", "tools": ["ste-check.py"],
       "summary": "STE writing rules on plans, reports and the changelog"},
     "project-rules": {"level": "essential", "since": "v0.19.0", "tools": ["kb-lint.py"],

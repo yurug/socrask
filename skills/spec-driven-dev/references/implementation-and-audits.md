@@ -19,6 +19,10 @@ Ratchet input is complete version-1 structured test results, not log text; see
 
 For each step in the plan:
 
+Check its prerequisites using [the blocker protocol](blockers.md). A known decision
+outside the mandate bypasses retry budgets. Notify the coordinator immediately;
+the coordinator asks the responsible human and continues independent work.
+
 **Stay in the step's scope.** The engineer approved the plan with each step's Files.
 Before the step closes, run:
 
@@ -97,8 +101,9 @@ observed user outcome described in `docs/outcome-quality.md`.
   escalation); this Phase 4 section so it can run the loop itself. Dispatch on the step's
   `Tier:` field; only a step that passes `plan-check.py` goes to the execution tier.
 - Execution-tier agents do not settle choices. A choice the step leaves open, or a
-  `Hand off` condition, ends the attempt with the failure report below, and the planner
-  fixes the step.
+  `Hand off` condition, pauses dependent work and triggers an immediate blocker report
+  with evidence, impact and proposed options. The coordinator resolves it within the
+  existing mandate or asks the human; the planner then fixes the step.
 - Returns on success: commit hash(es) produced; test results (pass/fail counts, names of any
   failures); any KB drift it noticed (file + line + expected-vs-found); any unresolved ambiguities.
 - Returns on budget exhaustion — the failure report: failing test names with verbatim error

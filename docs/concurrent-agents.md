@@ -93,6 +93,14 @@ attempt as abandoned and claim a new task ID for revisions. Keep the old record.
 
 ## Interruption and recovery
 
+Before dispatch, check each task's prerequisites and decision authority using
+[the blocker protocol](../skills/spec-driven-dev/references/blockers.md).
+Workers report blockers to the coordinator as soon as they find them, with
+evidence, impact and options. The coordinator asks the responsible human promptly
+and keeps independent tasks moving. A worker stopping does not end this duty.
+The integration owner updates the work ledger; workers propose the record rather
+than write shared status concurrently. Blocking does not release a path claim.
+
 `status` prints task ownership, checks and active resource leases as JSON. Claims
 never expire automatically; a slow agent must not lose its files to a timer.
 `close --outcome abandoned --reason '...'` releases a task only when it has no

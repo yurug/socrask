@@ -11,6 +11,7 @@ The tier table lives in SKILL.md. These rules apply it.
    a written spec. A weaker model's failure does not prove the spec is wrong. Execution
    agents get at most two unsuccessful iterations before a structured handoff; repeated
    failures require a changed hypothesis. Preserve the shared seven-iteration ceiling.
+   A known decision outside the mandate goes immediately through [the blocker protocol](blockers.md), without consuming retries.
 4. **Test KB navigation with the agents that consume it.** Keep that diagnostic
    separate from product acceptance. For product agents, record the effective model
    of every decision-making helper, not just the model selected in the chat UI.
