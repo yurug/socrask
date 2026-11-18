@@ -250,7 +250,7 @@ class ProjectCheck(unittest.TestCase):
         data = fixture()
         task = data['tasks'][0]
         task['status'] = 'blocked'
-        self.run_gate(data, 2, 'blocked task needs an open blocker')
+        self.run_gate(data, 2, 'blocked task needs a blocker')
         task['blockers'] = [blocker()]
         result = self.run_gate(data)
         self.assertEqual(result['counts']['active_tasks'], 0)
@@ -308,7 +308,7 @@ class ProjectCheck(unittest.TestCase):
         task['blockers'][1].update(status='resolved', resolution=copy.deepcopy(b['resolution']))
         self.assertEqual(self.run_gate(data)['open_blockers'], [])
         task['status'] = 'blocked'
-        self.run_gate(data, 2, 'blocked task needs an open blocker')
+        self.run_gate(data)  # Resolved, awaiting explicit resumption.
 
     def test_PM_blocker_malformed_inputs_return_diagnostics(self):
         for rows in (None, {}, [None], [dict(blocker(), kind=[])], [dict(blocker(), status={})],
@@ -318,6 +318,13 @@ class ProjectCheck(unittest.TestCase):
             data = fixture()
             data['tasks'][0].update(status='blocked', blockers=rows)
             self.run_gate(data, 2)
+
+    def test_PM_closure_must_follow_blocker_resolution(self):
+        data = closed_fixture()
+        b = blocker()
+        b.update(status='resolved', resolution=dict(at='2026-10-03T12:00:00Z', ref='evidence.json', outcome='Access supplied'))
+        data['tasks'][0]['blockers'] = [b]
+        self.run_gate(data, 2, 'closure predates blocker resolution')
 
     def test_PM_parent_closure_cannot_hide_pending_children(self):
         data = fixture()

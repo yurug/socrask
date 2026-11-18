@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Cross-machine coordination checks for team-work.py: a bare remote and two clones."""
 import json
+import importlib.util
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 TOOL = Path(__file__).with_name("team-work.py")
 ENV = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.invalid",
@@ -114,6 +116,42 @@ class TeamWorkTests(unittest.TestCase):
                       "--reason", "want this work now", code=2)
         self.assertIn("belongs to alice",
                       self.run_tool(self.bob, "renew", "--task", "T-1", "--engineer", "bob", code=2))
+
+    def test_expired_claim_cannot_reactivate_over_a_new_live_claim(self):
+        self.claim(self.alice, "old", "alice", "src", hours="-1")
+        self.claim(self.bob, "new", "bob", "src/a.ml")
+        before = self.registry(self.bob)
+        for action in ('renew', 'takeover'):
+            args = [action, '--task', 'old', '--engineer', 'alice']
+            if action == 'takeover':
+                args += ['--reason', 'resume work after expiration']
+            self.assertIn('paths overlap new', self.run_tool(self.alice, *args, code=2))
+            self.assertEqual(self.registry(self.bob), before)
+
+    def test_failed_ci_adapter_cannot_authorize_handoff(self):
+        self.claim(self.alice, 'T', 'alice', 'src')
+        self.run_tool(self.alice, 'handoff', '--task', 'T', '--engineer', 'alice',
+                      '--pr', 'pr/1', ci='success; exit 1', code=2)
+        self.assertEqual(self.registry(self.alice)['tasks']['T']['status'], 'active')
+
+    def test_github_requires_named_completed_successful_checks_on_all_pages(self):
+        spec = importlib.util.spec_from_file_location('team', TOOL)
+        team = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(team)
+        with self.assertRaisesRegex(ValueError, 'required-check'):
+            team.ci_status(team.DEFAULT_CI, 'a'*40)
+        def result(checks):
+            pages = [{'check_runs': [check]} for check in checks]
+            response = subprocess.CompletedProcess([], 0, json.dumps(pages))
+            with patch.object(team.subprocess, 'run', return_value=response):
+                return team.ci_status(team.DEFAULT_CI, 'a'*40, ['tests', 'lint'])
+        tests = dict(name='tests', status='completed', conclusion='success')
+        lint = dict(name='lint', status='completed', conclusion='success')
+        self.assertEqual(result([tests]), 'pending')
+        self.assertEqual(result([tests, lint]), 'success')
+        self.assertEqual(result([tests, dict(lint, status='in_progress', conclusion=None)]), 'pending')
+        for outcome in ('failure', 'skipped', 'neutral', None):
+            self.assertEqual(result([tests, dict(lint, conclusion=outcome)]), 'failure')
 
     def test_handoff_needs_ci_success_on_the_commit(self):
         self.claim(self.alice, "T-1", "alice", "src")

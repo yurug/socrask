@@ -292,13 +292,11 @@ Write findings to a ledger, `kb/reports/findings-<slice>.md`, from
 `templates/kb/reports/findings.md`: one row per finding, with its round, severity,
 status and evidence. A fix updates the row; it never deletes it.
 
-**The audit-and-fix loop converges, or it stops.** Each round should find less. From
-round 2 on, a round that finds a new high finding, or reopens a fixed one, is a strike.
-Two strikes in a row mean that more rounds will not converge: the fixes create defects,
-or the specification lets them through. Stop fixing, and route the failure with the
-engineer ([route every failure](../SKILL.md#route-every-failure-to-the-layer-that-owns-it)).
-Record the decision as `Escalated: round N, <decision>`. Past the round cap (3 by
-default), an open high finding also goes to the engineer.
+**Use the shared [audit policy](../../audit/references/policy.md).** A request to
+audit or propose improvements uses review mode; Phase 5 of an authorized
+implementation uses repair mode within that scope. Keep one findings ledger and
+the policy's three-round budget. Record arbitration as
+`Escalated: round N, <decision>`; a new agent does not reset the count.
 
 ```sh
 python3 tools/findings-check.py kb/reports/findings-<slice>.md
@@ -332,6 +330,5 @@ had stated, state it in `kb/properties/` with that check as its `Enforced-by:` c
 audit that only ever fixes instances re-finds the same class next round, and pays
 judgment-tier tokens each time to rediscover it.
 
-**Ralph Loop** (max 7 iterations): audit -> fix -> re-audit until 0 criticals; remaining highs
-must be either fixed or documented in `kb/reports/` with a rationale. If the loop is not
-converging, stop and return to Phase 3 to split the slice.
+The shared audit policy owns completion and escalation. Phase 4's seven
+implementation attempts do not extend the Phase 5 audit budget.

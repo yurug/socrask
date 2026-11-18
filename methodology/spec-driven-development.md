@@ -258,11 +258,10 @@ milestone.
 Multi-axis: test gaps, security, performance, UX, spec compliance, simplicity, provability.
 Select audit dimensions by the changed risks. Use independent capable judgment for
 consequential acceptance and trust boundaries; delegation depends on authorization and
-independent work, not a fixed auditor count. Verify consequential findings before repair. Ralph Loop the audits
-themselves — audit -> fix -> re-audit until 0 criticals — and stop the loop when it diverges.
-A findings ledger keeps every finding with its round. When two rounds in a row find new or
-reopened high findings, more rounds will not converge: the fixes create defects, or the
-specification lets them through, and the engineer decides where to route the failure.
+independent work, not a fixed auditor count. Verify consequential findings before repair.
+Use the [shared audit policy](../skills/audit/references/policy.md): review preserves
+product files; authorized repair uses three audit rounds by default, one findings ledger,
+and arbitration when the loop diverges or reaches its cap with high findings still open.
 
 ### Phase 6: KB Sync
 After implementation, verify the KB still matches reality. Update stale files. The KB is

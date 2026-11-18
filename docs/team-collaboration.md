@@ -41,20 +41,28 @@ KIT=/absolute/path/to/socrask
 python3 "$KIT/tools/team-work.py" claim --task T-12 --engineer alice \
   --path src/parser --criteria 'Malformed input is rejected'
 python3 "$KIT/tools/team-work.py" renew --task T-12 --engineer alice     # before 4 h
-python3 "$KIT/tools/team-work.py" handoff --task T-12 --engineer alice --pr <url>
+python3 "$KIT/tools/team-work.py" --required-check harness handoff --task T-12 --engineer alice --pr <url>
 python3 "$KIT/tools/team-work.py" close --task T-12 --engineer alice \
   --outcome integrated --reason 'Merged after review by the integration owner'
 python3 "$KIT/tools/team-work.py" status
 ```
 
 - **Leases.** A claim lasts four hours unless renewed. An expired claim frees its
-  paths. `takeover` with a reason transfers it, and the registry keeps the record.
+  paths. `renew` and `takeover` recheck conflicts inside the registry transaction;
+  neither can reactivate paths claimed by another live task.
 - **Handoff.** A pull request plus CI `success` on the exact commit. A local run is
   not evidence for another engineer.
 - **Integration.** `close --outcome integrated` needs the handoff commit merged into
   the default branch.
 - **Audit.** Each registry update is a commit. `git log refs/socrask/registry` shows
   who claimed, renewed, took over and closed what, and when.
+
+For GitHub, repeat `--required-check NAME` for the project's required check names.
+The default adapter reads all pages and requires every named check to have
+completed successfully. Missing or running checks remain pending; skipped and
+neutral results do not satisfy a required check. An external `--ci-status-cmd`
+owns its required-check policy and must exit zero with exactly `success`,
+`failure` or `pending`. A nonzero exit always prevents handoff.
 
 ## Authority
 

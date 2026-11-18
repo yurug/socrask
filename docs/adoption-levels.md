@@ -26,8 +26,11 @@ KIT=/absolute/path/to/socrask
 python3 "$KIT/tools/kit-adopt.py" vendor kb-lint.py plan-check.py ratchet.py kit-adopt.py kit-features.json
 ```
 
-The files are copied byte for byte. `tools/socrask.json` records the kit
-revision, the tag and each file's hash. Do not edit vendored files: put local
+The files and their declared dependencies are copied byte for byte.
+`tools/socrask.json` records the kit revision, tag, each file's revision, hash
+and dependencies. The installer compiles Python files and exercises argparse
+entrypoints with `--help` in an isolated staging tree before copying them.
+Do not edit vendored files: put local
 notes in the KB, and send fixes upstream. `kit-adopt.py check` in CI refuses a
 vendored file that differs from its hash, and the manifest from before the
 rename (`tools/agentic-dev-kit.json`).
@@ -42,6 +45,17 @@ python3 "$KIT/tools/kit-adopt.py" upgrade    # re-vendor every file from the lat
 You do not have to follow every release. Upgrade when a release changes a file
 you vendor, adds an essential feature, or adds a triggered feature whose trigger
 holds. Then update `kb/work/adoption.json`.
+
+Adding files with `vendor` cannot change the revision of an existing installation.
+Run `upgrade` first when the kit revision changed. Upgrade prepares all sources
+and dependencies before writing, and replaces the manifest last. Local edits
+are refused. If a filesystem failure interrupts the copy, `check` detects hash
+mismatches; finish the installation before using it. Keep the previous files or
+restore their recorded versions before retrying a partial upgrade.
+
+Manifests from before v0.29.0 lack per-file revision and dependency records.
+Run a full `upgrade --to v0.29.0` to establish the new provenance. Do not edit
+the global tag to declare an upgrade. A missing manifest is now an error.
 
 ## Record adoption
 

@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 TOOL = Path(__file__).with_name('ledger.py')
 spec = importlib.util.spec_from_file_location('fixtures', Path(__file__).with_name('test-project-check.py'))
@@ -60,7 +61,7 @@ class LedgerTool(unittest.TestCase):
     def test_block_and_resume_are_atomic_with_their_evidence(self):
         self.save(fixtures.fixture())
         before = self.path.read_text()
-        self.assertIn('blocked task needs an open blocker',
+        self.assertIn('blocked task needs a blocker',
                       self.run_tool('set', 'T', 'status=blocked', code=1))
         self.assertEqual(self.path.read_text(), before)
         b = fixtures.blocker()
@@ -80,6 +81,85 @@ class LedgerTool(unittest.TestCase):
         out = self.run_tool('set', 'T', 'status=closed', code=1)
         self.assertIn('refused: the ledger would become incoherent: T: closure evidence required', out)
         self.assertEqual(self.path.read_text(), before)
+
+    def test_blocker_commands_preserve_history_and_require_resolution(self):
+        self.save(fixtures.fixture())
+        self.run_tool('block', 'T', json.dumps(fixtures.blocker()))
+        before = self.path.read_bytes()
+        self.assertIn('removed blocker', self.run_tool('set', 'T', 'status=active', 'blockers=[]', code=1))
+        self.assertEqual(self.path.read_bytes(), before)
+        self.run_tool('resume', 'T', '--next-action', 'Run acceptance', code=1)
+        self.run_tool('resolve', 'T', 'B1', '--outcome', 'Account supplied', '--ref', 'evidence.json',
+                      '--at', '2026-10-03T12:00:00Z')
+        resolved = json.loads(self.run_tool('get', 'T'))
+        self.assertEqual(resolved['status'], 'blocked')
+        self.run_tool('resume', 'T', '--next-action', 'Run live acceptance')
+        self.assertEqual(json.loads(self.run_tool('get', 'T'))['status'], 'active')
+        self.assertIn('changed resolved blocker', self.run_tool('set', 'T', 'status=blocked',
+                      'blockers=' + json.dumps([fixtures.blocker()]), code=1))
+
+    def test_archive_preflight_keeps_live_records_when_target_is_not_a_file(self):
+        self.save(fixtures.closed_fixture())
+        before = self.path.read_bytes()
+        self.archive.mkdir()
+        self.run_tool('archive', code=1)
+        self.assertEqual(self.path.read_bytes(), before)
+
+    def test_interrupted_archive_recovers_both_snapshots_idempotently(self):
+        spec = importlib.util.spec_from_file_location('ledger_tool', TOOL)
+        ledger = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ledger)
+        for fail_target in (self.archive, self.path):
+            with self.subTest(target=fail_target):
+                self.archive.unlink(missing_ok=True)
+                data = fixtures.closed_fixture()
+                self.save(data)
+                archive = {'version': 1}
+                ledger.archive_entries(data, archive)
+                real_write = ledger.atomic_text
+                def interrupted(path, text):
+                    if Path(path) == fail_target:
+                        raise OSError('simulated interruption')
+                    real_write(path, text)
+                with patch.object(ledger, 'atomic_text', side_effect=interrupted):
+                    with self.assertRaises(OSError):
+                        ledger.archive_transaction(self.path, data, archive, 1)
+                with self.assertRaisesRegex(ValueError, 'pending ledger transaction'):
+                    ledger.PC.load(self.path)
+                self.run_tool('get', 'T', code=2)
+                self.assertIn('recovered', self.run_tool('recover'))
+                self.assertIn('no pending', self.run_tool('recover'))
+                _, _, merged = ledger.PC.load(self.path)
+                ledger.PC.Ledger(self.root, '2026-10-04').check(merged)
+                self.assertEqual([row['id'] for row in merged['tasks']], ['T'])
+                self.assertEqual([row['id'] for row in merged['feedback']], ['S32'])
+
+    def test_recovery_refuses_an_unrelated_edit_after_the_intent(self):
+        spec = importlib.util.spec_from_file_location('ledger_tool', TOOL)
+        ledger = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ledger)
+        data = fixtures.closed_fixture()
+        self.save(data)
+        archive = {'version': 1}
+        ledger.archive_entries(data, archive)
+        with patch.object(ledger, 'recover', side_effect=OSError('interrupted')):
+            with self.assertRaises(OSError):
+                ledger.archive_transaction(self.path, data, archive, 1)
+        edited = self.path.read_text() + '\n'
+        self.path.write_text(edited)
+        self.assertIn('changed since archive intent', self.run_tool('recover', code=2))
+        self.assertEqual(self.path.read_text(), edited)
+        self.assertTrue(ledger.PC.transaction_path(self.path).exists())
+
+    def test_invalid_resolution_is_refused_even_when_other_data_is_incoherent(self):
+        data = fixtures.fixture()
+        b = fixtures.blocker()
+        data['tasks'][0].update(status='blocked', blockers=[b], review_on='2026-10-01')
+        self.save(data)
+        before = self.path.read_bytes()
+        b['status'] = 'resolved'
+        self.run_tool('set', 'T', 'blockers=' + json.dumps([b]), code=1)
+        self.assertEqual(self.path.read_bytes(), before)
 
     def test_incoherent_ledger_accepts_fixes_one_at_a_time(self):
         data = fixtures.fixture()

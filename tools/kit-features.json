@@ -1,5 +1,16 @@
 {
   "version": 1,
+  "dependencies": {
+    "tools/project-check.py": ["tools/project_history.py"],
+    "tools/ledger.py": ["tools/project-check.py"],
+    "tools/team-work.py": ["tools/agent-work.py"],
+    "tools/agent-work.py": ["tools/alignment-check.py"],
+    "tools/retro.py": ["tools/task-meter.py"],
+    "tools/insights.py": ["tools/task-meter.py"],
+    "tools/kit-adopt.py": ["tools/kit-features.json"],
+    "skills/spec-driven-dev/scope-check.py": ["skills/spec-driven-dev/plan-check.py"],
+    "skills/spec-driven-dev/plan-check.py": ["skills/spec-driven-dev/core-check.py"]
+  },
   "features": {
     "kb-routing": {"level": "essential", "since": "v0.1.0", "tools": ["kb-lint.py"],
       "summary": "the KB, its routing protocol and kb-lint in CI"},
@@ -57,6 +68,8 @@
       "trigger": "a roadmap with milestones"},
     "release-notice": {"level": "optional", "since": "v0.8.0", "tools": [],
       "summary": "user-level hook that reports new kit releases"},
+    "agent-evaluation": {"level": "optional", "since": "v0.29.0", "tools": ["agent-eval.py"],
+      "summary": "synthetic fresh-agent trials for blocker detection, decision requests and authorized resumption"},
     "memory-route": {"level": "optional", "since": "v0.19.0", "tools": [],
       "summary": "user-level hook that routes project rules saved to agent memory into the KB"}
   }

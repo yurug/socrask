@@ -13,7 +13,7 @@ from pathlib import Path
 import re
 import sys
 
-from project_history import check_history
+from project_history import check_history, check_blocker_transition
 
 
 WORK_STATUSES = {'planned', 'active', 'blocked', 'deferred', 'imported-unverified', 'closed'}
@@ -65,6 +65,11 @@ def archive_path(ledger):
     return ledger.with_name(ledger.stem + '-archive.json')
 
 
+def transaction_path(ledger):
+    ledger = Path(ledger)
+    return ledger.with_name(ledger.stem + '-transaction.json')
+
+
 def with_archive(data, archive):
     """The ledger plus its archive, as one version-1 ledger. The archive holds only
     finished entries, so validation, dependencies and history see one record."""
@@ -85,6 +90,8 @@ def with_archive(data, archive):
 
 def load(ledger_path):
     """The live ledger, its raw bytes for the history digest, and the merged view."""
+    require(not transaction_path(ledger_path).exists(),
+            'pending ledger transaction: run ledger.py recover before checking')
     raw = Path(ledger_path).read_bytes()
     data = read_json(ledger_path)
     archive = archive_path(ledger_path)
@@ -210,12 +217,15 @@ class Ledger:
                 active[plans[task['plan']]['project']] += 1
             if task['status'] == 'closed':
                 if task['kind'] == 'product':
-                    self.product_closure(task)
+                    completed = self.product_closure(task)
                 else:
                     closure = task.get('closure')
                     require(isinstance(closure, dict), f'{id}: closure evidence required')
                     self.ref(closure.get('ref'), id, observation=True)
-                    self.time(closure.get('at'), id)
+                    completed = self.time(closure.get('at'), id)
+                for blocker in task.get('blockers', []):
+                    require(completed >= self.time(blocker['resolution']['at'], id),
+                            f'{id}: closure predates blocker resolution; revalidate the outcome')
         for id, project in projects.items():
             require(active[id] <= project['wip_limit'], f'{id}: WIP {active[id]} exceeds {project["wip_limit"]}')
         return active
@@ -267,8 +277,8 @@ class Ledger:
                 self.ref(resolution.get('ref'), f'{name}.resolution')
         require(not open_ids or task['status'] == 'blocked',
                 f'{task["id"]}: open blockers require blocked status; split independent work into another task')
-        require(task['status'] != 'blocked' or open_ids,
-                f'{task["id"]}: blocked task needs an open blocker with an unblock condition')
+        require(task['status'] != 'blocked' or rows,
+                f'{task["id"]}: blocked task needs a blocker with an unblock condition')
 
     def dependencies(self):
         """Kahn's traversal detects cycles without recursion limits on large imports."""

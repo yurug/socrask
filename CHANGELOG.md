@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.29.0 — 2026-11-18
+
+Audit counterexamples exposed gaps in lease renewal, archival, kit installation,
+blocker retention and CI handoff. This release checks those transitions and adds
+synthetic agent trials.
+
+- Triggered, team collaboration: renew and takeover recheck live path conflicts.
+  GitHub handoffs require named, completed, successful checks across all pages.
+  An external CI adapter that exits nonzero cannot authorize a handoff.
+- Triggered, project ledger: archival saves a durable intent before either file
+  changes. `ledger.py recover` finishes interrupted archival and refuses concurrent edits.
+  Block, resolve and resume commands preserve blocker identities and resolved records.
+  Git history checks also cover blockers and archive-only changes. Closure must follow resolution.
+- Kit adoption resolves declared dependencies, stages Python startup checks and
+  records each file's revision. Partial vendoring cannot relabel older files as
+  a new release. Local edits must be reconciled before upgrading.
+- Essential, audit policy: review requests produce findings without repairs.
+  Authorized repairs use one three-round policy across both skills.
+- Optional, agent evaluation: four simulator cases observe escalation, redundant
+  questions, independent work and authorized resumption. Four fresh-agent trials
+  passed; a separate audit trial found a defect without editing product files.
+  An earlier trial exposed a simulator bug; its trace remains in the report.
+
+Compatibility: GitHub handoffs now need `--required-check` for each required check.
+Older installation manifests need a full upgrade to establish per-file provenance.
+A ledger with an interrupted archive transaction requires `ledger.py recover`.
+Synthetic trials are exploratory; they do not establish a production success rate
+or an improvement over the previous release.
+
 ## 0.28.0 — 2026-11-18
 
 Blocked work now needs a route back to execution. Agents check prerequisites before

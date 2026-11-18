@@ -20,6 +20,12 @@ Usage (from the project root):
     ledger.py event ID --result failed|accepted --ref PATH [--at TIME]
                                               append an observation to feedback ID
     ledger.py archive                         move finished entries to the archive
+    ledger.py recover                         finish interrupted archival
+    ledger.py block TASK JSON                  append an open blocker, pause the task
+    ledger.py resolve TASK BLOCKER --outcome TEXT --ref PATH [--at TIME]
+                                              retain the resolution evidence
+    ledger.py resume TASK --next-action TEXT [--status active|reopened|planned|deferred]
+                                              check blockers, dependencies and WIP
 
     --ledger   defaults to kb/work/ledger.json; the archive is
                kb/work/ledger-archive.json (project-check.py reads both)
@@ -35,9 +41,10 @@ names the rule. When the ledger was already incoherent, it writes and prints
 the remaining failure, so that fixes can land one at a time. It keeps the
 file's indentation and key order, and replaces the file atomically.
 
-`archive` moves an entry only when the move cannot change a verdict: a closed
+`archive` saves a durable intent, then moves an entry only when the move cannot change a verdict: a closed
 task whose feedback is all finished, that feedback, and a closed plan or
-project whose children are all archived.
+project whose children are all archived. An interrupted intent requires `recover`.
+Blocker deletion and changes to resolved records are refused even through `set`.
 
 Exit code: 0 = done, 1 = refused (unknown ID, bad field, a write that breaks
 the ledger), 2 = unreadable ledger.
@@ -47,7 +54,9 @@ worktree (one worktree per agent, see agent-work.py), or check that a
 next_action is meaningful.
 """
 import argparse
+import copy
 import datetime as dt
+import hashlib
 import importlib.util
 import json
 import os
@@ -81,12 +90,78 @@ def indent_of(path):
     return 2
 
 
-def dump(path, data, indent):
-    text = json.dumps(data, indent=indent, ensure_ascii=False) + '\n'
+def atomic_text(path, text):
     fd, tmp = tempfile.mkstemp(dir=Path(path).parent, prefix='.ledger-')
-    with os.fdopen(fd, 'w', encoding='utf-8') as f:
-        f.write(text)
-    os.replace(tmp, path)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+        sync_directory(Path(path).parent)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def sync_directory(path):
+    fd = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def dump(path, data, indent):
+    atomic_text(path, json.dumps(data, indent=indent, ensure_ascii=False) + '\n')
+
+
+def digest(text):
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+
+def file_digest(path):
+    if path.is_symlink() or (path.exists() and not path.is_file()):
+        raise Refused(f'{path}: expected a regular file')
+    return digest(path.read_text(encoding='utf-8')) if path.exists() else None
+
+
+def recover(path):
+    """Finish a durable archive intent, without overwriting concurrent edits.
+
+    A crash can leave either file old or new. The journal retains both new
+    snapshots until both replacements are durable; readers refuse that window.
+    """
+    journal = PC.transaction_path(path)
+    if not journal.exists():
+        return False
+    record = PC.read_json(journal)
+    if not isinstance(record, dict) or record.get('version') != 1:
+        raise Refused('invalid ledger transaction')
+    targets = {'archive': PC.archive_path(path), 'ledger': Path(path)}
+    for key, target in targets.items():
+        entry = record.get(key)
+        if not isinstance(entry, dict) or not isinstance(entry.get('after'), str):
+            raise Refused('incomplete ledger transaction')
+        if file_digest(target) not in (entry.get('before'), digest(entry['after'])):
+            raise Refused(f'{target}: changed since archive intent; reconcile before recovery')
+    for key, target in targets.items():
+        atomic_text(target, record[key]['after'])
+    journal.unlink()
+    sync_directory(journal.parent)
+    return True
+
+
+def archive_transaction(path, data, archive, indent):
+    journal = PC.transaction_path(path)
+    if journal.exists():
+        raise Refused('pending ledger transaction: run ledger.py recover')
+    record = {'version': 1}
+    for key, target, value in (('ledger', path, data), ('archive', PC.archive_path(path), archive)):
+        record[key] = {'before': file_digest(Path(target)),
+                       'after': json.dumps(value, indent=indent, ensure_ascii=False) + '\n'}
+    dump(journal, record, indent)
+    recover(path)
 
 
 def verdict(data, archive, root, as_of):
@@ -186,13 +261,32 @@ def main():
     ev.add_argument('--ref', required=True)
     ev.add_argument('--at', default=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'))
     sub.add_parser('archive')
+    sub.add_parser('recover', help='finish an interrupted archive transaction')
+    block = sub.add_parser('block', help='append an open blocker and pause its task')
+    block.add_argument('id')
+    block.add_argument('entry', help='blocker JSON object or @PATH')
+    resolve = sub.add_parser('resolve', help='record a blocker resolution; resume is separate')
+    resolve.add_argument('id')
+    resolve.add_argument('blocker')
+    resolve.add_argument('--outcome', required=True)
+    resolve.add_argument('--ref', required=True)
+    resolve.add_argument('--at', default=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'))
+    resume = sub.add_parser('resume', help='resume only after every blocker is resolved')
+    resume.add_argument('id')
+    resume.add_argument('--status', choices=['active', 'reopened', 'planned', 'deferred'], default='active')
+    resume.add_argument('--next-action', required=True)
     args = ap.parse_args()
 
     path, apath = Path(args.ledger), PC.archive_path(args.ledger)
     try:
+        if args.cmd == 'recover':
+            print('ledger: recovered archive transaction' if recover(path) else 'ledger: no pending transaction')
+            return 0
+        if PC.transaction_path(path).exists():
+            raise Refused('pending ledger transaction: run ledger.py recover')
         data = PC.read_json(path)
         archive = PC.read_json(apath) if apath.is_file() else None
-    except (OSError, ValueError) as error:
+    except (OSError, ValueError, Refused) as error:
         print(f'ledger: cannot read {path}: {error}')
         return 2
     try:
@@ -214,14 +308,42 @@ def main():
             return 0
 
         before = verdict(data, archive, args.root, args.as_of)
+        previous = copy.deepcopy(PC.with_archive(data, archive))
         if args.cmd == 'set':
-            _, row = find(data, args.id)
+            group, row = find(data, args.id)
             for a in args.assignments:
                 field, sep, text = a.partition('=')
                 if not sep or not field:
                     raise Refused(f'expected FIELD=VALUE, got {a}')
                 assign(row, field, value(text))
+            if group == 'tasks':
+                PC.Ledger(args.root, args.as_of).blockers(row)
             done = f'set {args.id} ' + ', '.join(a.split('=', 1)[0] for a in args.assignments)
+        elif args.cmd in ('block', 'resolve', 'resume'):
+            group, row = find(data, args.id)
+            if group != 'tasks':
+                raise Refused('blocker operations require a task')
+            if args.cmd == 'block':
+                entry = value(args.entry)
+                if not isinstance(entry, dict) or entry.get('status') != 'open':
+                    raise Refused('block needs an open blocker object')
+                row.setdefault('blockers', []).append(entry)
+                row['status'] = 'blocked'
+                row['next_action'] = (f"Ask {entry.get('owner')}: {entry.get('question')}"
+                                      if entry.get('kind') == 'decision' else
+                                      f"Follow up with {entry.get('owner')}: {entry.get('unblock_when')}")
+            elif args.cmd == 'resolve':
+                matches = [b for b in row.get('blockers', []) if b['id'] == args.blocker]
+                if not matches or matches[0]['status'] != 'open':
+                    raise Refused('resolve needs an existing open blocker')
+                matches[0].update(status='resolved', resolution=dict(at=args.at, ref=args.ref, outcome=args.outcome))
+                if all(b['status'] == 'resolved' for b in row['blockers']):
+                    row['next_action'] = 'Resume after checking dependencies and WIP'
+            else:
+                if row['status'] != 'blocked' or any(b['status'] == 'open' for b in row.get('blockers', [])):
+                    raise Refused('resume needs a blocked task with every blocker resolved')
+                row.update(status=args.status, next_action=args.next_action)
+            done = f'{args.cmd} {args.id}'
         elif args.cmd == 'add':
             entry = value(args.entry)
             if not isinstance(entry, dict) or not entry.get('id'):
@@ -242,14 +364,18 @@ def main():
             done = f'archived {archive_entries(data, archive)} entries to {apath}'
 
         after = verdict(data, archive, args.root, args.as_of)
+        PC.check_blocker_transition(previous, PC.with_archive(data, archive))
+        if after and args.cmd in ('block', 'resolve', 'resume', 'archive'):
+            raise Refused(f'the ledger is incoherent: {after}')
         if after and not before:
             raise Refused(f'the ledger would become incoherent: {after}')
-        dump(path, data, indent_of(path))
         if args.cmd == 'archive':
-            dump(apath, archive, indent_of(path))
+            archive_transaction(path, data, archive, indent_of(path))
+        else:
+            dump(path, data, indent_of(path))
         print(f'ledger: {done}' + (f'; still incoherent: {after}' if after else ''))
         return 0
-    except Refused as error:
+    except (Refused, OSError, ValueError) as error:
         print(f'ledger: refused: {error}')
         return 1
 

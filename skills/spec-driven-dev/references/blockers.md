@@ -79,13 +79,17 @@ handoff naming the exact condition for continuation. Do not claim completion.
 On an answer, record the actual decision and update the plan, assumptions and
 acceptance criteria it changes. Check whether the unblock condition now holds:
 permission to request access is not access. Keep any remaining dependency open.
-Resolve each satisfied blocker with evidence, then resume its tasks. Revalidate
+Use `ledger.py block`, `resolve` and `resume` for these transitions. Resolved
+records remain immutable; a new blocker gets a new ID. Resolve each satisfied
+blocker with evidence, then resume its tasks. Revalidate
 dependent work; resolving a blocker does not itself satisfy task acceptance.
 
 ## Verification boundary
 
-`project-check.py` rejects incomplete blocker records and resumption with open
-blockers. It cannot detect unreported blockers, deliver questions, authenticate
+`ledger.py` refuses deleted blockers; `project-check.py --history-base` also
+checks retention across commits and archives. The snapshot gate rejects incomplete
+records and resumption with open blockers. It cannot detect unreported blockers, deliver questions, authenticate
 human answers or judge whether options are useful. Review real team transcripts
 for detection timing, prompt escalation and continued independent work. Passing
-record checks alone does not establish those behavioral outcomes.
+record checks alone does not establish those behavioral outcomes. Use the
+[synthetic agent scenarios](../../../docs/agent-evaluation.md) for repeatable probes.

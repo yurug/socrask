@@ -1,46 +1,31 @@
 ---
 name: audit
-description: "Run an autonomous audit-fix loop on the current codebase: detect project type, run the full test suite and linters, fix every failure at the root cause, repeat until green (max 5 iterations). Invoke when the user asks to audit, stabilize, or 'make the tests pass' on an existing project."
+description: "Audit an existing codebase or methodology with evidence and prioritized recommendations. Use for whole-project reviews, stabilization, or audit-and-fix requests. Audit is read-only by default; repair only when the user requests it."
 ---
 
-# Audit Skill
+# Audit
 
-Run an autonomous audit-fix loop on the current codebase.
+Find defects that affect correctness or the user's stated outcome. Distinguish
+reproduced failures from hypotheses and documented limits. Passing the existing
+suite does not establish that it tests the right behavior.
 
-## When to use
+Read [the audit policy](references/policy.md) before starting. It defines both
+modes and their stopping rules; it also governs the development skill's Phase 5.
 
-- Whole-codebase stabilization: accumulated test failures, lint debt, "make it green again".
-- After a large merge, refactor, or dependency upgrade.
+1. Identify the requested scope and mode. An audit or request for proposals uses
+   **review**; an explicit repair or stabilization request uses **repair**.
+2. Read repository instructions, contracts and the real CI entrypoint. Prefer its
+   documented command to guessing from the language or package manager.
+3. Inspect the risky boundaries and reproduce suspected failures in isolated
+   fixtures. Reuse recent validation of unchanged code; run checks that address
+   new questions. Do not treat test counts as user-outcome evidence.
+4. Report consequential findings with location, trigger, observed result, impact
+   and recommended action. Try to refute each serious finding before retaining it.
+5. In review mode, deliver findings and stop. Do not edit product code, repair
+   failures or create tracking files unless requested.
+6. In repair mode, fix verified findings within the authorized scope, add a check
+   for the defect class, and re-audit under the policy's shared round budget.
 
-Do NOT use this for reviewing or verifying a single change: Claude Code's built-in
-`/code-review` (diff review) and `/verify` (exercise a change end-to-end) cover that.
-This skill is the whole-repo convergence loop.
-
-## Process
-
-1. **Detect project type** by checking for `Cargo.toml` (Rust), `pyproject.toml`/`setup.py` (Python), `package.json` (TypeScript/Node).
-
-2. **Run the full test suite:**
-   - Rust: `cargo test` + `cargo clippy --all-targets -- -D warnings`
-   - Python: `pytest --tb=short -q`
-   - TypeScript: `npm test`
-   - If a `scripts/validate.sh` exists, use that instead.
-
-3. **For each failing test or lint error:**
-   - Diagnose the root cause by reading the relevant source and test files.
-   - Apply the minimal fix.
-   - Re-run only the affected tests to verify.
-
-4. **After all individual fixes, run the full suite again.**
-
-5. **Repeat until all tests pass or 5 full iterations have been completed.**
-
-6. **After each iteration, report:**
-   - Iteration number
-   - Tests fixed
-   - Tests remaining
-   - Systemic issues identified
-
-7. **When done, update `SESSION_STATE.md`** with the audit results.
-
-Work autonomously — do NOT ask for input unless stuck on an ambiguous architectural decision.
+When a finding requires a decision outside the mandate, follow the development
+skill's [blocker protocol](../spec-driven-dev/references/blockers.md). Keep
+independent investigation moving while the coordinator requests arbitration.

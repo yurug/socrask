@@ -46,8 +46,8 @@ listed here, so the page cannot silently fall behind the machinery.
 | `tools/source-check.py` | an external source without owner, tool or cadence, an internal source feeding a public KB, a sync without its digest, a digest item whose disposition does not resolve; warns when a source is overdue |
 | `tools/task-meter.py`, `tools/retro.py`, `tools/insights.py` | an unmeasured stop; an outlier task without a retrospective; a completed milestone without a retrospective, or a finding without a disposition; an analysis where over 10% of recent tasks are unmeasured. Never fails on cost alone |
 | `tools/update-check.py`, `tools/inject-profile.sh` | lifecycle helpers: tell the agent at session start that a newer kit release exists (never updates); inject only the explicitly enrolled personal profile |
-| `tools/outcome-check.py` | incomplete/stale user outcomes, missing cases, erased first-attempt failures, mismatched release/contract and measured regressions |
-| `tools/ledger.py` | a ledger write that makes a coherent ledger incoherent, an unknown ID, a duplicate ID |
+| `tools/outcome-check.py`, `tools/agent-eval.py` | incomplete/stale outcome reports and measured regressions; synthetic agent traces with delayed escalation, needless questions, unauthorized work or incomplete delivery |
+| `tools/ledger.py` | incoherent writes, deleted or rewritten resolved blockers, unsafe resumption; recovers interrupted archival from a durable journal |
 | `tools/project-check.py`, `tools/project_history.py` | orphaned commitments, incomplete blockers or resumption with open blockers, unsupported closure, invalid iterations and, with a fixed Git base, removed or rewritten committed feedback history |
 | `tools/sync-skills.py` | installation conflicts or missing/drifting selected Claude/Codex skill links (`--check`) |
 

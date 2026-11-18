@@ -22,6 +22,7 @@ Usage:
     --remote         defaults to origin
     --ci-status-cmd  prints success/failure/pending for a commit; `{sha}` is
                      replaced; defaults to the GitHub check runs via `gh`
+    --required-check NAME  required GitHub check name; repeat for each (before handoff)
 
 Rules:
     - claimed paths of two unexpired, unclosed tasks never overlap;
@@ -49,10 +50,7 @@ import sys
 
 REF = "refs/socrask/registry"
 LOCAL = "refs/socrask/registry-remote"
-DEFAULT_CI = ("gh api repos/{owner}/{repo}/commits/{sha}/check-runs "
-              "--jq '[.check_runs[].conclusion] | if length == 0 then \"pending\" "
-              "elif all(. == \"success\" or . == \"skipped\" or . == \"neutral\") then \"success\" "
-              "elif any(. == null) then \"pending\" else \"failure\" end'")
+DEFAULT_CI = "gh api --paginate --slurp repos/{owner}/{repo}/commits/{sha}/check-runs"
 
 
 def load_local_rules():
@@ -117,6 +115,14 @@ def live(task):
     return task["status"] in ("active", "ready") and not expired(task)
 
 
+def available(state, paths, exclude=None):
+    """Every transition granting a live lease rechecks path exclusivity."""
+    for other in state["tasks"].values():
+        if other["id"] != exclude and live(other) and any(
+                overlaps(a, b) for a in paths for b in other["paths"]):
+            raise ValueError(f"paths overlap {other['id']} held by {other['engineer']}")
+
+
 def kit_revision():
     return git("-C", str(Path(__file__).resolve().parent), "rev-parse", "HEAD", check=False)
 
@@ -150,9 +156,27 @@ def owned(state, args):
     return task
 
 
-def ci_status(cmd, sha):
+def ci_status(cmd, sha, required=()):
+    if cmd == DEFAULT_CI and not required:
+        raise ValueError("GitHub handoff needs --required-check NAME for each required check")
     out = subprocess.run(cmd.replace("{sha}", sha), shell=True, capture_output=True, text=True)
-    return out.stdout.strip().strip('"') or "unknown"
+    if out.returncode:
+        return "failure"
+    if cmd != DEFAULT_CI:
+        result = out.stdout.strip().strip('"')
+        return result if result in ("success", "failure", "pending") else "unknown"
+    try:
+        pages = json.loads(out.stdout)
+        checks = [check for page in pages for check in page['check_runs']]
+        names = {check['name'] for check in checks}
+        if not set(required) <= names:
+            return "pending"
+        selected = [check for check in checks if check['name'] in required]
+        if any(check['status'] != 'completed' for check in selected):
+            return "pending"
+        return "success" if all(check['conclusion'] == 'success' for check in selected) else "failure"
+    except (ValueError, KeyError, TypeError):
+        return "unknown"
 
 
 def default_branch(remote):
@@ -167,6 +191,7 @@ def parser():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--remote", default="origin")
     ap.add_argument("--ci-status-cmd", default=DEFAULT_CI)
+    ap.add_argument("--required-check", action="append", default=[], help="required GitHub check name; repeat for each")
     sub = ap.add_subparsers(dest="action", required=True)
     sub.add_parser("status")
     for name in ("claim", "renew", "takeover", "handoff", "close"):
@@ -220,9 +245,7 @@ def main():
         def claim(state):
             if args.task in state["tasks"]:
                 raise ValueError(f"task {args.task} already exists; use a new ID")
-            for other in state["tasks"].values():
-                if live(other) and any(overlaps(a, b) for a in paths for b in other["paths"]):
-                    raise ValueError(f"paths overlap {other['id']} held by {other['engineer']}")
+            available(state, paths)
             state["tasks"][args.task] = dict(
                 id=args.task, engineer=args.engineer, agent=agent, paths=paths, base=base,
                 criteria=args.criteria, kit=kit, consult=consult, status="active",
@@ -237,6 +260,7 @@ def main():
             task = owned(state, args)
             if task["status"] not in ("active", "ready"):
                 raise ValueError(f"{args.task} is {task['status']}")
+            available(state, task['paths'], exclude=task['id'])
             task["lease_until"] = lease(args.lease_hours)
         transact(args.remote, renew, f"renew {args.task}")
         print(f"renewed {args.task}")
@@ -250,6 +274,7 @@ def main():
             task = state["tasks"].get(args.task)
             if not task or not expired(task):
                 raise ValueError(f"{args.task} has no expired lease; ask {task and task['engineer']}")
+            available(state, task['paths'], exclude=task['id'])
             task["history"].append(dict(at=stamp(now()), event="takeover", previous=task["engineer"],
                                         by=args.engineer, reason=args.reason))
             task.update(engineer=args.engineer, agent=agent, status="active",
@@ -260,7 +285,7 @@ def main():
 
     if args.action == "handoff":
         sha = git("rev-parse", "--verify", args.commit + "^{commit}")
-        status = ci_status(args.ci_status_cmd, sha)
+        status = ci_status(args.ci_status_cmd, sha, args.required_check)
         if status != "success":
             raise ValueError(f"CI on {sha[:12]} is `{status}`; a cross-machine handoff needs `success`")
 

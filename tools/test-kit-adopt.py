@@ -123,6 +123,72 @@ class KitAdoptTests(unittest.TestCase):
         (self.kit / "skills/spec-driven-dev/kb-lint.py").write_text("dirty\n")
         self.assertIn("local changes", self.run_tool("vendor", "kb-lint.py", code=2))
 
+    def test_partial_vendor_cannot_relabel_old_files_as_the_new_release(self):
+        self.run_tool('vendor', 'kb-lint.py')
+        before = (self.proj / 'tools/socrask.json').read_bytes()
+        self.release('v0.2.0', "print('lint v2')\n")
+        self.assertIn('run upgrade', self.run_tool('vendor', 'roadmap-check.py', code=2))
+        self.assertEqual((self.proj / 'tools/socrask.json').read_bytes(), before)
+        self.assertFalse((self.proj / 'tools/roadmap-check.py').exists())
+        self.run_tool('upgrade')
+        self.run_tool('vendor', 'roadmap-check.py')
+        self.run_tool('check')
+
+    def test_annotated_release_pins_its_commit_and_allows_adding_files(self):
+        git(self.kit, 'tag', '-a', 'v0.1.1', '-m', 'annotated release')
+        self.run_tool('vendor', 'kb-lint.py')
+        self.run_tool('upgrade', '--to', 'v0.1.1')
+        self.run_tool('vendor', 'kit-features.json')
+        manifest = json.loads((self.proj / 'tools/socrask.json').read_text())
+        self.assertEqual(manifest['revision'], git(self.kit, 'rev-parse', 'HEAD'))
+        self.run_tool('check')
+
+    def test_actual_ledger_installs_transitive_dependencies_and_starts(self):
+        for name in ('ledger.py', 'project-check.py', 'project_history.py'):
+            shutil.copy(HERE / name, self.kit / 'tools' / name)
+        catalogue = dict(FEATURES, dependencies={'tools/ledger.py': ['tools/project-check.py'],
+                            'tools/project-check.py': ['tools/project_history.py']})
+        (self.kit / 'tools/kit-features.json').write_text(json.dumps(catalogue))
+        git(self.kit, 'add', '.')
+        git(self.kit, 'commit', '-qm', 'ledger tools')
+        self.run_tool('vendor', 'ledger.py')
+        manifest = json.loads((self.proj / 'tools/socrask.json').read_text())
+        self.assertEqual(len(manifest['files']), 3)
+        for entry in manifest['files'].values():
+            self.assertEqual(entry['revision'], manifest['revision'])
+        run = subprocess.run([sys.executable, 'tools/ledger.py', '--help'], cwd=self.proj, capture_output=True)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.run_tool('check')
+        del manifest['files']['tools/project_history.py']
+        (self.proj / 'tools/socrask.json').write_text(json.dumps(manifest))
+        self.assertIn('E-dependency', self.run_tool('check', code=1))
+
+    def test_missing_source_is_detected_before_any_upgrade_write(self):
+        self.run_tool('vendor', 'kb-lint.py', 'kit-features.json')
+        before = {p: p.read_bytes() for p in (self.proj / 'tools').iterdir()}
+        self.release('v0.2.0', "print('v2')\n")
+        catalogue = dict(FEATURES, dependencies={'skills/spec-driven-dev/kb-lint.py': ['tools/missing.py']})
+        (self.kit / 'tools/kit-features.json').write_text(json.dumps(catalogue))
+        git(self.kit, 'add', '.')
+        git(self.kit, 'commit', '-qm', 'broken dependency')
+        self.run_tool('upgrade', '--to', 'HEAD', code=2)
+        for path, content in before.items():
+            self.assertEqual(path.read_bytes(), content)
+
+    def test_legacy_provenance_needs_full_upgrade_and_local_edits_survive(self):
+        self.run_tool('vendor', 'kb-lint.py')
+        path = self.proj / 'tools/socrask.json'
+        manifest = json.loads(path.read_text())
+        del manifest['files']['tools/kb-lint.py']['revision']
+        path.write_text(json.dumps(manifest))
+        self.assertIn('E-provenance', self.run_tool('check', code=1))
+        self.run_tool('upgrade')
+        self.run_tool('check')
+        script = self.proj / 'tools/kb-lint.py'
+        script.write_text('local change\n')
+        self.assertIn('local edits', self.run_tool('upgrade', code=2))
+        self.assertEqual(script.read_text(), 'local change\n')
+
 
 if __name__ == "__main__":
     unittest.main()

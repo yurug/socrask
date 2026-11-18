@@ -95,7 +95,8 @@ evidence remains governed by [outcome acceptance](outcome-quality.md).
 
 ## Blockers
 
-A task with status `blocked` needs at least one open entry in `blockers`.
+A task with status `blocked` needs a recorded blocker. After resolution it stays
+blocked until an explicit resume checks dependencies and WIP.
 An open blocker requires that status; split independent work into another task.
 Other tasks can omit `blockers`. Project and plan statuses remain aggregates;
 record the actionable blockers on their affected tasks.
@@ -122,10 +123,9 @@ If the human defers the work, record that decision under the existing feedback
 rules. An unresolved failed observation still requires a blocked task and open
 feedback; keep its acceptance dependency visible. Deferral is not acceptance.
 
-Example contents of `blockers.json`, passed to `ledger.py`:
+Example contents of `blocker.json`, passed to `ledger.py block`:
 
 ```json
-[
   {
     "id": "B1", "kind": "decision", "status": "open",
     "detected_at": "2026-11-18T10:00:00Z",
@@ -139,24 +139,29 @@ Example contents of `blockers.json`, passed to `ledger.py`:
     ],
     "recommended": "account"
   }
-]
 ```
 
-The cited file must exist. Change the task status and blocker records together:
+The cited file must exist. Use the lifecycle commands:
 
 ```sh
-python3 tools/ledger.py set T-sync status=blocked blockers=@blockers.json \
-  next_action="Ask project-engineer to choose account or defer" review_on=2026-11-19
-# After the answer and any remaining dependencies are resolved, retain their evidence:
-python3 tools/ledger.py set T-sync status=active blockers=@resolved-blockers.json \
-  next_action="Run live sync acceptance"
+python3 tools/ledger.py block T-sync @blocker.json
+python3 tools/ledger.py resolve T-sync B1 --ref kb/decisions/account.md \
+  --outcome="Engineer chose a scoped test account"
+# Resolve any remaining access dependency before resuming:
+python3 tools/ledger.py resume T-sync --next-action="Run live sync acceptance"
 ```
 
+`block` records an open blocker and sets the follow-up action. `resolve` retains
+the resolution; `resume` checks every blocker, task dependency and WIP limit.
+Use `resume --status reopened` for a task with unresolved failed feedback.
+The generic `set` command also refuses blocker deletion or identity changes.
+Resolved records are immutable; new evidence creates a new blocker ID.
+
 `project-check.py` reports `open_blockers` and rejects incomplete records or
-resumption with an open blocker. It cannot verify that the question reached the
-human, judge alternatives, or authenticate a decision. The snapshot check does
-not retain deleted blocker history; `--history-base` protects feedback events,
-not blocker records. These limits require transcript and change review.
+resumption with an open blocker. With `--history-base`, it also checks blocker
+retention and resolutions across commits, including archive-only changes.
+A snapshot alone cannot detect direct file edits that delete records. Neither
+mode verifies question delivery, alternative quality or human authorship.
 
 Compatibility: existing blocked tasks need these records before the new gate
 passes. Use `ledger.py list tasks --status blocked`, then update each with
@@ -200,7 +205,7 @@ costs about 1,500 generated characters and can reformat the file. Use the tool:
 ```sh
 python3 tools/ledger.py list tasks --status active --owner me   # one line per entry
 python3 tools/ledger.py get T-S32                                # one entry, one line
-python3 tools/ledger.py set T-S32 status=blocked blockers=@blockers.json next_action="Ask engineer to choose an option"
+python3 tools/ledger.py block T-S32 @blocker.json
 python3 tools/ledger.py add tasks @new-task.json
 python3 tools/ledger.py event S32 --result failed --ref kb/reports/s32.md
 python3 tools/ledger.py archive
@@ -211,6 +216,11 @@ makes a coherent ledger incoherent. It keeps the file's format, so the diff show
 only the changed lines. `archive` moves closed tasks with finished feedback, and
 closed plans and projects with no live child, to `kb/work/ledger-archive.json`.
 `project-check.py` reads the archive as part of the ledger.
+
+Archiving records a durable intent before changing either file. If interrupted,
+both tools refuse ordinary work until `python3 tools/ledger.py recover` finishes
+that intent. Recovery is idempotent and refuses files changed since the intent.
+Keep one writing agent per ledger; the journal is crash recovery, not a lock.
 
 ## Make omission and false closure fail
 
@@ -264,11 +274,13 @@ python3 tools/project-check.py --root . --ledger kb/work/ledger.json \
 Vendor both `tools/project-check.py` and `tools/project_history.py`. The selected
 ledger path must stay inside the supplied root and cannot traverse a symlink.
 The base must be an actual ancestor of the pinned HEAD. The checker reads that
-ledger and every distinct ledger state reachable from HEAD but not from the base,
+ledger, its archive and every distinct pair reachable from HEAD but not from the base,
 including side branches forked before rollout and changes made by merges. Every
 prior feedback ID survives, and its exact event sequence remains a subsequence of
 the current sequence. Concurrent events can interleave; dispositions, ownership
 and task links can change. Deleting, rewriting or reordering an old event fails.
+Blocker identities also survive; a resolved record cannot change. Archive-only
+commits participate in the same checks.
 Old snapshots are checked structurally, without applying today's review deadline
 or requiring old reference paths to exist in today's tree.
 

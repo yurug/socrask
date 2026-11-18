@@ -1,7 +1,7 @@
 """Preserve committed observations when the work ledger changes.
 
-Purpose: Refuse loss of feedback observations already committed after a trusted rollout.
-Owns: read-only Git traversal and ordered retention of historical feedback IDs/events.
+Purpose: Refuse loss of observations and blockers committed after a trusted rollout.
+Owns: read-only Git traversal, feedback retention, and blocker transitions, including archives.
 Does not own: current ledger validity or outcome acceptance (project-check.py).
 Interface: check_history(root, ledger_path, base, data, raw) returns a history receipt;
 raises ValueError/OSError for invalid or unavailable history. Reads Git objects only.
@@ -75,6 +75,40 @@ def _feedback(data):
     return result
 
 
+def blocker_records(data):
+    """Task-local blocker identities survive moves into the archive."""
+    result = {}
+    tasks = data.get('tasks', [])
+    _require(isinstance(tasks, list), 'tasks array required')
+    for task in tasks:
+        _require(isinstance(task, dict) and _string(task.get('id')), 'task ID required')
+        rows = task.get('blockers', [])
+        _require(isinstance(rows, list), 'blockers array required')
+        for row in rows:
+            _require(isinstance(row, dict) and _string(row.get('id')), 'blocker ID required')
+            key = (task['id'], row['id'])
+            _require(key not in result, 'duplicate blocker identity')
+            result[key] = row
+    return result
+
+
+def check_blocker_transition(previous, current, label='ledger edit'):
+    """No erasure or identity change; a recorded resolution cannot be undone.
+
+    Owners, impact and options may evolve while a blocker is open. New evidence
+    after resolution creates a new blocker rather than rewriting the old result.
+    """
+    new = blocker_records(current)
+    for key, old in blocker_records(previous).items():
+        name = '/'.join(key)
+        _require(key in new, f'{label}: removed blocker {name}')
+        row = new[key]
+        for field in ('kind', 'detected_at'):
+            _require(row.get(field) == old.get(field), f'{label}: changed blocker identity {name}: {field}')
+        if old.get('status') == 'resolved':
+            _require(row == old, f'{label}: changed resolved blocker {name}')
+
+
 class _Repository:
     """One explicit worktree, sanitized Git environment and immutable traversal endpoint."""
 
@@ -118,17 +152,20 @@ class _Repository:
     def ancestor(self, older, newer):
         return self.git('merge-base', '--is-ancestor', older, newer, ancestor=True)
 
-    def blob(self, commit):
+    def blob(self, commit, path=None):
         """Distinguish an absent path from unreadable/corrupt tree data."""
-        entry = self.git('ls-tree', '-z', commit, '--', self.path)
+        target = path or self.path
+        entry = self.git('ls-tree', '-z', commit, '--', target)
         if not entry:
+            if path is not None:
+                return None
             _require(commit != self.base, 'ledger missing at trusted base')
             # A branch forked before adoption need not contain the ledger at all.
             _require(not self.ancestor(self.base, commit), f'ledger missing in history at {commit}')
             return None
         metadata, name = entry.rstrip('\0').split('\t', 1)
         mode, kind, oid = metadata.split()
-        _require(name == self.path and kind == 'blob' and mode in ('100644', '100755'),
+        _require(name == target and kind == 'blob' and mode in ('100644', '100755'),
                  f'ledger must be a regular blob at {commit}')
         return oid
 
@@ -151,22 +188,36 @@ def check_history(root, ledger_path, base, data, raw):
     """
     repository = _Repository(root, ledger_path, base)
     current = _feedback(data)
+    ledger = Path(repository.path)
+    archive = ledger.with_name(ledger.stem + '-archive.json').as_posix()
     # Full history retains both sides and merge-created states even if HEAD selected
     # one parent's ledger. BASE..HEAD includes merged branches forked before BASE.
     commits = [repository.base] + repository.git('rev-list', '--full-history',
-        f'{repository.base}..{repository.head}', '--', repository.path).splitlines()
+        f'{repository.base}..{repository.head}', '--', repository.path, archive).splitlines()
     seen = set()
     for commit in commits:
         blob = repository.blob(commit)
-        if blob is None or blob in seen:
+        archive_blob = repository.blob(commit, archive)
+        identity = (blob, archive_blob)
+        if blob is None or identity in seen:
             continue
         try:
             old = json.loads(repository.git('show', blob), object_pairs_hook=_pairs,
                              parse_constant=lambda value: _require(False, f'invalid JSON constant: {value}'))
+            _require(isinstance(old, dict), 'invalid historical ledger')
+            if archive_blob:
+                archived = json.loads(repository.git('show', archive_blob), object_pairs_hook=_pairs,
+                                      parse_constant=lambda value: _require(False, f'invalid JSON constant: {value}'))
+                _require(isinstance(archived, dict) and archived.get('version') == 1, 'invalid archive')
+                for group in ('feedback', 'tasks'):
+                    rows = archived.get(group, [])
+                    _require(isinstance(rows, list) and isinstance(old.get(group, []), list), 'invalid archived rows')
+                    old[group] = old.get(group, []) + rows
             _preserved(_feedback(old), current, commit)
+            check_blocker_transition(old, data, commit)
         except (ValueError, OverflowError, RecursionError) as error:
             raise ValueError(f'history at {commit}: {error}') from error
-        seen.add(blob)
+        seen.add(identity)
     return {'checked': True, 'trusted_base': repository.base, 'resolved_head': repository.head,
             'snapshot_count': len(seen), 'current_ledger': {'path': repository.path,
             'sha256': hashlib.sha256(raw).hexdigest()}}

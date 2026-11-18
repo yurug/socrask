@@ -75,6 +75,42 @@ class ProjectHistory(unittest.TestCase):
     def test_T_PM_HISTORY_snapshot_mode_explicitly_unchecked(self):
         self.assertEqual(self.gate(base=False)['history'], {'checked': False})
 
+    def test_blocker_deletion_and_resolution_rewrite_fail_across_commits(self):
+        data = FIXTURES['fixture']()
+        data['tasks'][0].update(status='blocked', blockers=[FIXTURES['blocker']()])
+        self.base = self.commit(data)
+        changed = copy.deepcopy(data)
+        changed['tasks'][0].update(status='active', blockers=[])
+        self.write(changed)
+        self.gate(base=False)
+        self.gate(2, 'removed blocker T/B1')
+        b = data['tasks'][0]['blockers'][0]
+        b.update(status='resolved', resolution=dict(at='2026-10-03T12:00:00Z', ref='evidence.json', outcome='Account supplied'))
+        data['tasks'][0]['status'] = 'active'
+        self.commit(data)
+        self.gate()
+        b['resolution']['outcome'] = 'Changed after the recorded answer'
+        self.write(data)
+        self.gate(2, 'changed resolved blocker')
+
+    def test_archive_only_changes_remain_in_blocker_history(self):
+        data = FIXTURES['closed_fixture']()
+        b = FIXTURES['blocker']()
+        b.update(detected_at='2026-10-01T10:00:00Z', status='resolved', resolution=dict(
+            at='2026-10-02T09:00:00Z', ref='evidence.json', outcome='Account supplied'))
+        data['tasks'][0]['blockers'] = [b]
+        self.base = self.commit(data)
+        archived = dict(version=1, tasks=data['tasks'], feedback=data['feedback'])
+        data.update(tasks=[], feedback=[])
+        path = self.root / 'kb/work/ledger-archive.json'
+        path.write_text(json.dumps(archived))
+        self.commit(data)
+        self.gate()
+        b['resolution']['outcome'] = 'Rewritten archive'
+        path.write_text(json.dumps(archived))
+        self.commit()
+        self.gate(2, 'changed resolved blocker')
+
     def test_T_PM_HISTORY_deletion_cannot_make_false_closure(self):
         self.write(FIXTURES['closed_fixture']())
         self.gate(base=False)  # This is the previously exploitable coherent snapshot.
