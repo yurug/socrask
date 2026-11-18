@@ -17,7 +17,7 @@ The ledger is a Markdown file in kb/reports/ with one table:
     | ID | Round | Severity | Finding | Status | Reopened | Evidence |
 
     Round      the audit round that found it (1, 2, ...)
-    Severity   high, medium or low
+    Severity   critical, high, medium or low
     Status     open, fixed or rejected
     Reopened   the round that found it again after a fix, or empty
     Evidence   for fixed: the test or commit; for rejected: the reason
@@ -25,16 +25,18 @@ The ledger is a Markdown file in kb/reports/ with one table:
 A line `Escalated: round N, <decision>` records the engineer's decision to go on
 after round N (`forebrief:<card-id>`, or the date and the engineer's words).
 
-The current round is the largest Round or Reopened value. A round from 2 on
+An `Audit round: N` line records the current round, including rounds with no
+new findings. A nondefault cap needs `Round budget: N, <decision>` matching
+`--max-rounds`. A round from 2 on
 "strikes" when it finds a new high finding or reopens a high one.
 
 Exit code: 0 = the loop may continue or stop, 1 = errors, 2 = unreadable ledger.
 
 Checks:
-    E-streak    the current round and the one before it both strike: stop
+    E-streak    two consecutive recorded rounds strike: stop
                 fixing, route the failure with the engineer, and record the
                 decision as an Escalated line
-    E-cap       the current round is past --max-rounds and a high finding is
+    E-cap       the current round reaches --max-rounds and a high finding is
                 still open
     E-evidence  a fixed finding without its test or commit, or a rejected one
                 without its reason
@@ -51,7 +53,8 @@ from pathlib import Path
 import re
 import sys
 
-SEVERITIES = {"high", "medium", "low"}
+SEVERITIES = {"critical", "high", "medium", "low"}
+SERIOUS = {"critical", "high"}
 STATUSES = {"open", "fixed", "rejected"}
 ESCALATED_RE = re.compile(r"^\s*Escalated:\s*round\s+(\d+)\s*,\s*(\S.*)$", re.IGNORECASE | re.MULTILINE)
 
@@ -72,7 +75,14 @@ def rows(text):
             continue
         if all(set(c) <= set("-: ") for c in cells):
             continue
+        if len(cells) != len(header):
+            raise ValueError('E-shape: finding row has wrong column count')
         out.append(dict(zip(header, cells)))
+    required = {'id', 'round', 'severity', 'finding', 'status', 'reopened', 'evidence'}
+    if header is None or set(header) != required or len(header) != len(required):
+        raise ValueError('E-shape: expected one findings table with all seven columns')
+    if any(set(row) != required or None in row.values() for row in out):
+        raise ValueError('E-shape: incomplete finding row')
     return out
 
 
@@ -82,35 +92,59 @@ def number(text):
 
 
 def check(text, max_rounds):
-    errors, table = [], rows(text)
+    text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
+    try:
+        table = rows(text)
+    except ValueError as error:
+        return [str(error)], 0, 0
+    errors = []
+    declared = re.findall(r'^Audit round:\s*(\d+)\s*$', text, re.MULTILINE)
+    current = int(declared[0]) if len(declared) == 1 else 0
+    if current < 1:
+        errors.append('E-shape: one positive Audit round: N is required')
+    budgets = re.findall(r'^Round budget:\s*(\d+)\s*,\s*(\S.*)$', text, re.MULTILINE)
+    if max_rounds < 1 or (max_rounds != 3 and (len(budgets) != 1 or int(budgets[0][0]) != max_rounds)):
+        errors.append('E-shape: nondefault positive cap needs matching Round budget: N, <decision>')
+    if budgets and (len(budgets) != 1 or int(budgets[0][0]) != max_rounds):
+        errors.append('E-shape: recorded round budget differs from launcher')
+    ids = set()
     strikes, rounds = set(), [0]
     for r in table:
         fid = r.get("id", "?")
+        if fid in ids or not fid.strip() or not r.get('finding', '').strip():
+            errors.append('E-shape: findings need unique nonempty IDs and descriptions')
+        ids.add(fid)
         found, reopened = number(r.get("round", "")), number(r.get("reopened", ""))
         severity, status = r.get("severity", "").lower(), r.get("status", "").lower()
-        if found is None or (r.get("reopened", "").strip() and reopened is None):
+        if not found or (r.get("reopened", "").strip() and not reopened):
             errors.append(f"E-shape: {fid}: Round and Reopened must be round numbers")
             continue
         if severity not in SEVERITIES:
-            errors.append(f"E-shape: {fid}: severity `{severity}`; expected high, medium or low")
+            errors.append(f"E-shape: {fid}: severity `{severity}`; expected critical, high, medium or low")
         if status not in STATUSES:
             errors.append(f"E-shape: {fid}: status `{status}`; expected open, fixed or rejected")
         if status in ("fixed", "rejected") and not r.get("evidence", "").strip():
             needs = "the test or commit that fixed it" if status == "fixed" else "the reason"
             errors.append(f"E-evidence: {fid} is {status} without {needs}")
         rounds += [found] + ([reopened] if reopened else [])
-        if severity == "high":
+        if reopened is not None and reopened <= found:
+            errors.append(f"E-shape: {fid}: reopened round must follow discovery")
+        if severity in SERIOUS:
             strikes.update(n for n in (found, reopened) if n and n >= 2)
-    current = max(rounds)
+    if max(rounds) > current:
+        errors.append('E-shape: finding round exceeds declared Audit round')
     escalated = max((int(m.group(1)) for m in ESCALATED_RE.finditer(text)), default=0)
-    if current > escalated and current in strikes and current - 1 in strikes:
-        errors.append(f"E-streak: rounds {current - 1} and {current} both found new or reopened high "
+    if escalated > current:
+        errors.append('E-shape: escalation cannot authorize a future round')
+    unresolved_streaks = [n for n in strikes if n > escalated and n - 1 in strikes]
+    if unresolved_streaks:
+        errors.append(f"E-streak: rounds {min(unresolved_streaks) - 1} and {min(unresolved_streaks)} both found new or reopened high "
                       "findings; stop fixing, route the failure (agent, specification or harness) with "
                       f"the engineer, and record `Escalated: round {current}, <decision>`")
     still_open = [r.get("id", "?") for r in table
-                  if r.get("severity", "").lower() == "high" and r.get("status", "").lower() == "open"]
-    if current > max_rounds and current > escalated and still_open:
-        errors.append(f"E-cap: round {current} is past the cap of {max_rounds} with high findings open "
+                  if r.get("severity", "").lower() in SERIOUS and r.get("status", "").lower() == "open"]
+    if current >= max_rounds and current > escalated and still_open:
+        errors.append(f"E-cap: round {current} reaches the cap of {max_rounds} with high findings open "
                       f"({', '.join(still_open)}); escalate to the engineer")
     return errors, len(table), current
 

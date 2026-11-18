@@ -35,6 +35,35 @@ class LedgerTool(unittest.TestCase):
         self.assertEqual(run.returncode, code, run.stdout + run.stderr)
         return run.stdout
 
+    def test_decisions_group_choices_and_show_dependency_impact_without_writes(self):
+        data = fixtures.fixture()
+        original = data['tasks'][0]
+        original.update(status='blocked', blockers=[fixtures.blocker()])
+        second = dict(original, id='T2', blockers=[dict(fixtures.blocker(), id='other')])
+        downstream = dict(original, id='T3', status='planned', blockers=[], depends_on=['T2'])
+        independent = dict(original, id='T4', status='planned', blockers=[], depends_on=[])
+        data['tasks'] += [second, downstream, independent]
+        self.save(data)
+        before = self.path.read_bytes()
+        view = json.loads(self.run_tool('decisions', '--json'))
+        self.assertEqual(len(view['decisions']), 1)
+        self.assertEqual(view['decisions'][0]['affected_tasks'], ['T','T2','T3'])
+        self.assertEqual(view['decisions'][0]['recommended'], 'account')
+        self.assertEqual([t['id'] for t in view['independent_candidates']], ['T4'])
+        self.assertFalse(view['decisions'][0]['review_due'])
+        self.assertIn('recommended', self.run_tool('decisions'))
+        self.assertEqual(json.loads(self.run_tool('decisions', '--owner', 'other', '--json'))['decisions'], [])
+        self.assertEqual(self.path.read_bytes(), before)
+        second['blockers'][0]['recommended'] = 'defer'
+        original['review_on'] = '2026-10-03'
+        self.save(data)
+        view = json.loads(self.run_tool('decisions','--json'))
+        self.assertEqual(len(view['decisions']), 2)  # conflicting recommendations are never merged
+        self.assertTrue(any(d['review_due'] for d in view['decisions']))
+        data['projects'][0]['wip_limit'] = 0
+        self.save(data)
+        self.assertEqual(json.loads(self.run_tool('decisions','--json'))['independent_candidates'], [])
+
     def test_get_prints_one_line(self):
         self.save(fixtures.fixture())
         out = self.run_tool('get', 'T')

@@ -6,6 +6,7 @@ are not a security boundary. No TTL steals work from a slow or disconnected agen
 """
 import argparse
 from contextlib import contextmanager
+from datetime import datetime, timezone
 import fcntl
 import json
 import os
@@ -106,10 +107,15 @@ def alignment(record, stage, base, head=None, work_id=None, tier=None):
     return data
 
 
-def team_scope(task_id, paths):
+def team_scope(task_id, paths, remote='origin', expected=None):
     """Local claims nest inside one engineer's cross-machine claim (team-work.py)."""
-    subprocess.run(['git', 'fetch', '-q', 'origin', '+refs/socrask/registry:refs/socrask/registry-remote'],
-                   capture_output=True)
+    try:
+        fetched = subprocess.run(['git', 'fetch', '-q', remote, '+refs/socrask/registry:refs/socrask/registry-remote'],
+                                 capture_output=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise ValueError('cannot refresh team registry within 30 seconds; restore access before dependent work') from error
+    if fetched.returncode:
+        raise ValueError('cannot refresh team registry; restore access before dependent work')
     try:
         registry = json.loads(git('show', 'refs/socrask/registry-remote:registry.json'))
     except subprocess.CalledProcessError:
@@ -117,9 +123,23 @@ def team_scope(task_id, paths):
     team = registry['tasks'].get(task_id)
     if not team or team['status'] not in ('active', 'ready'):
         raise ValueError(f'team task {task_id} is not active')
+    until = datetime.fromisoformat(team['lease_until'])
+    if until.tzinfo is None or until <= datetime.now(timezone.utc):
+        raise ValueError(f'team task {task_id} has an expired or invalid lease; renew it first')
+    binding = dict(task=task_id, remote=remote, engineer=team['engineer'],
+                   claimed_at=team['claimed_at'], kit=team['kit'])
+    if expected is not None and binding != expected:
+        raise ValueError(f'team task {task_id} changed ownership or identity; claim a new local task')
     outside = [p for p in paths if not any(p == t or p.startswith(t + '/') for t in team['paths'])]
     if outside:
         raise ValueError(f'paths outside team claim {task_id}: ' + ', '.join(outside))
+    return binding
+
+
+def refresh_team(task):
+    binding = task.get('team')
+    if binding:
+        team_scope(binding['task'], task['paths'], binding['remote'], binding)
 
 
 def parser():
@@ -138,6 +158,7 @@ def parser():
             p.add_argument('--alignment')
             p.add_argument('--coordinator')
             p.add_argument('--team-task', help='team-work.py task whose paths must contain this claim')
+            p.add_argument('--team-remote', default='origin', help='remote holding the team registry')
         if command == 'run':
             p.add_argument('--resource', action='append', default=[])
             p.add_argument('command', nargs=argparse.REMAINDER)
@@ -189,8 +210,7 @@ def main():
             if subprocess.run(['git', 'merge-base', '--is-ancestor', base, 'HEAD']).returncode:
                 raise ValueError('base must be an ancestor of HEAD')
             paths = sorted(set(normalized(p) for p in args.path))
-            if args.team_task:
-                team_scope(args.team_task, paths)
+            binding = team_scope(args.team_task, paths, args.team_remote) if args.team_task else None
             if args.role == 'coordinator':
                 if not args.alignment:
                     raise ValueError('coordinator requires --alignment; see docs/alignment.md')
@@ -199,6 +219,11 @@ def main():
                 coordinator = state['tasks'].get(args.coordinator, {})
                 if coordinator.get('role') != 'coordinator' or coordinator.get('status') != 'active':
                     raise ValueError('worker requires an active --coordinator task')
+                parent = coordinator.get('team')
+                if parent:
+                    if binding and binding != parent:
+                        raise ValueError('worker must retain its coordinator team binding')
+                    binding = team_scope(parent['task'], paths, parent['remote'], parent)
             for other in state['tasks'].values():
                 if other['status'] == 'closed':
                     continue
@@ -208,10 +233,13 @@ def main():
                     raise ValueError('owned path overlaps task ' + other['id'])
             state['tasks'][args.task] = dict(id=args.task, owner=args.owner, paths=paths, base=base,
                 branch=branch, worktree=worktree, criteria=args.criteria, status='active', checks=[],
-                role=args.role, coordinator=args.coordinator, tier=record['tier'] if args.role == 'coordinator' else None)
+                role=args.role, coordinator=args.coordinator, team=binding,
+                tier=record['tier'] if args.role == 'coordinator' else None)
             print('claimed ' + args.task)
             return 0
         task = task_for(state, args, worktree)
+        if args.action != 'close' or args.outcome == 'integrated':
+            refresh_team(task)
         if args.action == 'close':
             if any(r['task'] == args.task for r in state['resources'].values()) or task.get('running'):
                 raise ValueError('cannot close while a command or resource is active')
@@ -283,6 +311,11 @@ def main():
         result = 130 if isinstance(exc, KeyboardInterrupt) else 127
     with transaction(root) as state:
         task = task_for(state, args, worktree)
+        try:
+            refresh_team(task)
+        except ValueError as error:
+            print('agent-work: ' + str(error), file=sys.stderr)
+            result, sha = 2, None
         if not clean() or git('rev-parse', 'HEAD') != sha:
             sha = None
         try:

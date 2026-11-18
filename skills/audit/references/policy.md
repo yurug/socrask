@@ -16,12 +16,13 @@ Record findings and their dispositions in the same findings ledger throughout
 the repair: `templates/kb/reports/findings.md` supplies the shape.
 
 - The default budget is **three audit rounds**, including the first audit.
+  Record `Audit round: N` after every audit, even with no new findings.
 - From round two, a new or reopened high finding counts as a strike. Two
   consecutive strikes require arbitration before further fixes.
 - An open high finding at the round cap also requires arbitration. Do not mark
   it resolved or start a new ledger to reset the budget.
 - `findings-check.py LEDGER` enforces these rules. A different cap requires an
-  explicit scope decision, recorded in the ledger, and the same `--max-rounds`
+  explicit `Round budget: N, <decision>` in the ledger and the same `--max-rounds`
   value in the real launcher. A fresh agent inherits the existing round count.
 - A decision outside the agent's mandate goes to the coordinator immediately;
   do not wait for the cap. Report evidence, options and a recommendation.

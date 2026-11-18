@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.30.0 — 2026-11-18
+
+Installed tools now check the boundaries between kit adoption, team reservations
+and local execution. Pending choices have a read-only view for the engineer.
+
+- Kit installation refuses existing unmanaged files, including dependencies,
+  before copying. Installed team tools use manifest provenance for the kit pin.
+- Team-bound local work checks a fresh, live reservation before execution and
+  handoff, and after commands. Workers inherit the coordinator's binding.
+  Disconnection, expiry and takeover cannot supply valid handoff evidence.
+- `ledger.py decisions` groups matching choices, retains conflicting options,
+  shows affected tasks and review dates, and lists independent work candidates.
+- Audit ledgers declare their current round. The gate checks missing structure,
+  rounds without new findings and open serious findings at the round cap.
+- Integration tests exercise installed tools from claim through handoff, plus
+  collisions, disconnection, expiry and takeover.
+- Synthetic evaluation adds undisclosed access blockers, delayed answers and
+  interrupted sessions. Version comparisons require repeated trials with matched
+  simulator, prompts and model configuration, and retain failed trial IDs.
+  Both protocol versions passed six exploratory trials; no advantage was observed.
+  Earlier pilots with an ambiguous API contract remain in the report.
+
+Compatibility: add `Audit round: N` to existing findings ledgers. A nondefault
+cap needs `Round budget: N, <decision>` matching the launcher. Reclaim local
+team tasks created before this release to record their team binding.
+Long commands are checked at their boundaries; expiry does not kill them.
+Work candidates still need normal validation. Synthetic comparisons do not
+establish production reliability or a statistically significant improvement.
+
 ## 0.29.0 — 2026-11-18
 
 Audit counterexamples exposed gaps in lease renewal, archival, kit installation,

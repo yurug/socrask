@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Exercise coordination using real Git worktrees and competing processes."""
 import json
+import importlib.util
+from unittest.mock import patch
 from pathlib import Path
 import subprocess
 import sys
@@ -48,6 +50,14 @@ class WorkTests(unittest.TestCase):
     def claim(self, cwd, task, path, coordinator=False):
         r = self.invoke(cwd, *self.claim_args(task, path, coordinator))
         self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_team_refresh_has_a_bounded_wait(self):
+        spec = importlib.util.spec_from_file_location('work', TOOL)
+        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        with patch.object(module.subprocess, 'run', side_effect=subprocess.TimeoutExpired('git',30)) as fetch:
+            with self.assertRaisesRegex(ValueError, 'within 30 seconds'):
+                module.team_scope('T', ['src'])
+            self.assertEqual(fetch.call_args.kwargs['timeout'], 30)
 
     def test_simultaneous_overlapping_claims(self):
         procs = [subprocess.Popen([sys.executable, TOOL, *self.claim_args(t, 'src')], cwd=w,

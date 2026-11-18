@@ -151,6 +151,19 @@ python3 tools/ledger.py resolve T-sync B1 --ref kb/decisions/account.md \
 python3 tools/ledger.py resume T-sync --next-action="Run live sync acceptance"
 ```
 
+Inspect pending choices without changing the ledger:
+
+```sh
+python3 tools/ledger.py decisions
+python3 tools/ledger.py decisions --owner project-engineer --json
+```
+
+The view groups records only when owner, reference, question, options and
+recommendation match. It keeps conflicting recommendations separate, shows
+transitive affected tasks and due review dates, and lists independent work
+candidates under the recorded dependencies and WIP limit. Candidates still need
+normal validation before starting. It sends no notifications and makes no decision.
+
 `block` records an open blocker and sets the follow-up action. `resolve` retains
 the resolution; `resume` checks every blocker, task dependency and WIP limit.
 Use `resume --status reopened` for a task with unresolved failed feedback.

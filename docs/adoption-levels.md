@@ -49,7 +49,9 @@ holds. Then update `kb/work/adoption.json`.
 Adding files with `vendor` cannot change the revision of an existing installation.
 Run `upgrade` first when the kit revision changed. Upgrade prepares all sources
 and dependencies before writing, and replaces the manifest last. Local edits
-are refused. If a filesystem failure interrupts the copy, `check` detects hash
+are refused. All destinations, including new dependencies, are checked before
+copying. Existing files outside the manifest and symlink destinations are refused;
+move those files explicitly before installing. If a filesystem failure interrupts the copy, `check` detects hash
 mismatches; finish the installation before using it. Keep the previous files or
 restore their recorded versions before retrying a partial upgrade.
 

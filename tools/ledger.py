@@ -9,6 +9,7 @@ reformat the file or skip validation. With it, a change is one short command,
 and the ledger is validated before it is written.
 
 Usage (from the project root):
+    ledger.py decisions [--owner O] [--json]   pending choices and independent work
     ledger.py get ID                          the entry, as one line of JSON
     ledger.py list [GROUP] [--status S]... [--owner O] [--due DATE] [--archived] [--by-priority]
                                               one line per entry: id, status, owner,
@@ -207,6 +208,75 @@ def line(row):
     return '\t'.join(str(row.get(k, '')) for k in ('id', 'status', 'owner', 'review_on')) + '\t' + action
 
 
+def decision_view(data, root, as_of, owner=None):
+    """Group only identical open decisions; differing options must remain visible.
+
+    Work candidates use recorded dependencies and WIP, not a claim of execution
+    authority. The ordinary project gate remains responsible for starting work.
+    """
+    tasks = {t['id']: t for t in data.get('tasks', [])}
+    plans = {p['id']: p for p in data.get('plans', [])}
+    projects = {p['id']: p for p in data.get('projects', [])}
+    today = dt.date.fromisoformat(as_of)
+    grouped = {}
+    for task in tasks.values():
+        PC.Ledger(root, as_of).blockers(task)
+        for b in task.get('blockers', []):
+            if b['status'] != 'open' or b['kind'] != 'decision' or (owner and b['owner'] != owner):
+                continue
+            fields = {k: b[k] for k in ('owner', 'ref', 'question', 'options', 'recommended')}
+            key = json.dumps(fields, sort_keys=True)
+            group = grouped.setdefault(key, dict(fields, blockers=[], affected_tasks=[], review_on=task['review_on']))
+            group['blockers'].append(dict(task=task['id'], id=b['id'], summary=b['summary'],
+                                          detected_at=b['detected_at'], next_action=task['next_action']))
+            group['review_on'] = min(group['review_on'], task['review_on'])
+    decisions = sorted(grouped.values(), key=lambda g: (g['owner'], g['review_on'], g['question']))
+    for group in decisions:
+        affected = {b['task'] for b in group['blockers']}
+        while True:
+            more = {t['id'] for t in tasks.values() if t['status'] != 'closed' and
+                    affected.intersection(t.get('depends_on', []))}
+            if more <= affected:
+                break
+            affected |= more
+        group['affected_tasks'] = sorted(affected)
+        group['review_due'] = dt.date.fromisoformat(group['review_on']) <= today
+    active = {}
+    for task in tasks.values():
+        if task['status'] in PC.RUNNING:
+            project = plans[task['plan']]['project']
+            active[project] = active.get(project, 0) + 1
+    candidates = []
+    for task in tasks.values():
+        if task['status'] not in PC.RUNNING | {'planned'} or any(b['status'] == 'open' for b in task.get('blockers', [])):
+            continue
+        if any(tasks[d]['status'] != 'closed' for d in task.get('depends_on', [])):
+            continue
+        project = plans[task['plan']]['project']
+        if task['status'] == 'planned' and active.get(project, 0) >= projects[project]['wip_limit']:
+            continue
+        candidates.append({k: task[k] for k in ('id', 'owner', 'status', 'next_action')})
+    return dict(decisions=decisions, independent_candidates=candidates,
+                limits='Candidates reflect recorded dependencies and WIP; validate the ledger before starting work.')
+
+
+def print_decisions(view):
+    for group in view['decisions']:
+        print(f"{group['owner']} — {group['question']}")
+        print(f"  Affects: {', '.join(group['affected_tasks'])}; review {group['review_on']}" +
+              (' (due)' if group['review_due'] else '') + f"; evidence: {group['ref']}")
+        for option in group['options']:
+            label = ' (recommended)' if option['id'] == group['recommended'] else ''
+            print(f"  {option['id']}{label}: {option['action']} — {option['consequence']}")
+        for blocker in group['blockers']:
+            print(f"  {blocker['task']}/{blocker['id']}: {blocker['next_action']}")
+    print('Independent work candidates:')
+    for task in view['independent_candidates']:
+        print(f"  {task['id']} ({task['owner']}): {task['next_action']}")
+    print(view['limits'])
+    print(f"ledger: {len(view['decisions'])} pending decisions")
+
+
 def archive_entries(data, archive):
     """Move what is finished and can no longer change a verdict."""
     moved = {g: [] for g in GROUPS}
@@ -249,6 +319,9 @@ def main():
     ls.add_argument('--due', help='review_on on or before this YYYY-MM-DD date')
     ls.add_argument('--archived', action='store_true', help='include archived entries')
     ls.add_argument('--by-priority', action='store_true', help='highest priority first; unprioritized last')
+    decisions = sub.add_parser('decisions', help='group pending decisions and show independent work candidates')
+    decisions.add_argument('--owner')
+    decisions.add_argument('--json', action='store_true')
     st = sub.add_parser('set')
     st.add_argument('id')
     st.add_argument('assignments', nargs='+', metavar='FIELD=VALUE')
@@ -290,6 +363,13 @@ def main():
         print(f'ledger: cannot read {path}: {error}')
         return 2
     try:
+        if args.cmd == 'decisions':
+            view = decision_view(PC.with_archive(data, archive), args.root, args.as_of, args.owner)
+            if args.json:
+                print(json.dumps(view, indent=2, ensure_ascii=False))
+            else:
+                print_decisions(view)
+            return 0
         if args.cmd == 'get':
             merged = PC.with_archive(data, archive)
             print(json.dumps(find(merged, args.id)[1], ensure_ascii=False))

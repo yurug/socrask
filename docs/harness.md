@@ -22,7 +22,7 @@ listed here, so the page cannot silently fall behind the machinery.
 | `skills/spec-driven-dev/tool-check.py` | a project script missing from `kb/conventions/tools.md`, a catalog row whose path, kind or test is missing |
 | `skills/spec-driven-dev/comment-check.py` | nothing by default: warns on a comment with a hollow word or only KB IDs; `--strict` refuses them |
 | `skills/spec-driven-dev/scope-check.py` | a file changed since the step's base commit that the step's Files do not declare (`kb/` excepted) |
-| `skills/spec-driven-dev/findings-check.py` | a Phase 5 audit loop that keeps finding new or reopened high findings two rounds in a row, an open high finding past the round cap, a closed finding without evidence |
+| `skills/spec-driven-dev/findings-check.py` | a Phase 5 audit loop that keeps finding new or reopened high findings two rounds in a row, an open high finding at the round cap, missing round state, a closed finding without evidence |
 | `skills/spec-driven-dev/log-check.py` | a log call that names a secret-like value (password, secret, API key, access token, credential) |
 | `skills/spec-driven-dev/ste-check.py` | a human-facing sentence over the length limit, or a word the glossary rejects; warns on hedges and the passive voice |
 | `skills/spec-driven-dev/ratchet-adapt.py` | an adapter result marked complete when the JUnit, TAP or CI-step source says the run did not finish |
@@ -66,4 +66,4 @@ was wise, and whether the KB says something true about the world. Those are
 audit and human judgment, and no line in this table should be read as covering
 them.
 
-| `tools/test-ci-hook.py` | Git hook environment leaking into nested fixture repositories in the actual CI runner |
+| `tools/test-ci-hook.py`, `tools/test-workflow.py` | Git hook environment leaking into nested fixture repositories in the actual CI runner; installed tools failing the claim-to-handoff journey |

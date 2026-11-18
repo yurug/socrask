@@ -145,6 +145,7 @@ def install(m, entries, target):
     pin(m, target)
     target = m['revision']
     deps = dependency_map(target)
+    managed = set(m['files'])
     for dest, old in m['files'].items():
         path = Path(dest)
         if path.is_file() and isinstance(old, dict) and 'sha256' in old and sha(path.read_bytes()) != old['sha256']:
@@ -166,6 +167,10 @@ def install(m, entries, target):
             path = Path(dest)
             if path.is_absolute() or '..' in path.parts or not path.resolve().is_relative_to(Path.cwd().resolve()):
                 raise ValueError(f'{dest}: destination must stay in the project')
+            if path.resolve() != path.absolute():
+                raise ValueError(f'{dest}: destination must not traverse a symlink')
+            if path.exists() and (dest not in managed or not path.is_file()):
+                raise ValueError(f'{dest}: destination is not a managed regular file; move it before installing')
             data = kit_git('show', f"{target}:{entry['source']}")
             staged = Path(tmp) / path
             staged.parent.mkdir(parents=True, exist_ok=True)

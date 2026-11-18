@@ -66,6 +66,10 @@ Use the task's `blockers` entries in the existing work ledger; see
 The task owner remains accountable; the blocker owner is the person or team who
 can supply the decision or dependency. Keep `next_action` and `review_on` concrete.
 Link shared blockers to one decision record so the coordinator asks only once.
+`ledger.py decisions` groups pending choices and shows independent work candidates.
+After an interruption, read the retained decision state and handoff before asking
+again. A pending answer stays pending; a recorded authorization remains usable
+within its scope. Recheck any prerequisite that may have changed.
 Without a ledger yet, keep the same facts in the plan or session handoff and ask
 immediately; bootstrap must not delay escalation.
 

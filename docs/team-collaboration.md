@@ -8,7 +8,8 @@ under different engineers. The two layers nest:
   Everyone sees the claim.
 - **Inside the claim**: that engineer's agents on one machine split the work
   with `agent-work.py`, as before. `agent-work.py claim --team-task T` refuses a
-  local claim outside the paths of team task `T`.
+  local claim outside the paths of team task `T`, or under an expired lease.
+  Workers inherit their coordinator's team binding.
 
 A solo engineer, or a project without a shared remote, uses `agent-work.py` alone.
 
@@ -63,6 +64,19 @@ completed successfully. Missing or running checks remain pending; skipped and
 neutral results do not satisfy a required check. An external `--ci-status-cmd`
 owns its required-check policy and must exit zero with exactly `success`,
 `failure` or `pending`. A nonzero exit always prevents handoff.
+
+Local tasks retain the team task, remote and ownership identity. The tool refreshes
+the registry before checks, commands, handoffs and integrated closure, and after
+commands finish. An unavailable registry, expired lease or takeover prevents new
+work and invalidates a command's handoff evidence. Abandonment remains possible.
+Refresh attempts time out after 30 seconds. Use `--team-remote NAME` at claim
+time for a remote other than `origin`.
+
+This checks command boundaries; it does not kill a running command at lease expiry.
+Renew before long commands. Close local integration before closing its team task.
+Local records created before v0.30.0 lack this binding; finish or abandon them and
+claim new bound tasks to use the checks. Installed team tools read their kit
+revision from the installation manifest, rather than the consuming project's HEAD.
 
 ## Authority
 

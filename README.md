@@ -139,8 +139,9 @@ formal verification of critical modules.
 
 ## Status
 
-**v0.29.0** — checked lease and blocker transitions, recoverable archival, consistent
-kit installations, one audit policy, and [synthetic agent trials](docs/agent-evaluation.md).
+**v0.30.0** — safe installation collisions, live team bindings for local work,
+a pending-decision view, explicit audit rounds, and repeated
+[agent comparisons](docs/agent-evaluation.md).
 The methodology is still evolving, but every deterministic
 check shipped by the kit runs through `tools/ci-local.sh` and the same gate runs on every
 push and pull request. Supported skill installation targets are Claude Code and Codex;

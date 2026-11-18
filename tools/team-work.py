@@ -38,6 +38,7 @@ What this does NOT do: authenticate engineers beyond Git push access, correct
 clock skew between machines (leases use UTC timestamps), or replace review.
 """
 import argparse
+import hashlib
 from datetime import datetime, timedelta, timezone
 import fnmatch
 import importlib.util
@@ -124,6 +125,22 @@ def available(state, paths, exclude=None):
 
 
 def kit_revision():
+    directory = Path(__file__).resolve().parent
+    root = git('-C', str(directory), 'rev-parse', '--show-toplevel', check=False)
+    manifest = Path(root) / 'tools/socrask.json' if root else directory / 'socrask.json'
+    if manifest.exists():
+        data = json.loads(manifest.read_text())
+        matches = [entry for dest, entry in data.get('files', {}).items()
+                   if (manifest.parent.parent / dest).resolve() == Path(__file__).resolve()]
+        if len(matches) != 1:
+            raise ValueError('installed team-work.py needs one manifest entry')
+        entry = matches[0]
+        revision = data.get('revision')
+        if (not revision or entry.get('revision') != revision or
+                entry.get('source') != 'tools/team-work.py' or
+                entry.get('sha256') != hashlib.sha256(Path(__file__).read_bytes()).hexdigest()):
+            raise ValueError('installed team-work.py has inconsistent provenance; run kit-adopt.py check')
+        return revision
     return git("-C", str(Path(__file__).resolve().parent), "rev-parse", "HEAD", check=False)
 
 

@@ -290,7 +290,8 @@ that bar, it reports none; an empty audit is a valid result.
 
 Write findings to a ledger, `kb/reports/findings-<slice>.md`, from
 `templates/kb/reports/findings.md`: one row per finding, with its round, severity,
-status and evidence. A fix updates the row; it never deletes it.
+status and evidence. Update `Audit round: N` even when no new finding appears.
+A fix updates the row; it never deletes it.
 
 **Use the shared [audit policy](../../audit/references/policy.md).** A request to
 audit or propose improvements uses review mode; Phase 5 of an authorized
